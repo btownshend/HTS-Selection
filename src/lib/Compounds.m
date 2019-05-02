@@ -14,6 +14,7 @@ classdef Compounds < handle
     ic;    % ic(i,j) contains the total ion count for compound i, from file j
     nisomers;   % nisomers(i,j) is the number of other compounds that are within MZFUZZ in this file
     nunique;   % nunique(i,j) is the number of other compounds that are within MZFUZZ in this file and with unknown elution time
+    numhits;   % numhits(i,j) is the number of possible hits (need to have exactly 1 for the hit to be used)
   end
   
   properties(Constant)
@@ -122,6 +123,7 @@ classdef Compounds < handle
           end
           continue;
         end
+        obj.numhits(nindex,findex)=length(id.mz);
         if length(id.mz)==1
           obj.mz(nindex,findex)=id.mz(1);
           obj.time(nindex,findex)=id.time(1);
@@ -162,6 +164,7 @@ classdef Compounds < handle
           x(ii).ioncount(j)=nanmean(obj.ic(i,files));
           x(ii).nisomers(j)=nanmin(obj.nisomers(i,files));
           x(ii).nunique(j)=nanmin(obj.nunique(i,files));
+          x(ii).numhits(j)=nanmin(obj.numhits(i,files));
           f='';
           for k=1:length(files)
             f=[f,obj.files{files(k)},','];
