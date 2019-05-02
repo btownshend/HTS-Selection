@@ -1,17 +1,20 @@
 % Setup compounds with elution times for each compound
 % Do this by distinguishing isomers by checking row, col, and plate totals separately -- as long as a compound is a unique isomer in at least one of these, then it should be distinguishable
 
+datadir='../../data/';
+matdir=[datadir,'matfiles/'];
+
 if ~exist('sdf','var')
-  load ../../data/matfiles/sdf.mat
+  load([matdir,'sdf.mat']);
 end
 
-QQQBase='../../data/MassSpec/';
+msdir=[datadir,'MassSpec/'];
 
-rowdata=dir([QQQBase,'20190* Row, Column/Row*.mzXML']);
+rowdata=dir([msdir,'20190* Row, Column/Row*.mzXML']);
 rowdata=rowdata([1,9,3:8]);   % Use rerun
-coldata=dir([QQQBase,'20190* Row, Column/Col*.mzXML']);
+coldata=dir([msdir,'20190* Row, Column/Col*.mzXML']);
 coldata=coldata([2,11,4:9,1,10]);   % Use rerun, reorder
-platedata=dir([QQQBase,'20190309 CDiv Library Plates/CDIV*1.mzXML']);
+platedata=dir([msdir,'20190309 CDiv Library Plates/CDIV*1.mzXML']);
 
 allfiles=[rowdata;coldata;platedata];
 mzoffsets=[repmat(-.0027,1,length(rowdata)),repmat(-.0027,1,length(coldata)),repmat(.0014,1,length(platedata))]+7.4e-3;
@@ -61,6 +64,6 @@ report=compounds.report();
 compounds.checkmzoffset();
 
 writetable(report,'report.csv');
-save('compounds.mat','compounds');
+save([matdir,'compounds.mat'],'compounds');
 % TODO, summarize by compound
 
