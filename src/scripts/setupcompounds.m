@@ -18,7 +18,11 @@ coldata=coldata([2,11,4:9,1,10]);   % Use rerun, reorder
 platedata=dir([msdir,'20190309 CDiv Library Plates/CDIV*1.mzXML']);
 
 allfiles=[rowdata;coldata;platedata];
-mzoffsets=[repmat(-.0027,1,length(rowdata)),repmat(-.0027,1,length(coldata)),repmat(.0014,1,length(platedata))]+7.4e-3;
+mzoffsets=[repmat(.0030,1,length(rowdata)),repmat(.0026,1,length(coldata)),repmat(.0087,1,length(platedata))];
+% Offsets of rerun on 5/1 seem different
+mzoffsets(2)=.0076;
+mzoffsets([10,18])=.0086;
+           
 % Load data
 if ~exist('mzdata','var')
   mzdata={};
@@ -34,14 +38,17 @@ for i=1:length(allfiles)
   end
 end
 
+for i=1:length(mzdata)
+  mzdata{i}.adjmzoffset(mzoffsets(i));
+end
 
 if ~exist('compounds','var')
   compounds=Compounds();
 end
 
 
-for reps=1:2
-  fprintf('Pass %d...',reps);
+for reps=1:1
+  fprintf('Pass %d...\n',reps);
   for i=1:length(mzdata)
     if strncmp(mzdata{i}.name,'Col',3)
       cnum=sscanf(mzdata{i}.name,'Col%d.mzXML');
