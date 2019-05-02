@@ -57,7 +57,9 @@ end
 compounds.summary();
 
 report=compounds.report();
-fprintf('Additional M/Z offset = %.4f\n', nanmedian(report.mzoffset));
+
+compounds.checkmzoffset();
+
 writetable(report,'report.csv');
 save('compounds.mat','compounds');
 % TODO, summarize by compound

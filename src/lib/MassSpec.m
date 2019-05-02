@@ -24,19 +24,24 @@ classdef MassSpec < handle
       fprintf('Loading %s...\n', path);
       mzxml=mzxmlread(path);
       [obj.peaks,obj.time]=mzxml2peaks(mzxml);
-      if args.mzoffset~=0
-        % Correct the M/Z
-        for i=1:length(obj.peaks)
-          obj.peaks{i}(:,1)=obj.peaks{i}(:,1)-args.mzoffset;
-        end
-      end
       obj.mzrange=[min(cellfun(@(z) z(1,1), obj.peaks)),max(cellfun(@(z) z(end,1), obj.peaks))];
+      obj.mzoffset=0;
+      if args.mzoffset~=0
+        obj.adjmzoffset(args.mzoffset);
+      end
       obj.path=path;
       z=strsplit(obj.path,'/');
       obj.name=z{end};
-      obj.mzoffset=args.mzoffset;
     end
 
+    function adjmzoffset(obj,mzoffset)
+    % Correct the M/Z
+      for i=1:length(obj.peaks)
+        obj.peaks{i}(:,1)=obj.peaks{i}(:,1)-(mzoffset-obj.mzoffset);   % Adjust offset
+      end
+      obj.mzoffset=mzoffset;
+    end
+      
     function setLoad(obj,moles)
       obj.moles=moles;
     end
