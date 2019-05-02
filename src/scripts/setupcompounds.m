@@ -2,10 +2,10 @@
 % Do this by distinguishing isomers by checking row, col, and plate totals separately -- as long as a compound is a unique isomer in at least one of these, then it should be distinguishable
 
 if ~exist('sdf','var')
-  load ../HTBCFiles/sdf.mat
+  load ../../data/matfiles/sdf.mat
 end
 
-QQQBase='../QQQ/';
+QQQBase='../../data/MassSpec/';
 
 rowdata=dir([QQQBase,'20190* Row, Column/Row*.mzXML']);
 rowdata=rowdata([1,9,3:8]);   % Use rerun
