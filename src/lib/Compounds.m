@@ -134,14 +134,14 @@ classdef Compounds < handle
           ;
         end
       end
-      fprintf('Located %d/%d compounds uniquely with %d not present in MS peaks\n', sum(isfinite(obj.mz(:,findex))), sum(obj.contains(:,findex)), sum(obj.ic(:,findex)==0));
+      fprintf('Located %d/%d possible/%d total compounds\n', sum(isfinite(obj.mz(:,findex))), sum(obj.nunique(:,findex)==1), sum(obj.contains(:,findex)));
     end
     
     function summary(obj)
     % Summarize data available
       fprintf('Contains %d files, %d compounds (%d with elution time)\n', length(obj.files), length(obj.names), sum(any(isfinite(obj.time'))));
       for i=1:length(obj.files)
-        fprintf('%2d %-20.20s %3d/%3d compounds identified, %d missing\n', i, obj.files{i}, sum(isfinite(obj.mz(:,i))),sum(obj.contains(:,i)),sum(obj.nunique(:,i)==1 & obj.contains(:,i) & ~isfinite(obj.mz(:,i))));
+        fprintf('%2d %-20.20s %3d/%3d/%3d compounds identified\n', i, obj.files{i}, sum(isfinite(obj.mz(:,i))),sum(obj.nunique(:,i)==1),sum(obj.contains(:,i)))
       end
     end
     
