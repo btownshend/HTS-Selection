@@ -3,6 +3,7 @@
 
 datadir='../../data/';
 matdir=[datadir,'matfiles/'];
+resultsdir='../../results/';
 
 if ~exist('sdf','var')
   load([matdir,'sdf.mat']);
@@ -63,7 +64,8 @@ report=compounds.report();
 
 compounds.checkmzoffset();
 
-writetable(report,'report.csv');
+writetable(report,[resultsdir,'report.csv']);
 save([matdir,'compounds.mat'],'compounds');
+
 % TODO, summarize by compound
 
