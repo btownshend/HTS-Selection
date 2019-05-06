@@ -72,7 +72,11 @@ classdef MassSpec < handle
       if nargin<2
         markers=[];
       end
-      msheatmap(obj.resamp.mz,obj.time,log(obj.resamp.y),'resolution',obj.mzres,'markers',markers);
+      if isempty(markers)
+        msheatmap(obj.resamp.mz,obj.time,log(obj.resamp.y),'resolution',obj.mzres);
+      else
+        msheatmap(obj.resamp.mz,obj.time,log(obj.resamp.y),'resolution',obj.mzres,'markers',markers);
+      end
     end
 
     function clusterpeaks(obj,varargin)
