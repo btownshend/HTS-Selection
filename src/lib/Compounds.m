@@ -159,18 +159,20 @@ classdef Compounds < handle
         
         for j=1:length(ugroups)
           files=find(strcmp(obj.group,ugroups{j})& obj.contains(i,:));
-          x(ii).mzoffset(j)=nanmean(obj.mz(i,files))-obj.mztarget(i);
-          x(ii).elution(j)=nanmean(obj.time(i,files));
-          x(ii).ioncount(j)=nanmean(obj.ic(i,files));
-          x(ii).nisomers(j)=nanmin(obj.nisomers(i,files));
-          x(ii).nunique(j)=nanmin(obj.nunique(i,files));
-          x(ii).numhits(j)=nanmin(obj.numhits(i,files));
+          if ~isempty(files)
+          x(ii).mzoffset(j)=nanmean(obj.mz(i,files)')-obj.mztarget(i);
+          x(ii).elution(j)=nanmean(obj.time(i,files)');
+          x(ii).ioncount(j)=nanmean(obj.ic(i,files)');
+          x(ii).nisomers(j)=nanmin(obj.nisomers(i,files)');
+          x(ii).nunique(j)=nanmin(obj.nunique(i,files)');
+          x(ii).numhits(j)=nanmin(obj.numhits(i,files)');
           f='';
           for k=1:length(files)
             f=[f,obj.files{files(k)},','];
           end
           f=f(1:end-1);  % Remove trailing comma
           x(ii).files{j}=f;
+          end
         end
       end
       x=struct2table(x);
