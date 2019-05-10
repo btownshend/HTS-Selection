@@ -4,3 +4,4 @@ src/lib/dump_editted.numbers
 src/lib/dump_editted.xlsx
 .#*
 src/lib/dump.csv
+src/scripts/html/compositions.pdf
