@@ -65,6 +65,99 @@ classdef Compounds < handle
       end
     end
 
+    function [p,r,c]=getposition(obj,i)
+    % Get plate (str),row (int),col(int) of compound i
+      sdf=obj.sdf{i};
+      p=sdf.BATCH_PLATE;
+      r=sdf.BATCH_WELL(1)-'A'+1;
+      c=sscanf(sdf.BATCH_WELL(2:end),'%d');
+    end
+    
+    function id=checkComposition(obj,ms,varargin)
+    % Check composition in mass spec file using current set of compounds
+      defaults=struct('debug',false);  
+      args=processargs(defaults,varargin);
+      id=[];
+      for i=1:length(obj.mztarget)
+        meantime(i)=nanmean(obj.time(i,:));
+      end
+      for i=1:length(obj.mztarget)
+        mztarget=obj.mztarget(i);
+        id=[id,struct('mztarget',mztarget,'desc','','findargs','','mz',nan,'time',nan,'ic',nan)];
+        if isfinite(meantime(i))
+          % Only look for compounds with a known elution time
+          isomers=find(abs(meantime-meantime(i))<obj.TIMEFUZZ & abs(mztarget-obj.mztarget')<obj.MZFUZZ);
+          id(i)=ms.findcompound(mztarget,'sdf',obj.sdf{i},'elutetime',meantime(i),'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
+          if isempty(id(i).ic)
+            id(i).ic=0;
+            id(i).time=nan;
+            id(i).mz=nan;
+          end
+          if length(isomers)>1 && sum(id(i).ic)>0
+            fprintf('Isomer at compounds %s with ion count = %.0f\n', sprintf('%d,',isomers),sum(id(i).ic));
+            id(i).ic=nan;   % Can't use it
+          end
+        end
+      end
+      
+      for i=1:length(obj.mztarget)
+        id(i).name=obj.names{i};
+        id(i).relic=sum(id(i).ic)/nanmax(obj.ic(i,:));
+      end
+    end
+    
+    function [matic,id]=plotComposition(obj,ms,varargin)
+      defaults=struct('debug',false,'thresh',0.05);  
+      args=processargs(defaults,varargin);
+
+      id=obj.checkComposition(ms,'debug',args.debug);
+      ic=nan(length(id),1);
+      p={};
+      for i=1:length(id)
+        [p{i},r(i),c(i)]=obj.getposition(i);
+        if ~isempty(id(i).ic)
+          ic(i)=id(i).relic;
+        end
+      end
+      fprintf('%s: Located %d compounds with relative ion count >%.2f, %d with >0, out of %d with known elution time, %d total compounds\n', ms.name, sum(ic>=args.thresh), args.thresh, sum(ic>0), sum(isfinite(nanmean(obj.time,2))), length(ic));
+      up=unique(p,'sorted');
+      
+      setfig([ms.name,' Relative Ion Count distribution']);clf;
+      histogram(log10(ic),50)
+      ax=axis;
+      hold on;
+      plot(log10(args.thresh)*[1,1],ax(3:4),'r:');
+      xlabel('log10(Ion Count)');
+      title(ms.name);
+      
+      setfig([ms.name,' Composition']);clf;
+      for i=1:length(up)
+        mat=nan(max(r)+1,max(c)+1);
+        for j=1:max(r)
+          for k=min(c):max(c)
+            sel=strcmp(p,up{i})&r==j&c==k;
+            if any(sel)
+              mat(j,k)=ic(sel);
+            end
+          end
+        end
+        subplot(4,3,i);
+        pcolor(log10(mat));
+        axis ij;
+        set(gca,'XTick',(min(c):max(c))+0.5);
+        set(gca,'XTickLabel',arrayfun(@(z) sprintf('%.0f',z), min(c):max(c),'UniformOutput',false));
+        set(gca,'YTick',(1:max(r))+0.5);
+        set(gca,'YTickLabel',arrayfun(@(z) sprintf('%c',z+'A'-1), 1:max(r),'UniformOutput',false));
+        axis([min(c),max(c)+1,1,max(r)+1]);
+        caxis(log10([args.thresh,2.0]));
+        colorbar;
+        title(up{i});
+        matic(i,:,:)=mat;
+      end
+      suptitle(ms.name);
+      matic=matic(i,1:end-1,1:end-1);
+    end
+      
     function addFromSDF(obj,ms,sdf,varargin)
     % Add the unique peaks for compounds in given SDF from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
