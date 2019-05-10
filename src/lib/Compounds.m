@@ -19,7 +19,7 @@ classdef Compounds < handle
   
   properties(Constant)
     MZFUZZ=0.003;
-    TIMEFUZZ=50;   % in seconds
+    TIMEFUZZ=100;   % in seconds
   end
   
   methods
@@ -68,9 +68,11 @@ classdef Compounds < handle
     function [p,r,c]=getposition(obj,i)
     % Get plate (str),row (int),col(int) of compound i
       sdf=obj.sdf{i};
-      p=sdf.BATCH_PLATE;
-      r=sdf.BATCH_WELL(1)-'A'+1;
-      c=sscanf(sdf.BATCH_WELL(2:end),'%d');
+      for ii=1:length(i)
+        p=sdf.BATCH_PLATE;
+        r=sdf.BATCH_WELL(1)-'A'+1;
+        c=sscanf(sdf.BATCH_WELL(2:end),'%d');
+        end
     end
     
     function id=checkComposition(obj,ms,varargin)
@@ -106,29 +108,57 @@ classdef Compounds < handle
       end
     end
     
-    function [matic,id]=plotComposition(obj,ms,varargin)
-      defaults=struct('debug',false,'thresh',0.05);  
+    function [matic,id,refid]=plotComposition(obj,ms,varargin)
+      defaults=struct('debug',false,'thresh',0.05,'ref',[]);  
       args=processargs(defaults,varargin);
 
       id=obj.checkComposition(ms,'debug',args.debug);
+      if ~isempty(args.ref)
+        refid=obj.checkComposition(args.ref,'debug',args.debug);
+      end
+      
       ic=nan(length(id),1);
+      relic=ic;
+      refic=ic;
+      
       p={};
       for i=1:length(id)
         [p{i},r(i),c(i)]=obj.getposition(i);
         if ~isempty(id(i).ic)
-          ic(i)=id(i).relic;
+          ic(i)=nansum(id(i).ic);
+          if ~isempty(args.ref)
+            refic(i)=nansum(refid(i).ic);
+          else
+            relic(i)=id(i).relic;
+          end
         end
       end
+      if ~isempty(args.ref)
+        relic=ic./refic;
+        relic(refic==0)=nan;
+        ti=[ms.name,' vs ',args.ref.name];
+        setfig(ti); clf;
+        loglog(refic,ic,'.');
+        hold on;
+        ax=axis;
+        x=logspace(log10(ax(1)),log10(ax(2)));
+        plot(x,x+2*sqrt(x),':r');
+        plot(x,x-2*sqrt(x),':r');
+        xlabel(args.ref.name,'Interpreter','none');
+        ylabel(ms.name,'Interpreter','none');
+        title(ti,'Interpreter','none');
+      end
+      
       fprintf('%s: Located %d compounds with relative ion count >%.2f, %d with >0, out of %d with known elution time, %d total compounds\n', ms.name, sum(ic>=args.thresh), args.thresh, sum(ic>0), sum(isfinite(nanmean(obj.time,2))), length(ic));
       up=unique(p,'sorted');
       
       setfig([ms.name,' Relative Ion Count distribution']);clf;
-      histogram(log10(ic),50)
+      histogram(log10(relic),50)
       ax=axis;
       hold on;
       plot(log10(args.thresh)*[1,1],ax(3:4),'r:');
       xlabel('log10(Ion Count)');
-      title(ms.name);
+      title(ms.name,'Interpreter','none');
       
       setfig([ms.name,' Composition']);clf;
       for i=1:length(up)
@@ -137,7 +167,7 @@ classdef Compounds < handle
           for k=min(c):max(c)
             sel=strcmp(p,up{i})&r==j&c==k;
             if any(sel)
-              mat(j,k)=ic(sel);
+              mat(j,k)=relic(sel);
             end
           end
         end
@@ -149,13 +179,18 @@ classdef Compounds < handle
         set(gca,'YTick',(1:max(r))+0.5);
         set(gca,'YTickLabel',arrayfun(@(z) sprintf('%c',z+'A'-1), 1:max(r),'UniformOutput',false));
         axis([min(c),max(c)+1,1,max(r)+1]);
-        caxis(log10([args.thresh,2.0]));
+        caxis(log10([args.thresh,nanmax(relic(isfinite(relic(:))))]));
         colorbar;
-        title(up{i});
+        title(up{i},'Interpreter','none');
         matic(i,:,:)=mat;
       end
-      suptitle(ms.name);
-      matic=matic(i,1:end-1,1:end-1);
+      if ~isempty(args.ref)
+        h=suptitle(sprintf('%s (Ref:%s)',ms.name,args.ref.name));
+      else
+        h=suptitle(ms.name);
+      end
+      set(h,'Interpreter','none');
+      matic=matic(:,1:end-1,1:end-1);
     end
       
     function addFromSDF(obj,ms,sdf,varargin)
@@ -372,5 +407,38 @@ classdef Compounds < handle
       h=suptitle(sprintf('%s N=%d',ti,sum(all(isfinite(obj.ic(:,[f1,f2])),2))));
       set(h,'Interpreter','none');
     end
+
+    function plotmap(obj)
+    % Plot map of compounds in m/z vs time space
+      setfig('Compound Map');clf;
+      etime=[];
+      for i=1:length(obj.mztarget)
+        etime(i,1)=nanmin(obj.time(i,:));
+        etime(i,2)=nanmax(obj.time(i,:));
+        etime(i,3)=nanmean(obj.time(i,:));
+        mz(i,1)=nanmin(obj.mz(i,:));
+        mz(i,2)=nanmax(obj.mz(i,:));
+      end
+      plot(obj.mztarget,etime(:,3),'.b');
+      hold on;
+      ngood=0;
+      for i=1:size(etime,1)
+        if isnan(etime(i,3))
+          continue;
+        end
+        overlap=sum(etime(:,1)<etime(i,2) & etime(:,2)>etime(:,1) & mz(:,1)<mz(i,2) & mz(:,2)>mz(i,1));
+        if overlap>1
+          col='r';
+        else
+          col='g';
+          ngood=ngood+1;
+        end
+        plot(mz(i,[1,2,2,1,1]),etime(i,[1,1,2,2,1]),col);
+      end
+      xlabel('m/z');
+      ylabel('Elution time (s)');
+      title(sprintf('Compound Map (%d distinguishable/%d identified)',ngood,sum(isfinite(etime(:,3)))));
+    end
+    
   end
 end
