@@ -11,18 +11,17 @@ end
 
 msdir=[datadir,'MassSpec/'];
 
-welldata=dir([msdir,'20190506-Individual/*.mzXML']);
 rowdata=dir([msdir,'20190* Row, Column/Row*.mzXML']);
 rowdata=rowdata([1,9,3:8]);   % Use rerun
 coldata=dir([msdir,'20190* Row, Column/Col*.mzXML']);
 coldata=coldata([2,11,4:9,1,10]);   % Use rerun, reorder
 platedata=dir([msdir,'20190309 CDiv Library Plates/CDIV*1.mzXML']);
 
-allfiles=[welldata;rowdata;coldata;platedata];
-mzoffsets=[repmat(.0030,1,length(welldata)),repmat(.0030,1,length(rowdata)),repmat(.0026,1,length(coldata)),repmat(.0087,1,length(platedata))];
+allfiles=[rowdata;coldata;platedata];
+mzoffsets=[repmat(.0030,1,length(rowdata)),repmat(.0026,1,length(coldata)),repmat(.0087,1,length(platedata))];
 % Offsets of rerun on 5/1 seem different
-mzoffsets(2+length(welldata))=.0076;
-mzoffsets([10,18]+length(welldata))=.0086;
+mzoffsets(2)=.0076;
+mzoffsets([10,18])=.0086;
            
 % Load data
 if ~exist('mzdata','var')
@@ -61,11 +60,8 @@ for reps=1:1
       pnum=sscanf(mzdata{i}.name,'CDIV%d.mzXML');
       compounds.addFromSDF(mzdata{i},sdf.filter(pnum),'group','Plate');
     else
-      row=mzdata{i}.name(1);
-      cnum=sscanf(mzdata{i}.name(2:end),'%d.mzXML');
-      compounds.addFromSDF(mzdata{i},sdf.filter(1,row,cnum),'group','Well');
       % Assume all compounds
-      %fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i});
+      fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i});
     end
   end
 end
