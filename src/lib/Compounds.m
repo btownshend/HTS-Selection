@@ -96,7 +96,7 @@ classdef Compounds < handle
             id(i).mz=nan;
           end
           if length(isomers)>1 && sum(id(i).ic)>0
-            fprintf('Isomer at compounds %s with ion count = %.0f\n', sprintf('%d,',isomers),sum(id(i).ic));
+            %fprintf('Isomer at compounds %s with ion count = %.0f\n', sprintf('%d,',isomers),sum(id(i).ic));
             id(i).ic=nan;   % Can't use it
           end
         end
@@ -109,7 +109,7 @@ classdef Compounds < handle
     end
     
     function [matic,id,refid]=plotComposition(obj,ms,varargin)
-      defaults=struct('debug',false,'thresh',0.05,'ref',[]);  
+      defaults=struct('debug',false,'thresh',0.02,'ref',[]);  
       args=processargs(defaults,varargin);
 
       id=obj.checkComposition(ms,'debug',args.debug);
@@ -133,11 +133,14 @@ classdef Compounds < handle
           end
         end
       end
+      ti=[ms.name,' vs ',args.ref.name];
+      setfig(ti); clf;
+
       if ~isempty(args.ref)
         relic=ic./refic;
         relic(refic==0)=nan;
-        ti=[ms.name,' vs ',args.ref.name];
-        setfig(ti); clf;
+
+        subplot(333);  
         loglog(refic,ic,'.');
         hold on;
         ax=axis;
@@ -146,51 +149,98 @@ classdef Compounds < handle
         plot(x,x-2*sqrt(x),':r');
         xlabel(args.ref.name,'Interpreter','none');
         ylabel(ms.name,'Interpreter','none');
-        title(ti,'Interpreter','none');
+        title('Abs. Ion Count Compare');
+        
+        subplot(334);
+        semilogy([id.mztarget],relic,'.');
+        xlabel('m/z');
+        ylabel('IC/Ref IC');
+        title('Rel IC vs m/z');
+        
+        subplot(337);
+        time=arrayfun(@(z) z.time(1), id);
+        semilogy(time,relic,'.');
+        xlabel('Elution Time (s)');
+        ylabel('IC/Ref IC');
+        title('Rel IC vs Time');
+        
+        subplot(332);
+        reftime=arrayfun(@(z) z.time(1), refid);
+        plot(reftime,time-reftime,'.');
+        hold on;
+        ax=axis;
+        plot(ax(1:2),-obj.TIMEFUZZ*[1,1],':r');
+        plot(ax(1:2),obj.TIMEFUZZ*[1,1],':r');
+        xlabel(args.ref.name,'Interpreter','none');
+        ylabel('Time diff (s)','Interpreter','none');
+        title('Elution Time Compare');
+        
       end
       
       fprintf('%s: Located %d compounds with relative ion count >%.2f, %d with >0, out of %d with known elution time, %d total compounds\n', ms.name, sum(ic>=args.thresh), args.thresh, sum(ic>0), sum(isfinite(nanmean(obj.time,2))), length(ic));
       up=unique(p,'sorted');
       
-      setfig([ms.name,' Relative Ion Count distribution']);clf;
+      subplot(331);
       histogram(log10(relic),50)
       ax=axis;
       hold on;
       plot(log10(args.thresh)*[1,1],ax(3:4),'r:');
       xlabel('log10(Ion Count)');
-      title(ms.name,'Interpreter','none');
-      
-      setfig([ms.name,' Composition']);clf;
+      title('Relative Ion Count');
+
+      mat=nan(8*4,10*3);
+      matic=nan(12,8,10);
       for i=1:length(up)
-        mat=nan(max(r)+1,max(c)+1);
+        row=floor((i-1)/3);
+        col=i-row*3-1;
+        
         for j=1:max(r)
           for k=min(c):max(c)
             sel=strcmp(p,up{i})&r==j&c==k;
             if any(sel)
-              mat(j,k)=relic(sel);
+              mat(j+row*8,(k-1)+col*10)=relic(sel);
+              matic(i,j,k)=relic(sel);
             end
           end
         end
-        subplot(4,3,i);
-        pcolor(log10(mat));
-        axis ij;
-        set(gca,'XTick',(min(c):max(c))+0.5);
-        set(gca,'XTickLabel',arrayfun(@(z) sprintf('%.0f',z), min(c):max(c),'UniformOutput',false));
-        set(gca,'YTick',(1:max(r))+0.5);
-        set(gca,'YTickLabel',arrayfun(@(z) sprintf('%c',z+'A'-1), 1:max(r),'UniformOutput',false));
-        axis([min(c),max(c)+1,1,max(r)+1]);
-        caxis(log10([args.thresh,nanmax(relic(isfinite(relic(:))))]));
-        colorbar;
-        title(up{i},'Interpreter','none');
-        matic(i,:,:)=mat;
       end
+      
+      subplot(3,3,[5,6,8,9]);
+      mat(end+1,:)=nan;
+      mat(:,end+1)=nan;
+      pcolor(log10(mat));
+      axis ij;
+      set(gca,'XTick',(1:30)+0.5);
+      set(gca,'XTickLabel',arrayfun(@(z) sprintf('%.0f',z), repmat(min(c):max(c),1,3),'UniformOutput',false));
+      set(gca,'YTick',(1:32)+0.5);
+      set(gca,'YTickLabel',arrayfun(@(z) sprintf('%c',z+'A'-1), repmat(1:max(r),1,4),'UniformOutput',false));
+      hold on;
+      plot(1*[1,1],[1,33],'-k','LineWidth',5);
+      plot(11*[1,1],[1,33],'-k','LineWidth',5);
+      plot(21*[1,1],[1,33],'-k','LineWidth',5);
+      plot(31*[1,1],[1,33],'-k','LineWidth',5);
+      plot([1,31],1*[1,1],'-k','LineWidth',5);
+      plot([1,31],9*[1,1],'-k','LineWidth',5);
+      plot([1,31],17*[1,1],'-k','LineWidth',5);
+      plot([1,31],25*[1,1],'-k','LineWidth',5);
+      plot([1,31],33*[1,1],'-k','LineWidth',5);
+
+      for i=1:length(up)
+        row=floor((i-1)/3);
+        col=i-row*3-1;
+        text(col*10+6,row*8+4.5,up{i},'HorizontalAlignment','center','VerticalAlignment','middle');
+      end
+      
+      caxis(log10([args.thresh,nanmax(relic(isfinite(relic(:))))]));
+      colorbar;
+      title('log10(Rel IC)');
+      
       if ~isempty(args.ref)
         h=suptitle(sprintf('%s (Ref:%s)',ms.name,args.ref.name));
       else
         h=suptitle(ms.name);
       end
       set(h,'Interpreter','none');
-      matic=matic(:,1:end-1,1:end-1);
     end
       
     function addFromSDF(obj,ms,sdf,varargin)
