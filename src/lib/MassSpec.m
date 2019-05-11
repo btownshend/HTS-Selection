@@ -301,9 +301,10 @@ classdef MassSpec < handle
     
     function plotTIC(obj)
     % Plot TIC showing best traces
-      setfig('TIC');clf;
+      ti=[obj.name,'-TIC'];
+      setfig(ti);clf;
       plot(obj.time,obj.TIC());
-      title('Total Ion Chromatogram (TIC)')
+      title(ti)
       xlabel('Retention Time')
       ylabel('Relative Intensity')
       hold on;
