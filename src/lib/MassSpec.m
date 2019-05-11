@@ -128,19 +128,27 @@ classdef MassSpec < handle
       fprintf('Found a total of %d/%d peaks with IC>=%.0f>=%.0f\n', length(res),args.maxpeaks, args.minic,min([res.maxic]));
     end
     
-    function [ic,mz]=mzscan(obj, mztarget, varargin)
+    function [ic,mz,time]=mzscan(obj, mztarget, varargin)
     % Get ion counts for given mztarget across elution times
     % Also return weighted mean m/z for each elution time
-      defaults=struct('mztol',0.01);
+      defaults=struct('mztol',0.01,'timerange',[]);
       args=processargs(defaults,varargin);
       % Build a table of elution vs IC for this M/Z
-      ic=zeros(size(obj.peaks,1),1);
-      mz=nan(size(obj.peaks,1),1);
-      for i=1:length(obj.peaks)
+      if isempty(args.timerange)
+        first=1;
+        last=length(obj.peaks);
+      else
+        first=find(obj.time>=args.timerange(1),1);
+        last=find(obj.time<=args.timerange(2),1,'last');
+      end
+      ic=zeros(last-first+1,1);
+      mz=nan(last-first+1,1);
+      time=obj.time(first:last);
+      for i=first:last
         sel=abs(obj.peaks{i}(:,1)-mztarget)<=args.mztol;
         if any(sel)
-          ic(i)=sum(obj.peaks{i}(sel,2));
-          mz(i)=sum((obj.peaks{i}(sel,1).*obj.peaks{i}(sel,2)))/ic(i);
+          ic(i-first+1)=sum(obj.peaks{i}(sel,2));
+          mz(i-first+1)=sum((obj.peaks{i}(sel,1).*obj.peaks{i}(sel,2)))/ic(i-first+1);
         end
       end
     end
@@ -161,20 +169,20 @@ classdef MassSpec < handle
       end
       
       % Build a table of elution vs IC for this M/Z
-      [ic,mz]=obj.mzscan(mztarget,'mztol',args.mztol);
-
-      % Handle any time limitations given on command line
-      if ~isempty(args.elutetime)
-        sel=abs(obj.time-args.elutetime)<=args.timetol;
-      elseif ~isempty(args.ignoreelutetimes)
-        sel=~(min(abs(obj.time-args.ignoreelutetimes(:)'),[],2)<args.timetol);
+      if isempty(args.elutetime)
+        [ic,mz,time]=obj.mzscan(mztarget,'mztol',args.mztol);
       else
-        sel=true(size(ic));
+        [ic,mz,time]=obj.mzscan(mztarget,'mztol',args.mztol,'timerange',[args.elutetime-args.timetol,args.elutetime+args.timetol]);
       end
 
-      time=obj.time(sel);
-      ic=ic(sel);
-      mz=mz(sel);
+      % Handle any other time limitations given on command line
+      if ~isempty(args.ignoreelutetimes)
+        sel=~(min(abs(obj.time-args.ignoreelutetimes(:)'),[],2)<args.timetol);
+        time=time(sel);
+        ic=ic(sel);
+        mz=mz(sel);
+      end
+
       
       % Find peaks
       maxtime=[]; maxic=[]; maxmz=[];
