@@ -188,7 +188,7 @@ classdef Compounds < handle
       xlabel('log10(Ion Count)');
       title('Relative Ion Count');
 
-      mat=nan(8*4,10*3);
+      mat=nan(9*4,10*3);
       matic=nan(12,8,10);
       for i=1:length(up)
         row=floor((i-1)/3);
@@ -198,7 +198,7 @@ classdef Compounds < handle
           for k=min(c):max(c)
             sel=strcmp(p,up{i})&r==j&c==k;
             if any(sel)
-              mat(j+row*8,(k-1)+col*10)=relic(sel);
+              mat(j+row*9+1,(k-1)+col*10)=relic(sel);
               matic(i,j,k)=relic(sel);
             end
           end
@@ -209,26 +209,37 @@ classdef Compounds < handle
       mat(end+1,:)=nan;
       mat(:,end+1)=nan;
       pcolor(log10(mat));
+      shading flat
       axis ij;
       set(gca,'XTick',(1:30)+0.5);
       set(gca,'XTickLabel',arrayfun(@(z) sprintf('%.0f',z), repmat(min(c):max(c),1,3),'UniformOutput',false));
-      set(gca,'YTick',(1:32)+0.5);
-      set(gca,'YTickLabel',arrayfun(@(z) sprintf('%c',z+'A'-1), repmat(1:max(r),1,4),'UniformOutput',false));
+      set(gca,'YTick',(1:36)+0.5);
+      lbls=arrayfun(@(z) sprintf('%c',z+'A'-2), repmat(1:max(r)+1,1,4),'UniformOutput',false);
+      for i=1:9:length(lbls)
+        lbls{i}=' ';
+      end
+      set(gca,'YTickLabel',lbls);
+      keyboard
+      set(gca,'TickLength',[0,0])
       hold on;
-      plot(1*[1,1],[1,33],'-k','LineWidth',5);
-      plot(11*[1,1],[1,33],'-k','LineWidth',5);
-      plot(21*[1,1],[1,33],'-k','LineWidth',5);
-      plot(31*[1,1],[1,33],'-k','LineWidth',5);
-      plot([1,31],1*[1,1],'-k','LineWidth',5);
-      plot([1,31],9*[1,1],'-k','LineWidth',5);
-      plot([1,31],17*[1,1],'-k','LineWidth',5);
-      plot([1,31],25*[1,1],'-k','LineWidth',5);
-      plot([1,31],33*[1,1],'-k','LineWidth',5);
-
+      for i=1:31
+        for j=2:9:37
+          plot(i*[1,1],[j,j+8],'-k','LineWidth',1);
+        end
+      end
+      for i=1:10:31
+        plot(i*[1,1],[1,37],'-k','LineWidth',4);
+      end
+      for i=1:37
+        plot([1,31],i*[1,1],'-k','LineWidth',1);
+      end
+      for i=1:9:37
+        plot([1,31],i*[1,1],'-k','LineWidth',4);
+      end
       for i=1:length(up)
         row=floor((i-1)/3);
         col=i-row*3-1;
-        text(col*10+6,row*8+4.5,up{i},'HorizontalAlignment','center','VerticalAlignment','middle');
+        text(col*10+6,row*9+1.55,up{i},'HorizontalAlignment','center','VerticalAlignment','middle');
       end
       
       caxis(log10([args.thresh,nanmax(relic(isfinite(relic(:))))]));
