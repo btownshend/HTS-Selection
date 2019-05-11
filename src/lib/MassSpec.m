@@ -11,6 +11,7 @@ classdef MassSpec < handle
     clustersettings;
     ident;    % struct array of identified peaks
     mzoffset;   % M/Z offset (obs-actual) -- for info only, already applied to the other fields
+    mzxml;
   end
   
   properties(Constant)
@@ -32,6 +33,7 @@ classdef MassSpec < handle
       obj.path=path;
       z=strsplit(obj.path,'/');
       obj.name=z{end};
+      obj.mzxml=mzxml;
     end
 
     function adjmzoffset(obj,mzoffset)
