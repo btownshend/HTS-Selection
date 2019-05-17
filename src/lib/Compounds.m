@@ -166,8 +166,10 @@ classdef Compounds < handle
         
         subplot(332);
         reftime=arrayfun(@(z) z.time(1), refid);
-        plot(reftime,time-reftime,'.');
+        plot(reftime,time-reftime,'.r');
         hold on;
+        sel=relic>args.thresh;
+        plot(reftime(sel),time(sel)-reftime(sel),'.g');
         ax=axis;
         plot(ax(1:2),-obj.TIMEFUZZ*[1,1],':r');
         plot(ax(1:2),obj.TIMEFUZZ*[1,1],':r');
@@ -219,7 +221,6 @@ classdef Compounds < handle
         lbls{i}=' ';
       end
       set(gca,'YTickLabel',lbls);
-      keyboard
       set(gca,'TickLength',[0,0])
       hold on;
       for i=1:31
