@@ -14,10 +14,12 @@ classdef SDF < handle
       end
 
       function n=getname(obj,i,withnum)
+        n=sprintf('%s%s',strrep(obj.sdf(i).BATCH_PLATE,'CDIV0',''),obj.sdf(i).BATCH_WELL);
+        if n(1)=='0'
+          n=n(2:end);
+        end
         if nargin<3 || withnum
-          n=sprintf('%s-%s(%d)',obj.sdf(i).BATCH_PLATE,obj.sdf(i).BATCH_WELL,i);
-        else
-          n=sprintf('%s-%s',obj.sdf(i).BATCH_PLATE,obj.sdf(i).BATCH_WELL);
+          n=sprintf('%s(%d)',n,i);
         end
       end
       
@@ -34,6 +36,15 @@ classdef SDF < handle
       end
       
       function sel=find(obj,plate,row,col)
+        if nargin==2 && ischar(plate)
+          ind=find(plate>='A' & plate<='H');
+          if length(ind)~=1
+            error('Unable to parse %s (expected NNNNANN)\n', plate);
+          end
+          sel=obj.find(str2num(plate(1:ind-1)),plate(ind),str2num(plate(ind+1:end)));
+          return;
+        end
+        
         sel=ones(size(obj.sdf));
         if ~isempty(plate)
           sel=sel&arrayfun(@(z) ismember(str2num(z.BATCH_PLATE(5:end)),plate),obj.sdf);
@@ -204,22 +215,27 @@ classdef SDF < handle
         fclose(fd);
       end
 
-      function plot(obj,sel,center)
-        if nargin<3
-          center=[0,0,0];
-        end
+      function plot(obj,sel,pos,align)
         if length(sel)>1
+          % Multiple structures -- layout in grid
+          s=obj.sdf(sel);
+          maxsize=[0,0,0];
+          for i=1:length(s)
+            [low,high]=bounds([s(i).atoms.x;s(i).atoms.y;s(i).atoms.z]');
+            maxsize=max(maxsize,high-low);
+          end
+          maxsize
           nz=1; % ceil(length(sel)^(1/3));
           nx=ceil(sqrt(length(sel)/nz));
           ny=ceil(length(sel)/nx/nz);
           i=1;
-          shift=[10.5,10.5,2];
-          for ix=1:nx
-            for iy=1:ny
+          shift=maxsize+[0.5,1.5,2];
+          for iy=ny:-1:1
+            for ix=1:nx
               for iz=1:nz
                 %subplot(nr,nc,i);
                 if i<=length(sel)
-                  obj.plot(sel(i),center+shift.*[ix-(nx-3)/2,iy-(ny-3)/2,iz-(nz-3)/2]);
+                  obj.plot(sel(i),shift.*[ix,iy,iz],'lowermid');
                 end
                 i=i+1;
               end
@@ -228,31 +244,58 @@ classdef SDF < handle
           
           return;
         end
+
+        if nargin<4
+          align='center';
+        end
+        if nargin<3
+          pos=[0,0,0];
+        end
         s=obj.sdf(sel);
+        [low,high]=bounds([s.atoms.x;s.atoms.y;s.atoms.z]');
+        if strcmp(align,'lowerleft')
+          pos=pos-low;
+        elseif strcmp(align,'lowermid')
+          pos(2:3)=pos(2:3)-low(2:3);
+          pos(1)=pos(1)-(high(1)+low(1))/2;
+        elseif strcmp(align,'center');
+          pos=pos-(high+low)/2;
+        else
+          error('Unsupported alignment: %s\n', align);
+        end
+
         b=s.bonds;
         for i=1:length(b)
           a=s.atoms(b(i).atoms);
           v=[[a.x];[a.y];[a.z]]';
           delta=v(2,:)-v(1,:);
-          vp=v(1,:)+center+delta*0.2;
-          vp(2,:)=v(1,:)+center+delta*0.8;
+          if a(1).atom=='C'
+            vp=v(1,:)+pos;
+          else
+            vp=v(1,:)+pos+delta*0.2;
+          end
+          if a(2).atom=='C'
+            vp(2,:)=v(1,:)+pos+delta;
+          else
+            vp(2,:)=v(1,:)+pos+delta*0.8;
+          end
           if b(i).type==1
             plot3(vp(:,1),vp(:,2),vp(:,3),'b-');
           else
-            perp=delta([2,1,3]).*[1,-1,0];perp=perp/norm(perp)*0.15;
+            perp=delta([2,1,3]).*[1,-1,0];perp=perp/norm(perp)*0.07;
             assert(abs(dot(perp,delta))<1e-8);
-            plot3(vp(:,1),vp(:,2),vp(:,3),'r-');
+            plot3(vp(:,1)-perp(1),vp(:,2)-perp(2),vp(:,3)-perp(3),'r-');
             plot3(vp(:,1)+perp(1),vp(:,2)+perp(2),vp(:,3)+perp(3),'r-');
           end
           hold on;
         end
         axis equal
         axis off
-        axis ij;
         view(0,90);
         %plot3([s.atoms.x],[s.atoms.y],[s.atoms.z],'.');
-        text([s.atoms.x]+center(1),[s.atoms.y]+center(2),[s.atoms.z]+center(3),{s.atoms.atom},'HorizontalAlignment','center','VerticalAlignment','middle');
-        text(mean([s.atoms.x])+center(1),max([s.atoms.y])+center(2)+0.1,mean([s.atoms.z])+center(3),obj.getname(sel,false),'HorizontalAlignment','center','VerticalAlignment','top','Color','m');
+        noncarbon=s.atoms(~strcmp({s.atoms.atom},'C'));
+        text([noncarbon.x]+pos(1),[noncarbon.y]+pos(2),[noncarbon.z]+pos(3),{noncarbon.atom},'HorizontalAlignment','center','VerticalAlignment','middle');
+        text(mean([low(1),high(1)])+pos(1),pos(2)+low(2)-0.15,pos(3)+mean([low(3),high(3)]),obj.getname(sel,false),'HorizontalAlignment','center','VerticalAlignment','top','Color','m');
         %title(obj.getname(i));
       end
       
