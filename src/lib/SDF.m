@@ -36,6 +36,13 @@ classdef SDF < handle
       end
       
       function sel=find(obj,plate,row,col)
+        if iscell(plate)
+          sel=obj.find(plate{1});
+          for i=1:length(plate)
+            sel=sel|obj.find(plate{i});
+          end
+          return;
+        end
         if nargin==2 && ischar(plate)
           ind=find(plate>='A' & plate<='H');
           if length(ind)~=1
@@ -216,6 +223,9 @@ classdef SDF < handle
       end
 
       function plot(obj,sel,pos,align)
+        if islogical(sel)
+          sel=find(sel);
+        end
         if length(sel)>1
           % Multiple structures -- layout in grid
           s=obj.sdf(sel);
