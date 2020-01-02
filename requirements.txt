@@ -1,3 +1,5 @@
+numpy
+matplotlib
 # local package
 -e .
 
