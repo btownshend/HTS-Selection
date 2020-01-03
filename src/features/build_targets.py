@@ -1,5 +1,6 @@
 # Set expected fold change of molecules as a function of the aptamer
 import csv
+import math
 
 
 def build_fold(tested):
@@ -16,20 +17,25 @@ def build_fold(tested):
                 line_count += 1
             else:
                 line_count += 1
-                fold.append([float(x) for x in row[1:]])
+                fold.append([float(x) if math.isfinite(float(x)) else 1.0 for x in row[1:]])
                 targets.append(row[0])
-        print(f'Processed {line_count} targets.')
+        print(f'Processed {line_count-1} targets.')
     print(targets)
 
     # Setup ML output as y
     y = []
     nofold = [1.0 for _ in fold[0]]
+    found=[]
     for t in tested:
         name = t.GetProp("NAME")
         if name in targets:
-            y.append(fold[name == targets])
+            y.append(fold[targets.index(name)])
+            found.append(name)
         else:
             y.append(nofold)
+    if len(found) != len(fold):
+        missing = [x for x in targets if x not in found]
+        print("No match against molecules for: ", missing)
     return y, aptamers
 
 

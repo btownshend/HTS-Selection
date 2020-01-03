@@ -1,3 +1,4 @@
+import numpy as np
 import sklearn.metrics as sm
 from sklearn.model_selection import LeaveOneOut
 
@@ -12,6 +13,12 @@ def predict(mdl, X, y_true, molecules):
             print("%6.6s: predict=%.1f, actual=%.1f" % (molecules[i].GetProp("NAME"), y[i], y_true[i]))
     return y
 
+def predict_reg(mdl, X, y_true, molecules):
+    y = np.transpose([mdl[i].predict(X) for i in range(len(mdl))])
+    score = [mdl[i].score(X, [y_true[j][i] for j in range(len(y_true))]) for i in range(len(mdl))]
+    print("score=",score)
+    print("mean(score)=%.3f"%np.mean(score))
+    return y
 
 def predictLOO(mdl, X, y_true, molecules):
     loo = LeaveOneOut()
