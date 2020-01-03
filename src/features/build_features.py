@@ -7,6 +7,6 @@ def build(molecules, fpSize=2048):
     fp = []
     for m in molecules:
         fp.append(AllChem.RDKFingerprint(m, fpSize=fpSize))
-    print(fp)
+    # print(fp)
     X = np.array(list(fp))
     return X

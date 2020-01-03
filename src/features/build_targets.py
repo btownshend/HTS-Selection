@@ -42,19 +42,25 @@ def build_hit(tested):
         line_count = 0
         for row in csv_reader:
             if line_count == 0:
-                #print(f'Column names are {", ".join(row)}')
+                # print(f'Column names are {", ".join(row)}')
                 line_count += 1
             else:
-                #print(f'\tPlate {row[0]}, well {row[1]} is a hit.')
+                # print(f'\tPlate {row[0]}, well {row[1]} is a hit.')
                 line_count += 1
                 allhits.append("%s%s" % (row[0], row[1]))
-        print(f'Processed {line_count} hits.')
+        print(f'Processed {line_count - 1} hits.')
     # Setup ML output as y
     y = []
+    found = []
     for t in tested:
         name = t.GetProp("NAME")
         if name in allhits:
             y.append(1.0)
+            found.append(name)
         else:
             y.append(0.0)
+    print("Matched %d hits" % len(found))
+    if len(found) != len(allhits):
+        missing = [x for x in allhits if x not in found]
+        print("No match against molecules for: ", missing)
     return y
