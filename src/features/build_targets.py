@@ -1,9 +1,9 @@
 # Set expected fold change of molecules as a function of the aptamer
 import csv
 import math
+import numpy as np
 
-
-def build_fold(tested):
+def build_fold(tested,keep=None):
     fold = []  # fold[i][j] is the fold change for aptamer j in the presence of target i
     targets = []  # Names of the targets in the form, for example,  91A2  (PlateRowCol)
     aptamers = []  # Names of the aptamers
@@ -17,14 +17,14 @@ def build_fold(tested):
                 line_count += 1
             else:
                 line_count += 1
-                fold.append([float(x) if math.isfinite(float(x)) else 1.0 for x in row[1:]])
+                fold.append([math.log(float(x)) if math.isfinite(float(x)) else 0.0 for x in row[1:]])
                 targets.append(row[0])
         print(f'Processed {line_count-1} targets.')
     print(targets)
 
     # Setup ML output as y
     y = []
-    nofold = [1.0 for _ in fold[0]]
+    nofold = [0.0 for _ in fold[0]]
     found=[]
     for t in tested:
         name = t.GetProp("NAME")
@@ -33,9 +33,16 @@ def build_fold(tested):
             found.append(name)
         else:
             y.append(nofold)
+    y=np.transpose(y)   # y will be first indexed by aptamer and then by target
     if len(found) != len(fold):
         missing = [x for x in targets if x not in found]
         print("No match against molecules for: ", missing)
+    if keep is not None:
+        # Only keep aptamers in keep list
+        sel=[aptamers.index(k) for k in keep]
+        assert(len(sel) == len(keep))
+        aptamers=[aptamers[i] for i in sel]
+        y=[y[i] for i in sel]
     return y, aptamers
 
 

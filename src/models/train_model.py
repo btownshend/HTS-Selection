@@ -1,7 +1,8 @@
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, cross_validate
 from sklearn.svm import SVR, LinearSVR
 from sklearn.tree import DecisionTreeRegressor
 
@@ -33,12 +34,27 @@ def train_dtr(random_state=42):
 def train_svr(random_state=42):
     return SVR(gamma="auto")
 
-def train_linearsvr(random_state=42):
-    return LinearSVR(max_iter=10000,random_state=random_state)
-
 def train_multi(tfun, X, y, random_state=42):
-    mdl = [tfun(random_state=random_state) for _ in range(len(y[0]))]
-    #crossval(mdl, X, y)
+    mdl=[tfun(X,yi,random_state=random_state) for yi in y]
     for i in range(len(mdl)):
-        mdl[i].fit(X, [y[j][i] for j in range(len(y))])
+        mdl[i].fit(X, y[i])
     return mdl
+
+def cv_model(mdl,X,y,scoring='neg_mean_squared_error'):
+    print(mdl)
+    cvres = cross_validate(mdl, X, y, cv=3,scoring=scoring,return_train_score=True)
+    print(cvres)
+    scores=cvres['test_score']
+    tscores=cvres['train_score']
+    print("Cross-validation scores: test=%.3f+-%.3f, train=%.3f+-%.3f"%(np.asscalar(np.mean(scores)),np.asscalar(np.std(scores)),np.asscalar(np.mean(tscores)),np.asscalar(np.std(tscores))))
+
+def cv_model_sfm(mdl,X,y,max_features=3,scoring='neg_mean_squared_error'):
+    smdl = SelectFromModel(mdl,max_features=max_features)
+    smdl.fit(X,y)
+    features=smdl.get_support(indices=True)
+    if len(features)>0:
+        print("features:", features)
+        Xt=smdl.transform(X)
+        cv_model(mdl,Xt,y,scoring=scoring)
+    else:
+        print("No features retainec")

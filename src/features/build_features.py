@@ -9,4 +9,5 @@ def build(molecules, fpSize=2048):
         fp.append(AllChem.RDKFingerprint(m, fpSize=fpSize))
     # print(fp)
     X = np.array(list(fp))
+    print("mean value of features =",np.mean(np.mean(X)))
     return X
