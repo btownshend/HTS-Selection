@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
@@ -34,8 +36,8 @@ def train_dtr(random_state=42):
 def train_svr(random_state=42):
     return SVR(gamma="auto")
 
-def train_multi(tfun, X, y, random_state=42):
-    mdl=[tfun(X,yi,random_state=random_state) for yi in y]
+def train_multi(basemdl, X, y, random_state=42):
+    mdl=[copy.deepcopy(basemdl) for yi in y]
     for i in range(len(mdl)):
         mdl[i].fit(X, y[i])
     return mdl
