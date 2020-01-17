@@ -10,6 +10,9 @@ classdef MolDist < SDF
     
     function loadcsv(obj,file)
       fd=fopen(file,'r');
+      if fd<0
+        error('Unable to open file: %s',file);
+      end
       line=fgetl(fd);
       labels=strsplit(line,',');
       labels=labels(2:end);
@@ -19,18 +22,24 @@ classdef MolDist < SDF
       assert(length(labels)==size(dist,2));
       ord=[];
       names=arrayfun(@(z) obj.getname(z,false),1:length(obj.sdf),'UniformOutput',false);
-      for i=1:length(labels)
-        l=labels{i};
-        if l(1)=='0'
-          l=l(2:end);
+      if strncmp(labels{1},'Untitled',8)
+        assert(size(dist,1)==960 && size(dist,2)==960);
+        fprintf('Assuming CSV file is ordered the same as SDF file\n');
+        obj.dist=dist;
+      else
+        for i=1:length(labels)
+          l=labels{i};
+          if l(1)=='0'
+            l=l(2:end);
+          end
+          ind=find(strcmp(l,names));
+          if isempty(ind)
+            error('Unable to find %s in SDF\n', l);
+          end
+          ord(i)=ind;
         end
-        ind=find(strcmp(l,names));
-        if isempty(ind)
-          error('Unable to find %s in SDF\n', l);
-        end
-        ord(i)=ind;
+        obj.dist=dist(ord,ord);   % Reorder
       end
-      obj.dist=dist(ord,ord);   % Reorder
       assert(all(diag(obj.dist)==1));
     end
 
