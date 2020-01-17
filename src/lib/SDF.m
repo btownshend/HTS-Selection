@@ -234,7 +234,6 @@ classdef SDF < handle
             [low,high]=bounds([s(i).atoms.x;s(i).atoms.y;s(i).atoms.z]');
             maxsize=max(maxsize,high-low);
           end
-          maxsize
           nz=1; % ceil(length(sel)^(1/3));
           nx=ceil(sqrt(length(sel)/nz));
           ny=ceil(length(sel)/nx/nz);
