@@ -15,6 +15,7 @@ classdef Compounds < handle
     nisomers;   % nisomers(i,j) is the number of other compounds that are within MZFUZZ in this file
     nunique;   % nunique(i,j) is the number of other compounds that are within MZFUZZ in this file and with unknown elution time
     numhits;   % numhits(i,j) is the number of possible hits (need to have exactly 1 for the hit to be used)
+    multihits;
   end
   
   properties(Constant)
@@ -24,6 +25,7 @@ classdef Compounds < handle
   
   methods
     function obj=Compounds()
+      obj.multihits={};
     end
 
     function nindex=lookupName(obj,name, mztarget, sdf)
@@ -313,6 +315,7 @@ classdef Compounds < handle
           end
           continue;
         end
+        obj.multihits{nindex,findex}=id;
         obj.numhits(nindex,findex)=length(id.mz);
         if length(id.mz)==1
           obj.mz(nindex,findex)=id.mz(1);
