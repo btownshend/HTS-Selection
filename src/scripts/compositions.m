@@ -1,4 +1,6 @@
 % Check composition of each M/S file
-for i=1:length(mzdata)
-  compounds.plotComposition(mzdata{i});
+ref=mzdata{end};
+for i=1:length(mzdata)-1
+  compounds.plotComposition(mzdata{i},'ref',ref);
+  break;
 end
