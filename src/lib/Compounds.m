@@ -135,7 +135,11 @@ classdef Compounds < handle
           end
         end
       end
-      ti=[ms.name,' vs ',args.ref.name];
+      if ~isempty(args.ref)
+        ti=[ms.name,' vs ',args.ref.name];
+      else
+        ti=ms.name;
+      end
       setfig(ti); clf;
 
       if ~isempty(args.ref)
@@ -168,15 +172,16 @@ classdef Compounds < handle
         
         subplot(332);
         reftime=arrayfun(@(z) z.time(1), refid);
-        plot(reftime,time-reftime,'.r');
+        h=plot(reftime,time-reftime,'.r');
         hold on;
         sel=relic>args.thresh;
-        plot(reftime(sel),time(sel)-reftime(sel),'.g');
+        h(2)=plot(reftime(sel),time(sel)-reftime(sel),'.g');
         ax=axis;
         plot(ax(1:2),-obj.TIMEFUZZ*[1,1],':r');
         plot(ax(1:2),obj.TIMEFUZZ*[1,1],':r');
         xlabel(args.ref.name,'Interpreter','none');
         ylabel('Time diff (s)','Interpreter','none');
+        legend(h,{sprintf('RelIC<=%1.g',args.thresh),sprintf('RelIC>%.1g',args.thresh)},'location','best');
         title('Elution Time Compare');
         
       end
@@ -189,8 +194,13 @@ classdef Compounds < handle
       ax=axis;
       hold on;
       plot(log10(args.thresh)*[1,1],ax(3:4),'r:');
-      xlabel('log10(Ion Count)');
-      title('Relative Ion Count');
+      if isempty(args.ref)
+        title('Ion Count');
+        xlabel('log10(Ion Count)');
+      else
+        title('Relative Ion Count');
+        xlabel('log10(Rel. Ion Count)');
+      end
 
       mat=nan(9*4,10*3);
       matic=nan(12,8,10);
@@ -247,7 +257,11 @@ classdef Compounds < handle
       
       caxis(log10([args.thresh,nanmax(relic(isfinite(relic(:))))]));
       colorbar;
-      title('log10(Rel IC)');
+      if isempty(args.ref)
+        title('log10(IC)');
+      else
+        title('log10(Rel IC)');
+      end
       
       if ~isempty(args.ref)
         h=suptitle(sprintf('%s (Ref:%s)',ms.name,args.ref.name));
