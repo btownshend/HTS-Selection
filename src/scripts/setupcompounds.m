@@ -16,9 +16,10 @@ rowdata=rowdata([1,9,3:8]);   % Use rerun
 coldata=dir([msdir,'20190* Row, Column/Col*.mzXML']);
 coldata=coldata([2,11,4:9,1,10]);   % Use rerun, reorder
 platedata=dir([msdir,'20190309 CDiv Library Plates/CDIV*1.mzXML']);
+fulldata=dir([msdir,'20190* Row, Column/Full.mzXML']);
 
-allfiles=[rowdata;coldata;platedata];
-mzoffsets=[repmat(.0030,1,length(rowdata)),repmat(.0026,1,length(coldata)),repmat(.0087,1,length(platedata))];
+allfiles=[rowdata;coldata;platedata;fulldata];
+mzoffsets=[repmat(.0030,1,length(rowdata)),repmat(.0026,1,length(coldata)),repmat(.0087,1,length(platedata)),.0036];
 % Offsets of rerun on 5/1 seem different
 mzoffsets(2)=.0076;
 mzoffsets([10,18])=.0086;
@@ -58,7 +59,9 @@ for reps=1:1
       compounds.addFromSDF(mzdata{i},sdf.filter([],row),'group','Row');
     elseif strncmp(mzdata{i}.name,'CDIV',4)
       pnum=sscanf(mzdata{i}.name,'CDIV%d.mzXML');
-      compounds.addFromSDF(mzdata{i},sdf.filter(pnum),'group','Plate');
+      compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find(pnum)),'group','Plate');
+    elseif strncmp(mzdata{i}.name,'Full',4)
+      compounds.addFromSDF(mzdata{i},sdf,'group','Full');
     else
       % Assume all compounds
       fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i});
