@@ -53,13 +53,16 @@ for reps=1:1
   for i=1:length(mzdata)
     if strncmp(mzdata{i}.name,'Col',3)
       cnum=sscanf(mzdata{i}.name,'Col%d.mzXML');
-      compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find([],[],cnum)),'group','Col');
+      %      compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find([],[],cnum)),'group','Col');
+      compounds.addFromSDF(mzdata{i},sdf,'contains',sdf.find([],[],cnum),'group','Col');
     elseif strncmp(mzdata{i}.name,'Row',3)
       row=mzdata{i}.name(4);
-      compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find([],row)),'group','Row');
+      %compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find([],row)),'group','Row');
+      compounds.addFromSDF(mzdata{i},sdf,'contains',sdf.find([],row),'group','Row');
     elseif strncmp(mzdata{i}.name,'CDIV',4)
       pnum=sscanf(mzdata{i}.name,'CDIV%d.mzXML');
-      compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find(pnum)),'group','Plate');
+      %compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find(pnum)),'group','Plate');
+      compounds.addFromSDF(mzdata{i},sdf,'contains',sdf.find(pnum),'group','Plate');
     elseif strncmp(mzdata{i}.name,'Full',4)
       compounds.addFromSDF(mzdata{i},sdf,'group','Full');
     else

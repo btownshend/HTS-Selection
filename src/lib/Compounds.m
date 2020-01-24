@@ -27,6 +27,7 @@ classdef Compounds < handle
   methods
     function obj=Compounds()
       obj.multihits={};
+      obj.contains=false(0,0);
     end
 
     function ind=find(obj,name)
@@ -111,7 +112,7 @@ classdef Compounds < handle
       args=processargs(defaults,varargin);
       id=[];
       for i=1:length(obj.mztarget)
-        meantime(i)=nanmean(obj.time(i,:));
+        meantime(i)=nanmean(obj.time(i,obj.contains(i,:)));
       end
       for i=1:length(obj.mztarget)
         mztarget=obj.mztarget(i);
@@ -303,13 +304,16 @@ classdef Compounds < handle
     % Add the unique peaks for compounds in given SDF from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
     % or scan all elution times if the no prior data (keep only if a unique peak is determined)
-      defaults=struct('debug',false,'group','');  
+      defaults=struct('debug',false,'group','','contains',[]);  
       args=processargs(defaults,varargin);
 
       fprintf('Adding data from %s\n',ms.name);
       findex=obj.lookupMS(ms);
       if ~isempty(args.group)
         obj.group{findex}=args.group;
+      end
+      if isempty(args.contains)
+        args.contains=true(size(sdf.sdf));
       end
       % Add all these compounds and mark which ones this file contains
       nindex=[];
@@ -319,15 +323,15 @@ classdef Compounds < handle
         mztarget=s.MonoisotopicMass+1;
         nindices(i)=obj.lookupName(name,mztarget,s);
         nindex=nindices(i);
-        obj.contains(nindex,findex)=true;   % Mark it as expected to contain
+        obj.contains(nindex,findex)=args.contains(i)~=0;   % Mark it as expected to contain
       end
       % Attempt to locate each one uniquely
       for i=1:length(nindices)
         nindex=nindices(i);
-        meantime=nanmean(obj.time(nindex,:));
+        meantime=nanmean(obj.time(nindex,obj.contains(nindex,:)));
         mztarget=obj.mztarget(nindex);
         % Check if the M/Z is unique over the compounds in this file
-        samemz=nindices(find(abs(obj.mztarget(nindices)-mztarget)<=obj.MZFUZZ));   % Compounds with same M/Z
+        samemz=find(obj.contains(:,findex) & abs(obj.mztarget-mztarget)<=obj.MZFUZZ);   % Compounds with same M/Z
         nisomers=1;  nunique=1; ignoreelutetimes=[];
         for i=1:length(samemz)
           if samemz(i)~=nindex
@@ -343,8 +347,15 @@ classdef Compounds < handle
         obj.nisomers(nindex,findex)=nisomers;
         obj.nunique(nindex,findex)=nunique;
         
+        obj.multihits{nindex,findex}=[];
+        obj.numhits(nindex,findex)=0;
+        obj.mz(nindex,findex)=nan;
+        obj.time(nindex,findex)=nan;
+        obj.ic(nindex,findex)=nan;
         if isfinite(meantime)
           id=ms.findcompound(mztarget,'sdf',s,'elutetime',meantime,'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
+        elseif ~obj.contains(nindex,findex)
+          continue;
         elseif nisomers==1
           id=ms.findcompound(mztarget,'sdf',s,'mztol',obj.MZFUZZ,'timetol',obj.TIMEFUZZ,'debug',args.debug);
         elseif nunique==1
@@ -369,7 +380,8 @@ classdef Compounds < handle
           ;
         end
       end
-      fprintf('Located %d/%d possible/%d total compounds\n', sum(isfinite(obj.mz(:,findex))), sum(obj.nunique(:,findex)==1), sum(obj.contains(:,findex)));
+      minic=1000;
+      fprintf('Located %d/%d possible/%d expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & isfinite(obj.mz(:,findex))), sum(obj.contains(:,findex) & obj.nunique(:,findex)==1), sum(obj.contains(:,findex)),sum(~obj.contains(:,findex)&isfinite(obj.mz(:,findex))&obj.ic(:,findex)>=minic),minic);
     end
     
     function summary(obj)
