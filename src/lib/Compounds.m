@@ -29,6 +29,22 @@ classdef Compounds < handle
       obj.multihits={};
     end
 
+    function ind=find(obj,name)
+    % Find given name
+    % Try both format stored in names (e.g. 'CDIV0051-B07') and short format (e.g. '51B07')
+      if name(end-1)>='A' && name(end-2)<='H'
+        % Add leading 0 to column
+        name=[name(1:end-1),'0',name(end)];
+      end
+      ind=find(strcmp(name,obj.names));
+      if length(ind)~=1
+        ind=find(strcmp(name,obj.shortnames));
+        if length(ind)~=1
+          error('Compound %s not found',name);
+        end
+      end
+    end
+      
     function nindex=lookupName(obj,name, mztarget, sdf)
     % Find the index of compound by name, create if missing
       if ismember(name,obj.names)
