@@ -78,7 +78,15 @@ report=compounds.report();
 compounds.checkmzoffset();
 
 writetable(report,[resultsdir,'report.csv']);
+fprintf('Saving compounds...');
 save([matdir,'compounds.mat'],'compounds');
+fprintf('done\n');
+
+if false
+  fprintf('Saving mzdata...');
+  save([matdir,'mzdata.mat'],'mzdata');
+  fprintf('done\n');
+end       
 
 % Summarize by compound
 namelist={'1A4','91A2','91F3'};
