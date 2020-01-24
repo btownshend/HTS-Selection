@@ -127,7 +127,7 @@ classdef Compounds < handle
             id(i).mz=nan;
           end
           if length(isomers)>1 && sum(id(i).ic)>0
-            %fprintf('Isomer at compounds %s with ion count = %.0f\n', sprintf('%d,',isomers),sum(id(i).ic));
+            fprintf('Isomer at compounds %s with ion count = %.0f\n', sprintf('%d,',isomers),sum(id(i).ic));
             id(i).ic=nan;   % Can't use it
           end
         end
@@ -146,6 +146,8 @@ classdef Compounds < handle
       id=obj.checkComposition(ms,'debug',args.debug);
       if ~isempty(args.ref)
         refid=obj.checkComposition(args.ref,'debug',args.debug);
+      else
+        refid=nan;
       end
       
       ic=nan(length(id),1);
@@ -242,16 +244,17 @@ classdef Compounds < handle
             sel=strcmp(p,up{i})&r==j&c==k;
             if any(sel)
               mat(j+row*9+1,(k-1)+col*10)=relic(sel);
-              matic(i,j,k)=relic(sel);
+              matic(i,j,k-1)=relic(sel);
             end
           end
         end
       end
       
       subplot(3,3,[5,6,8,9]);
-      mat(end+1,:)=nan;
-      mat(:,end+1)=nan;
-      pcolor(log10(mat));
+      data=mat;
+      data(end+1,:)=nan;
+      data(:,end+1)=nan;
+      pcolor(log10(data));
       shading flat
       axis ij;
       set(gca,'XTick',(1:30)+0.5);

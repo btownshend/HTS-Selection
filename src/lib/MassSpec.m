@@ -125,7 +125,7 @@ classdef MassSpec < handle
       res=res(ord);
       obj.clusters=res;
       obj.clustersettings=args;
-      fprintf('Found a total of %d/%d peaks with IC>=%.0f>=%.0f\n', length(res),args.maxpeaks, args.minic,min([res.maxic]));
+      fprintf('Found a total of %d/%d peaks with IC>=%.0f>=%.0f\n', length(res),args.maxpeaks, min([res.maxic]), args.minic);
     end
     
     function [ic,mz,time]=mzscan(obj, mztarget, varargin)
