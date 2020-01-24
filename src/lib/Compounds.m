@@ -658,6 +658,20 @@ classdef Compounds < handle
         end
       end
     end
-    
+
+    function listunexpected(obj,varargin)
+    % List peaks that shouldn't be present, in order of descending ion count
+      defaults=struct('nlist',20);
+      args=processargs(defaults,varargin);
+
+      ic=obj.ic;
+      ic(obj.contains)=0;
+      [~,ord]=sort(ic(:),'desc','MissingPlacement','last');
+      for i=1:args.nlist
+        [ii,ij]=ind2sub(size(obj.contains),ord(i));
+        fprintf('%12.12s:%-7.7s IC=%8.0f\n', obj.files{ij}, obj.shortnames{ii}, ic(ord(i)));
+      end
+      keyboard
+    end
   end
 end
