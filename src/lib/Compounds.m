@@ -625,28 +625,8 @@ classdef Compounds < handle
           end
         end
         if ~isempty(args.mzdata)
-          [ic,mz,t]=args.mzdata{j}.mzscan(obj.mztarget(ind),'mztol',obj.MZFUZZ);
           nexttile;
-          plot(t,ic);
-          ax=axis;
-          hold on;
-          plot(meant+obj.TIMEFUZZ*[1,1],ax(3:4),':b');
-          plot(meant-obj.TIMEFUZZ*[1,1],ax(3:4),':b');
-          ylabel('Ion Count');
-          yyaxis right
-          plot(t,mz,'r');
-          hold on;
-          ax=axis;
-          axis(ax);
-          plot(ax(1:2),obj.mztarget(ind)+obj.MZFUZZ*[1,1],':r');
-          plot(ax(1:2),obj.mztarget(ind)-obj.MZFUZZ*[1,1],':r');
-          ylabel('M/Z');
-          if isfinite(meant)
-            ax(1:2)=meant+obj.TIMEFUZZ*2*[-1,1];
-          end
-          ax(3:4)=obj.mztarget(ind)+obj.MZFUZZ*2*[-1,1];
-          axis(ax);
-          title(sprintf('%s',args.mzdata{j}.name));
+          obj.plotscan(ind,args.mzdata{j});
         end
         fprintf('\n');
       end
@@ -660,11 +640,41 @@ classdef Compounds < handle
         for j=1:length(obj.files)
           if ~obj.contains(ind,j) && obj.ic(ind,j)>=minic
             fprintf('%-15.15s: mz=%8.4f, t=%7.2f, ic=%5.0f\n',obj.files{j},obj.mz(ind,j), obj.time(ind,j), obj.ic(ind,j));
+            if ~isempty(args.mzdata)
+              nexttile;
+              obj.plotscan(ind,args.mzdata{j});
+            end
           end
         end
       end
     end
 
+    function plotscan(obj,ind,mzdata)
+      meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
+      meant=nanmean(obj.time(ind,obj.contains(ind,:)));
+      [ic,mz,t]=mzdata.mzscan(obj.mztarget(ind),'mztol',obj.MZFUZZ);
+      plot(t,ic);
+      ax=axis;
+      hold on;
+      plot(meant+obj.TIMEFUZZ*[1,1],ax(3:4),':b');
+      plot(meant-obj.TIMEFUZZ*[1,1],ax(3:4),':b');
+      ylabel('Ion Count');
+      yyaxis right
+      plot(t,mz,'r');
+      hold on;
+      ax=axis;
+      axis(ax);
+      plot(ax(1:2),obj.mztarget(ind)+obj.MZFUZZ*[1,1],':r');
+      plot(ax(1:2),obj.mztarget(ind)-obj.MZFUZZ*[1,1],':r');
+      ylabel('M/Z');
+      if isfinite(meant)
+        ax(1:2)=meant+obj.TIMEFUZZ*2*[-1,1];
+      end
+      ax(3:4)=obj.mztarget(ind)+obj.MZFUZZ*2*[-1,1];
+      axis(ax);
+      title(sprintf('%s',mzdata.name));
+    end
+    
     function listunexpected(obj,varargin)
     % List peaks that shouldn't be present, in order of descending ion count
       defaults=struct('nlist',20);
