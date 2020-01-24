@@ -21,7 +21,7 @@ classdef Compounds < handle
   
   properties(Constant)
     MZFUZZ=0.003;
-    TIMEFUZZ=100;   % in seconds
+    TIMEFUZZ=50;   % in seconds
   end
   
   methods
