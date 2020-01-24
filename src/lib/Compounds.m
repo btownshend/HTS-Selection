@@ -335,7 +335,7 @@ classdef Compounds < handle
         mztarget=obj.mztarget(nindex);
         % Check if the M/Z is unique over the compounds in this file
         samemz=find(obj.contains(:,findex) & abs(obj.mztarget-mztarget)<=obj.MZFUZZ);   % Compounds with same M/Z
-        nisomers=1;  nunique=1; ignoreelutetimes=[];
+        nisomers=1;  nunique=1; ignoreelutetimes=[]; nident=1;
         for i=1:length(samemz)
           if samemz(i)~=nindex
             nisomers=nisomers+1;
@@ -343,7 +343,13 @@ classdef Compounds < handle
               % This isomer has unknown elution time
               nunique=nunique+1;
             else
-              ignoreelutetimes(end+1)=nanmean(obj.time(samemz(i),:));
+              if abs(nanmean(obj.time(samemz(i),:)) - meantime) < obj.TIMEFUZZ
+                fprintf('%d and %d have same m/z, same elution time\n', nindex, samemz(i));
+                nunique=nunique+1;  % Same elution times
+                nident=nident+1;
+              else
+                ignoreelutetimes(end+1)=nanmean(obj.time(samemz(i),:));
+              end
             end
           end
         end
@@ -355,7 +361,7 @@ classdef Compounds < handle
         obj.mz(nindex,findex)=nan;
         obj.time(nindex,findex)=nan;
         obj.ic(nindex,findex)=nan;
-        if isfinite(meantime)
+        if isfinite(meantime) && nident==1
           id=ms.findcompound(mztarget,'sdf',s,'elutetime',meantime,'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
         elseif ~obj.contains(nindex,findex)
           continue;
