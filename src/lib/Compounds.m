@@ -559,5 +559,76 @@ classdef Compounds < handle
       title(sprintf('Compound Map (%d distinguishable/%d identified)',ngood,sum(isfinite(etime(:,3)))));
     end
     
+    function getinfo(obj,name,varargin)
+      defaults=struct('mzdata',[]);
+      args=processargs(defaults,varargin);
+
+      if ischar(name)
+        ind = obj.find(name);
+      else
+        ind=name;
+      end
+      meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
+      meant=nanmean(obj.time(ind,obj.contains(ind,:)));
+      fprintf('%s (%d): m/z=%8.4f t=%7.2f meanic=%.0f\n',obj.shortnames{ind},ind, obj.mztarget(ind),meant,meanic);
+      if ~isempty(args.mzdata)
+        setfig(obj.shortnames{ind});
+        t=tiledlayout('flow');
+        title(t,sprintf('%s m/z=%.4f t=%.0f',obj.shortnames{ind},obj.mztarget(ind),meant));
+      end
+      
+      for j=1:length(obj.files)
+        if ~obj.contains(ind,j)
+          % TODO: Could list false positives here
+          continue;
+        end
+        fprintf('%-15.15s: nisomers=%d, nunique=%d, nhits=%-2d ',obj.files{j},obj.nisomers(ind,j), obj.nunique(ind,j), obj.numhits(ind,j));
+        m=obj.multihits{ind,j};
+        if ~isempty(m)
+          for k=1:length(m.mz)
+            fprintf('[mz=%8.4f, t=%.2f, ic=%.0f] ', m.mz(k), m.time(k), m.ic(k));
+          end
+        end
+        if ~isempty(args.mzdata)
+          [ic,mz,t]=args.mzdata{j}.mzscan(obj.mztarget(ind),'mztol',obj.MZFUZZ);
+          nexttile;
+          plot(t,ic);
+          ax=axis;
+          hold on;
+          plot(meant+obj.TIMEFUZZ*[1,1],ax(3:4),':b');
+          plot(meant-obj.TIMEFUZZ*[1,1],ax(3:4),':b');
+          ylabel('Ion Count');
+          yyaxis right
+          plot(t,mz,'r');
+          hold on;
+          ax=axis;
+          axis(ax);
+          plot(ax(1:2),obj.mztarget(ind)+obj.MZFUZZ*[1,1],':r');
+          plot(ax(1:2),obj.mztarget(ind)-obj.MZFUZZ*[1,1],':r');
+          ylabel('M/Z');
+          if isfinite(meant)
+            ax(1:2)=meant+obj.TIMEFUZZ*2*[-1,1];
+          end
+          ax(3:4)=obj.mztarget(ind)+obj.MZFUZZ*2*[-1,1];
+          axis(ax);
+          title(sprintf('%s',args.mzdata{j}.name));
+        end
+        fprintf('\n');
+      end
+      if isfinite(meanic) && isfinite(meant)
+        % False positives
+        minic=meanic/10;
+        fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.0f,%.0f], IC >= %.0f:\n',...
+                obj.mztarget(ind)+obj.MZFUZZ*[-1,1],...
+                nanmean(obj.time(ind,obj.contains(ind,:)))+obj.TIMEFUZZ*[-1,1],...
+                minic);
+        for j=1:length(obj.files)
+          if ~obj.contains(ind,j) && obj.ic(ind,j)>=minic
+            fprintf('%-15.15s: mz=%8.4f, t=%7.2f, ic=%5.0f\n',obj.files{j},obj.mz(ind,j), obj.time(ind,j), obj.ic(ind,j));
+          end
+        end
+      end
+    end
+    
   end
 end

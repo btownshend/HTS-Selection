@@ -80,19 +80,9 @@ compounds.checkmzoffset();
 writetable(report,[resultsdir,'report.csv']);
 save([matdir,'compounds.mat'],'compounds');
 
-% TODO, summarize by compound
-for i=1:10
-  fprintf('\n%s: m/z=%8.4f t=%7.2f\n',compounds.names{i},compounds.mztarget(i),nanmean(compounds.time(i,:)));
-  for j=1:length(compounds.files)
-    if ~compounds.contains(i,j)
-      % TODO: Could list false positives here
-      continue;
-    end
-    fprintf('%-15.15s: nisomers=%d, nunique=%d, nhits=%-2d ',compounds.files{j},compounds.nisomers(i,j), compounds.nunique(i,j), compounds.numhits(i,j));
-    m=compounds.multihits{i,j};
-    for k=1:length(m.mz)
-      fprintf('[mz=%8.4f, t=%.2f, ic=%.0f] ', m.mz(k), m.time(k), m.ic(k));
-    end
-    fprintf('\n');
-  end
+% Summarize by compound
+namelist={'1A4','91A2','91F3'};
+for i=1:length(namelist)
+  compounds.getinfo(namelist{i})
+  fprintf('\n');
 end
