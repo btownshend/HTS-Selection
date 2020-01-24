@@ -2,5 +2,5 @@
 ref=mzdata{end};
 for i=1:length(mzdata)-1
   compounds.plotComposition(mzdata{i},'ref',ref);
-  break;
+  pause(0.1)
 end
