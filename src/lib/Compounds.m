@@ -471,6 +471,32 @@ classdef Compounds < handle
       end
     end
     
+    function checktimeoffset(obj,sel)
+    % Check time alignments
+      meantime=nanmean(obj.time,2);
+      [meantime,ord]=sort(meantime);
+      time=obj.time(ord,:);
+      reltime=nan(size(time));
+      for i=1:size(time,2)
+        tother=time;  tother(:,i)=nan;
+        reltime(:,i)=time(:,i)-nanmean(tother,2);
+      end
+      setfig('timeoffset');clf;
+      tiledlayout('flow');
+      for i=1:length(sel)
+        nexttile
+        plot(meantime,reltime(:,sel(i)),'.');
+        use=isfinite(meantime) & isfinite(reltime(:,sel(i)));
+        p=polyfit(meantime(use),reltime(use,sel(i)),1)
+        hold on;
+        plot(meantime,polyval(p,meantime),'-r');
+        xlabel('Mean time');
+        ylabel('Individual run times - meantime');
+        title(sprintf('%s m=%.4f, b=%.4f',obj.files{sel(i)},p));
+      end
+    end
+    
+    
     function plotcompare(obj,f1,f2)
     % Plot comparison of each compound the occurs in both f1 and f2
       ti=sprintf('%s vs %s',obj.files{f1}, obj.files{f2});
