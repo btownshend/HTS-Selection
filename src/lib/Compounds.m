@@ -1,7 +1,8 @@
 % Data structure to hold information about compounds located in mass spec runs
 classdef Compounds < handle
   properties
-    names;   % names{i} - Name of compound i
+    names;   % names{i} - Name of compound i (e.g. 'CDIV0051-B07')
+    shortnames; % shortnames{i} - Short name of compound i (e.g. '51B07')
     sdf;     % sdf{i} - SDF data for compound i
     mztarget; % mztarget(i) - target m/z for compound i 
     files;   % files{j} - Mass spec filename j
@@ -49,6 +50,17 @@ classdef Compounds < handle
         obj.time(nindex,:)=nan;
         obj.ic(nindex,:)=nan;
         obj.contains(nindex,:)=false;
+        
+        % Set short name
+        [p,r,c]=obj.getposition(length(obj.names));
+        obj.shortnames{length(obj.names)} = sprintf('%d%c%02d',str2num(p(5:end)),r+'A'-1,c);
+      end
+      if length(obj.shortnames) < length(obj.names)
+        obj.shortnames=cell(size(obj.names));
+        for i=1:length(obj.names)
+          [p,r,c]=obj.getposition(i);
+          obj.shortnames{i} = sprintf('%d%c%02d',str2num(p(5:end)),r+'A'-1,c);
+        end
       end
     end
 
@@ -74,7 +86,7 @@ classdef Compounds < handle
         p=sdf.BATCH_PLATE;
         r=sdf.BATCH_WELL(1)-'A'+1;
         c=sscanf(sdf.BATCH_WELL(2:end),'%d');
-        end
+      end
     end
     
     function id=checkComposition(obj,ms,varargin)
