@@ -356,7 +356,9 @@ classdef Compounds < handle
               nunique=nunique+1;
             else
               if abs(nanmean(obj.time(samemz(i),:)) - meantime) < obj.TIMEFUZZ
-                fprintf('%d and %d have same m/z, same elution time\n', nindex, samemz(i));
+                if obj.contains(nindex,findex) && nindex<samemz(i)
+                  fprintf('%s and %s have same m/z, same elution time\n', obj.shortnames{nindex}, obj.shortnames{samemz(i)});
+                end
                 nunique=nunique+1;  % Same elution times
                 nident=nident+1;
               else
@@ -409,7 +411,7 @@ classdef Compounds < handle
     % Summarize data available
       fprintf('Contains %d files, %d compounds (%d with elution time)\n', length(obj.files), length(obj.names), sum(any(isfinite(obj.time'))));
       for i=1:length(obj.files)
-        fprintf('%2d %-20.20s %3d/%3d/%3d compounds identified\n', i, obj.files{i}, sum(isfinite(obj.mz(:,i))),sum(obj.nunique(:,i)==1),sum(obj.contains(:,i)))
+        fprintf('%2d %-20.20s %3d/%3d/%3d compounds identified/unique/total\n', i, obj.files{i}, sum(obj.contains(:,i) & isfinite(obj.mz(:,i))),sum(obj.contains(:,i) & obj.nunique(:,i)==1),sum(obj.contains(:,i)))
       end
     end
     
