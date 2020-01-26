@@ -30,6 +30,18 @@ classdef Compounds < handle
       obj.contains=false(0,0);
     end
 
+    function t=meantime(obj,i)
+      if nargin>1
+        t=nanmean(obj.time(i,obj.contains(i,:)));
+      else
+        t=[];
+        for i=1:size(obj.time,1)
+          t(i)=nanmean(obj.time(i,obj.contains(i,:)));
+        end
+        t=t';
+      end
+    end
+    
     function ind=find(obj,name)
     % Find given name
     % Try both format stored in names (e.g. 'CDIV0051-B07') and short format (e.g. '51B07')
