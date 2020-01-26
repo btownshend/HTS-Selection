@@ -29,6 +29,11 @@ if ~exist('mzdata','var')
   mzdata={};
 end
 
+if length(mzdata)>length(allfiles)
+  fprintf('Removing last %d entries from mzdata\n', length(mzdata)-length(allfiles));
+  mzdata=mzdata(1:length(allfiles));
+end
+
 for i=1:length(allfiles)
   path=[allfiles(i).folder,'/',allfiles(i).name];
   if i>length(mzdata) || ~strcmp(mzdata{i}.path,path)
@@ -71,7 +76,7 @@ for reps=1:1
       compounds.addFromSDF(mzdata{i},sdf,'group','Individual','contains',sdf.find(31,'A',3));
     else
       % Assume all compounds
-      fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i});
+      fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i}.name);
     end
   end
 end
