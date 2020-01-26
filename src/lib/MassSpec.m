@@ -331,12 +331,14 @@ classdef MassSpec < handle
       end
     end
 
-    function map=timealign(obj,o2,step)
+    function map=timealign(obj,o2,step,window)
     % Find mapping between elution times
       t1=obj.TIC();
       t2=o2.TIC();
       if nargin<3
         step=10;
+      end
+      if nargin<4
         window=500;
       end
       map=[];
