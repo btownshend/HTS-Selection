@@ -517,7 +517,48 @@ classdef Compounds < handle
       end
     end
     
-    
+    function checktimeoffset2(obj,obj2)
+    % Compare time offsets between two structures with same compound list
+      assert(all(obj.mztarget==obj2.mztarget));
+      setfig('checktimeoffset2');clf;
+      subplot(211);
+      t1=obj.time(:,1); t2=obj2.time(:,1);
+      sel=isfinite(t1)&isfinite(t2);
+      t1=t1(sel);t2=t2(sel);
+      [t1,ord]=sort(t1);
+      t2=t2(ord);
+      plot(t1,t2,'go');
+      xlabel(obj.files{1});
+      ylabel(obj2.files{1});
+      fit=robustfit(t1,t2);
+      hold on;
+      ax=axis;
+      plot(ax(1:2),ax(1:2)*fit(2)+fit(1),'b:');
+      % Try a two-part linear
+      split=median(t1)
+      for i=1:8
+        fprintf('Split at T=%.0f\n', split);
+        fit1=robustfit(t1(t1<split),t2(t1<split));
+        fit2=robustfit(t1(t1>=split),t2(t1>=split));
+        % Find intersection
+        split=(fit2(1)-fit1(1))/(fit1(2)-fit2(2));
+      end
+      pred=[t1(t1<split)*fit1(2)+fit1(1);t1(t1>=split)*fit2(2)+fit2(1)];
+      plot(t1,pred,'r-');
+      subplot(212);
+      resid=t2-pred;
+      plot(t1,resid,'o');
+      ylabel('Residual');
+      rmse=16;
+      for i=1:4
+        outlier=abs(resid)>rmse*4;
+        rmse=sqrt(mean(resid(~outlier).^2));
+      end
+      hold on; plot(t1(outlier),resid(outlier),'or');
+      fprintf('Best fit:  <%.0f: m=%.2f, b=%.2f; >%.0f: m=%.2f, b=%.2f\n', split, fit1([2,1]), split, fit2([2,1]));
+      fprintf('RMSE(resid) = %.1f (outliers are >=%.0f)\n',rmse, min(abs(resid(outlier)))); 
+    end
+
     function plotcompare(obj,f1,f2)
     % Plot comparison of each compound the occurs in both f1 and f2
       ti=sprintf('%s vs %s',obj.files{f1}, obj.files{f2});
