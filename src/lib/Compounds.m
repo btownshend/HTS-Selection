@@ -738,9 +738,16 @@ classdef Compounds < handle
       [~,ord]=sort(ic(:),'desc','MissingPlacement','last');
       for i=1:args.nlist
         [ii,ij]=ind2sub(size(obj.contains),ord(i));
-        fprintf('%12.12s:%-7.7s IC=%8.0f\n', obj.files{ij}, obj.shortnames{ii}, ic(ord(i)));
+        fprintf('%12.12s:%-7.7s IC=%8.0f', obj.files{ij}, obj.shortnames{ii}, ic(ord(i)));
+        alias=find(obj.contains(:,ij) & abs(obj.mztarget-obj.mztarget(ii))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
+        if ~isempty(alias)
+          fprintf(' Indistinguishable from ');
+          for j=1:length(alias)
+            fprintf(' %s',obj.shortnames{alias(j)});
+          end
+        end
+        fprintf('\n');
       end
-      keyboard
     end
   end
 end
