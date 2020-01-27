@@ -335,7 +335,7 @@ classdef Compounds < handle
       for i=1:length(sdf.sdf)
         s=sdf.sdf(i);
         name=[s.BATCH_PLATE,'-',s.BATCH_WELL];
-        mztarget=s.MonoisotopicMass+1;
+        mztarget=s.MonoisotopicMass+1;   % Assume hydrogen adduct 
         nindices(i)=obj.lookupName(name,mztarget,s);
         nindex=nindices(i);
         obj.contains(nindex,findex)=args.contains(i)~=0;   % Mark it as expected to contain
@@ -519,7 +519,7 @@ classdef Compounds < handle
       end
     end
     
-    function checktimeoffset2(obj,obj2)
+    function map=checktimeoffset2(obj,obj2)
     % Compare time offsets between two structures with same compound list
       assert(all(obj.mztarget==obj2.mztarget));
       setfig('checktimeoffset2');clf;
@@ -559,6 +559,9 @@ classdef Compounds < handle
       hold on; plot(t1(outlier),resid(outlier),'or');
       fprintf('Best fit:  <%.0f: m=%.2f, b=%.2f; >%.0f: m=%.2f, b=%.2f\n', split, fit1([2,1]), split, fit2([2,1]));
       fprintf('RMSE(resid) = %.1f (outliers are >=%.0f)\n',rmse, min(abs(resid(outlier)))); 
+      map=[t1(1);split;t1(end)];
+      map(1:2,2)=map(1:2,1)*fit1(2)+fit1(1);
+      map(3,2)=map(3,1)*fit2(2)+fit2(1);
     end
 
     function plotcompare(obj,f1,f2)

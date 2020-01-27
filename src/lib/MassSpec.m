@@ -4,7 +4,7 @@ classdef MassSpec < handle
     name;    % Short name for this file
     moles;   % Nominal number of moles (per compound) loaded
     peaks;  % Peaks from mzxml2peaks;  peaks{i}(k,1:2) is [mz,time] for elution i, at peak k 
-    time;   % Time of elutions
+    localtime;   % Time of elutions
     mzrange;   % Range [low,high] of m/z to plot/consider
     resamp;   % struct (mz,y,n) of uniformly sampled data
     clusters;	% Cluster peaks (across m/z and time)
@@ -12,6 +12,8 @@ classdef MassSpec < handle
     ident;    % struct array of identified peaks
     mzoffset;   % M/Z offset (obs-actual) -- for info only, already applied to the other fields
     mzxml;
+    timeTLU;  % mapping from times in this file to a global timescale  
+                 % t(global)=interp1(timeTLU(1),timeTLU(2),t(local))
   end
   
   properties(Constant)
@@ -24,7 +26,7 @@ classdef MassSpec < handle
       args=processargs(defaults,varargin);
       fprintf('Loading %s...\n', path);
       mzxml=mzxmlread(path);
-      [obj.peaks,obj.time]=mzxml2peaks(mzxml);
+      [obj.peaks,obj.localtime]=mzxml2peaks(mzxml);
       obj.mzrange=[min(cellfun(@(z) z(1,1), obj.peaks)),max(cellfun(@(z) z(end,1), obj.peaks))];
       obj.mzoffset=0;
       if args.mzoffset~=0
@@ -36,6 +38,14 @@ classdef MassSpec < handle
       obj.mzxml=mzxml;
     end
 
+    function t=time(obj,ind)
+    % Convert from localtime (within this file) to a global (aligned) time-base
+      t=interp1(obj.timeTLU(:,1),obj.timeTLU(:,2),obj.localtime);
+      if nargin>=2
+        t=t(ind);
+      end
+    end
+    
     function adjmzoffset(obj,mzoffset)
     % Correct the M/Z
       for i=1:length(obj.peaks)
@@ -50,8 +60,8 @@ classdef MassSpec < handle
     
     function filter(obj,trange,mzrange)
       if nargin>=2 && ~isempty(trange)
-        sel=find(obj.time>=trange(1) & obj.time<=trange(2));
-        obj.time=obj.time(sel);
+        sel=find(obj.localtime>=trange(1) & obj.localtime<=trange(2));
+        obj.localtime=obj.localtime(sel);
         obj.peaks=obj.peaks(sel);
       end
       if nargin>=3 && ~isempty(mzrange)
@@ -143,7 +153,7 @@ classdef MassSpec < handle
       end
       ic=zeros(last-first+1,1);
       mz=nan(last-first+1,1);
-      time=obj.time(first:last);
+      time=obj.time;time=time(first:last);
       for i=first:last
         sel=abs(obj.peaks{i}(:,1)-mztarget)<=args.mztol;
         if any(sel)

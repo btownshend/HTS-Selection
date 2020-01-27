@@ -23,7 +23,9 @@ mzoffsets=[repmat(.0030,1,length(rowdata)),repmat(.0026,1,length(coldata)),repma
 % Offsets of rerun on 5/1 seem different
 mzoffsets(2)=.0076;
 mzoffsets([10,18])=.0086;
-           
+% Setup time offsets
+identityMap=[0 0; 1 1 ];
+
 % Load data
 if ~exist('mzdata','var')
   mzdata={};
@@ -40,10 +42,16 @@ for i=1:length(allfiles)
       mzdata{i}=MassSpec(path,'mzoffset',mzoffsets(i));
       mzdata{i}.setLoad(2500*1e-15);
       % Prune out some data
-      mzdata{i}.filter([300,2700],[127,505]);
+      mzdata{i}.filter([300,2700],[127,505]);  % NOTE: this is using the localtimes to filter
   end
 end
 
+% Set time lookups
+for i=1:length(mzdata)
+  mzdata{i}.timeTLU=identityMap;
+end
+
+% Set m/z offsets
 for i=1:length(mzdata)
   mzdata{i}.adjmzoffset(mzoffsets(i));
 end
