@@ -10,7 +10,7 @@ classdef MassSpec < handle
     clusters;	% Cluster peaks (across m/z and time)
     clustersettings;
     ident;    % struct array of identified peaks
-    mzoffset;   % M/Z offset (obs-actual) -- for info only, already applied to the other fields
+    mzoffset;   % M/Z offset (obs-actual) -- for info only, already applied to the m/z column of peaks
     mzxml;
     timeTLU;  % mapping from times in this file to a global timescale  
                  % t(global)=interp1(timeTLU(1),timeTLU(2),t(local))
@@ -40,7 +40,7 @@ classdef MassSpec < handle
 
     function t=time(obj,ind)
     % Convert from localtime (within this file) to a global (aligned) time-base
-      t=interp1(obj.timeTLU(:,1),obj.timeTLU(:,2),obj.localtime);
+      t=interp1(obj.timeTLU(:,1),obj.timeTLU(:,2),obj.localtime,'linear','extrap');
       if nargin>=2
         t=t(ind);
       end
