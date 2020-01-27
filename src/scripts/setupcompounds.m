@@ -18,8 +18,10 @@ coldata=coldata([2,11,4:9,1,10]);   % Use rerun, reorder
 platedata=dir([msdir,'20190309 CDiv Library Plates/CDIV*1.mzXML']);
 fulldata=dir([msdir,'20190* Row, Column/Full.mzXML']);
 indivdata=[]; % dir([msdir,'20190506-Individual/*.mzXML']);
-allfiles=[rowdata;coldata;platedata;fulldata;indivdata];
-mzoffsets=[repmat(.0030,1,length(rowdata)),repmat(.0026,1,length(coldata)),repmat(.0087,1,length(platedata)),.0036,repmat(0.0036,1,length(indivdata))];
+diagdata=dir([msdir,'200124-Diags-8630/*.mzXML']);
+
+allfiles=[rowdata;coldata;platedata;fulldata;indivdata;diagdata];
+mzoffsets=[repmat(.0028,1,length(rowdata)),repmat(.0025,1,length(coldata)),repmat(.0089,1,length(platedata)),.0038,repmat(0.0036,1,length(indivdata)),repmat(0.0043,1,length(diagdata))];
 % Offsets of rerun on 5/1 seem different
 mzoffsets(2)=.0076;
 mzoffsets([10,18])=.0086;
@@ -50,6 +52,9 @@ end
 for i=1:length(mzdata)
   mzdata{i}.timeTLU=identityMap;
 end
+mzdata{end}.timeTLU=[0.3933    0.3669
+                    1.7714    2.0839
+                    2.5138    2.6997]*1e3;
 
 % Set m/z offsets
 for i=1:length(mzdata)
@@ -64,7 +69,9 @@ end
 for reps=1:1
   fprintf('Pass %d...\n',reps);
   for i=1:length(mzdata)
-    if strncmp(mzdata{i}.name,'Col',3)
+    if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5)
+      compounds.addFromSDF(mzdata{i},sdf,'group','Full');
+    elseif strncmp(mzdata{i}.name,'Col',3)
       cnum=sscanf(mzdata{i}.name,'Col%d.mzXML');
       %      compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find([],[],cnum)),'group','Col');
       compounds.addFromSDF(mzdata{i},sdf,'contains',sdf.find([],[],cnum),'group','Col');
