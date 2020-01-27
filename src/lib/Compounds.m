@@ -519,8 +519,14 @@ classdef Compounds < handle
       end
     end
     
-    function map=checktimeoffset2(obj,obj2)
+    function map=checktimeoffset2(obj,obj2,sel1,sel2)
     % Compare time offsets between two structures with same compound list
+      if nargin<3
+        sel1=1;
+      end
+      if nargin<4
+        sel2=1;
+      end
       assert(all(obj.mztarget==obj2.mztarget));
       setfig('checktimeoffset2');clf;
       subplot(211);
