@@ -52,9 +52,11 @@ end
 for i=1:length(mzdata)
   mzdata{i}.timeTLU=identityMap;
 end
-mzdata{end}.timeTLU=[0.3933    0.3669
-                    1.7714    2.0839
-                    2.5138    2.6997]*1e3;
+for i=length(mzdata)-length(diagdata)+1:length(mzdata)
+  mzdata{i}.timeTLU=[0.3933    0.3669
+                     1.7714    2.0839
+                     2.5138    2.6997]*1e3;
+end
 
 % Set m/z offsets
 for i=1:length(mzdata)
@@ -71,6 +73,8 @@ for reps=1:1
   for i=1:length(mzdata)
     if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5)
       compounds.addFromSDF(mzdata{i},sdf,'group','Full');
+    elseif strncmp(mzdata{i}.name,'86',2)
+      compounds.addFromSDF(mzdata{i},sdf,'group','Diag');
     elseif strncmp(mzdata{i}.name,'Col',3)
       cnum=sscanf(mzdata{i}.name,'Col%d.mzXML');
       %      compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find([],[],cnum)),'group','Col');
