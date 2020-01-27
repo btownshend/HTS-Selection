@@ -524,28 +524,10 @@ classdef Compounds < handle
       assert(all(obj.mztarget==obj2.mztarget));
       setfig('checktimeoffset2');clf;
       subplot(211);
-      t1=obj.time(:,1); t2=obj2.time(:,1);
-      sel=isfinite(t1)&isfinite(t2);
-      t1=t1(sel);t2=t2(sel);
-      [t1,ord]=sort(t1);
-      t2=t2(ord);
-      plot(t1,t2,'go');
-      xlabel(obj.files{1});
-      ylabel(obj2.files{1});
-      fit=robustfit(t1,t2);
-      hold on;
-      ax=axis;
-      plot(ax(1:2),ax(1:2)*fit(2)+fit(1),'b:');
-      % Try a two-part linear
-      split=median(t1)
-      for i=1:8
-        fprintf('Split at T=%.0f\n', split);
-        fit1=robustfit(t1(t1<split),t2(t1<split));
-        fit2=robustfit(t1(t1>=split),t2(t1>=split));
-        % Find intersection
-        split=(fit2(1)-fit1(1))/(fit1(2)-fit2(2));
-      end
-      pred=[t1(t1<split)*fit1(2)+fit1(1);t1(t1>=split)*fit2(2)+fit2(1)];
+      t1=obj.time(:,sel1); t2=obj2.time(:,sel2);
+      plot(t1,t2,'o'); hold on;
+      map=piecewise(t1,t2,obj.TIMEFUZZ,4);
+      pred=interp1(map(:,1),map(:,2),t1);
       plot(t1,pred,'r-');
       subplot(212);
       resid=t2-pred;
@@ -554,14 +536,10 @@ classdef Compounds < handle
       rmse=16;
       for i=1:4
         outlier=abs(resid)>rmse*4;
-        rmse=sqrt(mean(resid(~outlier).^2));
+        rmse=sqrt(nanmean(resid(~outlier).^2));
       end
       hold on; plot(t1(outlier),resid(outlier),'or');
-      fprintf('Best fit:  <%.0f: m=%.2f, b=%.2f; >%.0f: m=%.2f, b=%.2f\n', split, fit1([2,1]), split, fit2([2,1]));
-      fprintf('RMSE(resid) = %.1f (outliers are >=%.0f)\n',rmse, min(abs(resid(outlier)))); 
-      map=[t1(1);split;t1(end)];
-      map(1:2,2)=map(1:2,1)*fit1(2)+fit1(1);
-      map(3,2)=map(3,1)*fit2(2)+fit2(1);
+      fprintf('RMSE(resid) = %.1f (outliers are >=%.0f)\n',rmse, min([inf;abs(resid(outlier))])); 
     end
 
     function plotcompare(obj,f1,f2)
