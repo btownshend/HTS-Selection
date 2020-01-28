@@ -492,12 +492,14 @@ classdef Compounds < handle
         for i=1:length(obj.files)
           if strcmp(obj.group{i},ugroups{j})
             err=nanmedian(obj.mz(:,i)-obj.mztarget);
-            fprintf('%-20.20s  %8.4f\n', obj.files{i}, err);
+            fit=robustfit(obj.mztarget,obj.mz(:,i));
+            fprintf('%-20.20s  %8.4f [%8.4f@%3.0f - %8.4f@%3.0f]\n', obj.files{i}, err,fit(1)+(fit(2)-1)*min(obj.mztarget),min(obj.mztarget),fit(1)+(fit(2)-1)*max(obj.mztarget),max(obj.mztarget));
             all(end+1)=err;
           end
         end
         sel=strcmp(obj.group,ugroups{j});
-        fprintf('%-20.20s  %8.4f over group\n', ugroups{j}, nanmedian(all));
+        fit=robustfit(obj.mztarget,nanmean(obj.mz(:,sel),2));
+        fprintf('%-20.20s  %8.4f [%8.4f@%3.0f - %8.4f@%3.0f] over group\n', ugroups{j}, nanmedian(all), fit(1)+(fit(2)-1)*min(obj.mztarget),min(obj.mztarget),fit(1)+(fit(2)-1)*max(obj.mztarget),max(obj.mztarget));
       end
     end
     
