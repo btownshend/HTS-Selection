@@ -4,16 +4,13 @@ classdef MassSpec < handle
     name;    % Short name for this file
     moles;   % Nominal number of moles (per compound) loaded
     peaks;  % Peaks from mzxml2peaks;  peaks{i}(k,1:2) is [mz,time] for elution i, at peak k 
-    localtime;   % Time of elutions
+    time;   % Time of elutions
     mzrange;   % Range [low,high] of m/z to plot/consider
     resamp;   % struct (mz,y,n) of uniformly sampled data
     clusters;	% Cluster peaks (across m/z and time)
     clustersettings;
     ident;    % struct array of identified peaks
-    mzoffset;   % M/Z offset (obs-actual) -- for info only, already applied to the m/z column of peaks
     mzxml;
-    timeTLU;  % mapping from times in this file to a global timescale  
-                 % t(global)=interp1(timeTLU(1),timeTLU(2),t(local))
   end
   
   properties(Constant)
@@ -22,46 +19,26 @@ classdef MassSpec < handle
   
   methods
     function obj=MassSpec(path,varargin)
-      defaults=struct('mzoffset',0.0);  % mzoffset is observed-actual M/Z
+      defaults=struct('debug',false);
       args=processargs(defaults,varargin);
       fprintf('Loading %s...\n', path);
       mzxml=mzxmlread(path);
-      [obj.peaks,obj.localtime]=mzxml2peaks(mzxml);
+      [obj.peaks,obj.time]=mzxml2peaks(mzxml);
       obj.mzrange=[min(cellfun(@(z) z(1,1), obj.peaks)),max(cellfun(@(z) z(end,1), obj.peaks))];
-      obj.mzoffset=0;
-      if args.mzoffset~=0
-        obj.adjmzoffset(args.mzoffset);
-      end
       obj.path=path;
       z=strsplit(obj.path,'/');
       obj.name=z{end};
       obj.mzxml=mzxml;
     end
 
-    function t=time(obj,ind)
-    % Convert from localtime (within this file) to a global (aligned) time-base
-      t=interp1(obj.timeTLU(:,1),obj.timeTLU(:,2),obj.localtime,'linear','extrap');
-      if nargin>=2
-        t=t(ind);
-      end
-    end
-    
-    function adjmzoffset(obj,mzoffset)
-    % Correct the M/Z
-      for i=1:length(obj.peaks)
-        obj.peaks{i}(:,1)=obj.peaks{i}(:,1)-(mzoffset-obj.mzoffset);   % Adjust offset
-      end
-      obj.mzoffset=mzoffset;
-    end
-      
     function setLoad(obj,moles)
       obj.moles=moles;
     end
     
     function filter(obj,trange,mzrange)
       if nargin>=2 && ~isempty(trange)
-        sel=find(obj.localtime>=trange(1) & obj.localtime<=trange(2));
-        obj.localtime=obj.localtime(sel);
+        sel=find(obj.time>=trange(1) & obj.time<=trange(2));
+        obj.time=obj.time(sel);
         obj.peaks=obj.peaks(sel);
       end
       if nargin>=3 && ~isempty(mzrange)
@@ -161,6 +138,8 @@ classdef MassSpec < handle
           mz(i-first+1)=sum((obj.peaks{i}(sel,1).*obj.peaks{i}(sel,2)))/ic(i-first+1);
         end
       end
+      sel=ic>0;
+      ic=ic(sel);mz=mz(sel);time=time(sel);
     end
     
     function res=findcompound(obj, mztarget, varargin)
@@ -180,7 +159,7 @@ classdef MassSpec < handle
 
       % Handle any other time limitations given on command line
       if ~isempty(args.ignoreelutetimes)
-        sel=~(min(abs(obj.time-args.ignoreelutetimes(:)'),[],2)<args.timetol);
+        sel=~(min(abs(time-args.ignoreelutetimes(:)'),[],2)<args.timetol);
         time=time(sel);
         ic=ic(sel);
         mz=mz(sel);
@@ -205,9 +184,14 @@ classdef MassSpec < handle
           maxic=maxic(keep);
           maxmz=maxmz(keep);
           maxtime=maxtime(keep);
+        else
+          %fprintf('m/z scan gave %d peaks, but none from mspeaks\n', length(ic));
+          maxmz=sum(ic.*mz)/sum(ic);
+          maxtime=sum(ic.*time)/sum(ic);
+          maxic=sum(ic);
         end
       end
-      
+      assert(all(isfinite(maxmz)));
       desc=sprintf('m/z=%.4f+=%.3f',mztarget,args.mztol);
       if ~isempty(args.elutetime)
         desc=[desc,sprintf(' T=%.1f+=%.1f',args.elutetime,args.timetol)];
