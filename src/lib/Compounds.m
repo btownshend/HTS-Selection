@@ -1,10 +1,10 @@
 % Data structure to hold information about compounds located in mass spec runs
 classdef Compounds < handle
   properties
-    names;   % names{i} - Name of compound i (e.g. 'CDIV0051-B07')
-    shortnames; % shortnames{i} - Short name of compound i (e.g. '51B07')
+    names;   % names{i} - Name of compound i (e.g.'51B07')
+    adduct;  % adduct(i) - Name of adduct of compound (e.g. 'H')
     sdf;     % sdf{i} - SDF data for compound i
-    mztarget; % mztarget(i) - target m/z for compound i 
+    mztarget; % mztarget(i) - target m/z for compound i with adduct(i)
     files;   % files{j} - Mass spec filename j
     moles;    % moles(j) - Moles of each compound loaded in run j
     group;   % group{j} - name of group this file belongs to
@@ -22,6 +22,7 @@ classdef Compounds < handle
   properties(Constant)
     MZFUZZ=0.003;
     TIMEFUZZ=50;   % in seconds
+    ADDUCTS=struct('name',{'H','Na'},'mass',{1.007825035,22.9897677});
   end
   
   methods
@@ -42,34 +43,31 @@ classdef Compounds < handle
       end
     end
     
-    function ind=find(obj,name)
+    function ind=find(obj,name,adduct)
     % Find given name
     % Try both format stored in names (e.g. 'CDIV0051-B07') and short format (e.g. '51B07')
-      if name(end-1)>='A' && name(end-2)<='H'
-        % Add leading 0 to column
-        name=[name(1:end-1),'0',name(end)];
-      end
-      ind=find(strcmp(name,obj.names));
-      if length(ind)~=1
-        ind=find(strcmp(name,obj.shortnames));
-        if length(ind)~=1
-          error('Compound %s not found',name);
+      if nargin<3
+        c=strsplit(name,'+');
+        if length(c)==2
+          name=c{1};
+          adduct=c{2};
+        else
+          adduct='H';
         end
+      end
+      ind=find(strcmp(name,obj.names) & stcmp(obj.adduct,adduct));
+      if length(ind)~=1
+        error('Compound %s+%s not found',name,adduct);
       end
     end
       
-    function nindex=lookupName(obj,name, mztarget, sdf)
+    function nindex=lookupName(obj,name, mztarget)
     % Find the index of compound by name, create if missing
       if ismember(name,obj.names)
         nindex=find(strcmp(name,obj.names));
       else
         obj.names{end+1,1}=name;
         nindex=length(obj.names);
-        if nargin>=4
-          obj.sdf{nindex,1}=sdf;
-        else
-          obj.sdf{nindex,1}=[];
-        end
         if nargin>=3
           obj.mztarget(nindex,1)=mztarget;
         else
@@ -79,17 +77,6 @@ classdef Compounds < handle
         obj.time(nindex,:)=nan;
         obj.ic(nindex,:)=nan;
         obj.contains(nindex,:)=false;
-        
-        % Set short name
-        [p,r,c]=obj.getposition(length(obj.names));
-        obj.shortnames{length(obj.names)} = sprintf('%d%c%02d',str2num(p(5:end)),r+'A'-1,c);
-      end
-      if length(obj.shortnames) < length(obj.names)
-        obj.shortnames=cell(size(obj.names));
-        for i=1:length(obj.names)
-          [p,r,c]=obj.getposition(i);
-          obj.shortnames{i} = sprintf('%d%c%02d',str2num(p(5:end)),r+'A'-1,c);
-        end
       end
     end
 
@@ -147,6 +134,7 @@ classdef Compounds < handle
       
       for i=1:length(obj.mztarget)
         id(i).name=obj.names{i};
+        id(i).adduct=obj.adduct{i};
         id(i).relic=sum(id(i).ic)/nanmax(obj.ic(i,:));
       end
     end
@@ -315,11 +303,43 @@ classdef Compounds < handle
       set(h,'Interpreter','none');
     end
       
-    function addFromSDF(obj,ms,sdf,varargin)
+    function addCompound(obj,name,mass,adduct)
+    % Add a compound
+      if any(strcmp(obj.names,name) & strcmp(obj.adduct,adduct))
+        error('%s+%s already added', name, adduct);
+      end
+      addsel=find(strcmp({obj.ADDUCTS.name},adduct));
+      if isempty(addsel)
+        error('Unknown adduct: %s',adduct);
+      end
+
+      obj.names{end+1}=name;
+      nindex=length(obj.names);
+      obj.adduct{nindex}=adduct;
+      obj.mztarget{nindex}=mass+obj.ADDUCTS(addsel).mass;
+      obj.mz(nindex,:)=nan;
+      obj.time(nindex,:)=nan;
+      obj.ic(nindex,:)=nan;
+      obj.contains(nindex,:)=false;
+    end
+    
+    function addCompoundsFromSDF(obj,sdf,adduct)
+    % Add all the compounds in the given SDF file using a name formed from the PLATE and WELL
+      if nargin<3
+        adduct='H';
+      end
+      for i=1:length(sdf.sdf)
+        s=sdf.sdf(i);
+        name=sprintf('%d%s',str2num(s.BATCH_PLATE(5:end)),s.BATCH_WELL);
+        obj.addCompound(name,s.MonoisotopicMass,adduct);
+      end
+    end
+    
+    function addMS(obj,ms,varargin)
     % Add the unique peaks for compounds in given SDF from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
     % or scan all elution times if the no prior data (keep only if a unique peak is determined)
-      defaults=struct('debug',false,'group','','contains',[],'mztol',[],'timetol',[]);  
+      defaults=struct('debug',false,'group','','contains',{{}},'mztol',[],'timetol',[]);  
       args=processargs(defaults,varargin);
 
       if isempty(args.mztol)
@@ -335,21 +355,17 @@ classdef Compounds < handle
         obj.group{findex}=args.group;
       end
       if isempty(args.contains)
-        args.contains=true(size(sdf.sdf));
+        obj.contains(:,findex)=true;
+      else
+        badnames=setdiff(args.contains,obj.names);
+        if ~isempty(badnames)
+          error('contains list has nonexistent compounds names: ',strjoin(badnames,','));
+        end
+        obj.contains(:,findex)=ismember(obj.names,args.contains);
       end
-      % Add all these compounds and mark which ones this file contains
-      nindex=[];
-      for i=1:length(sdf.sdf)
-        s=sdf.sdf(i);
-        name=[s.BATCH_PLATE,'-',s.BATCH_WELL];
-        mztarget=s.MonoisotopicMass+1;   % Assume hydrogen adduct 
-        nindices(i)=obj.lookupName(name,mztarget,s);
-        nindex=nindices(i);
-        obj.contains(nindex,findex)=args.contains(i)~=0;   % Mark it as expected to contain
-      end
+
       % Attempt to locate each one uniquely
-      for i=1:length(nindices)
-        nindex=nindices(i);
+      for nindex=1:length(obj.mztarget)
         meantime=nanmean(obj.time(nindex,obj.contains(nindex,:)));
         mztarget=obj.mztarget(nindex);
         % Check if the M/Z is unique over the compounds in this file
@@ -364,7 +380,7 @@ classdef Compounds < handle
             else
               if abs(nanmean(obj.time(samemz(i),:)) - meantime) < args.timetol
                 if obj.contains(nindex,findex) && nindex<samemz(i)
-                  fprintf('%s and %s have same m/z, same elution time\n', obj.shortnames{nindex}, obj.shortnames{samemz(i)});
+                  fprintf('%s and %s have same m/z, same elution time\n', obj.names{nindex}, obj.names{samemz(i)});
                 end
                 nunique=nunique+1;  % Same elution times
                 nident=nident+1;
@@ -432,6 +448,7 @@ classdef Compounds < handle
       for ii=1:length(obj.names)
         i=ord(ii);
         x(ii).name=obj.names{i};
+        x(ii).adduct=obj.adduct{i};
         x(ii).mztarget=obj.mztarget(i);
         
         for j=1:length(ugroups)
@@ -656,11 +673,11 @@ classdef Compounds < handle
       end
       meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
       meant=nanmean(obj.time(ind,obj.contains(ind,:)));
-      fprintf('%s (%d): m/z=%8.4f t=%7.2f meanic=%.0f\n',obj.shortnames{ind},ind, obj.mztarget(ind),meant,meanic);
+      fprintf('%s (%d): m/z=%8.4f t=%7.2f meanic=%.0f\n',obj.names{ind},ind, obj.mztarget(ind),meant,meanic);
       if ~isempty(args.mzdata)
-        setfig(obj.shortnames{ind});
+        setfig(obj.names{ind});
         t=tiledlayout('flow');
-        title(t,sprintf('%s m/z=%.4f t=%.0f',obj.shortnames{ind},obj.mztarget(ind),meant));
+        title(t,sprintf('%s m/z=%.4f t=%.0f',obj.names{ind},obj.mztarget(ind),meant));
       end
       
       for j=1:length(obj.files)
@@ -736,12 +753,12 @@ classdef Compounds < handle
       [~,ord]=sort(ic(:),'desc','MissingPlacement','last');
       for i=1:args.nlist
         [ii,ij]=ind2sub(size(obj.contains),ord(i));
-        fprintf('%12.12s:%-7.7s IC=%8.0f', obj.files{ij}, obj.shortnames{ii}, ic(ord(i)));
+        fprintf('%12.12s:%-7.7s IC=%8.0f', obj.files{ij}, obj.names{ii}, ic(ord(i)));
         alias=find(obj.contains(:,ij) & abs(obj.mztarget-obj.mztarget(ii))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
         if ~isempty(alias)
           fprintf(' Indistinguishable from ');
           for j=1:length(alias)
-            fprintf(' %s',obj.shortnames{alias(j)});
+            fprintf(' %s',obj.names{alias(j)});
           end
         end
         fprintf('\n');

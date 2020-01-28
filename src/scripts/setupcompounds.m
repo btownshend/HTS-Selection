@@ -65,63 +65,83 @@ end
 
 if ~exist('compounds','var')
   compounds=Compounds();
+  compounds.addCompoundsFromSDF(sdf,'H');
 end
-
 
 for reps=1:1
   fprintf('Pass %d...\n',reps);
   for i=1:length(mzdata)
     if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)
-      compounds.addFromSDF(mzdata{i},sdf,'group','Full');
+      compounds.addMS(mzdata{i},'group','Full');
     elseif strncmp(mzdata{i}.name,'86',2)
       id=str2num(mzdata{i}.name(1:4));
-      contains=false(size(sdf.sdf));
+      contains={};
       if id>=8611 && id<=8618
         % row-plate diagonals
         for p=1:12
           for r=1:8
             if mod(r-p,8)==(id-8611)
-              contains=contains|sdf.find((p-1)*10+1,r+'A'-1);
+              for c=2:11
+                contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,c);
+              end
             end
           end
         end
-        assert(sum(contains)==120);
-        compounds.addFromSDF(mzdata{i},sdf,'group','DiagPR','contains',contains);
+        assert(length(contains)==120);
+        compounds.addMS(mzdata{i},'group','DiagPR','contains',contains);
       elseif id>=8631 && id<=8640
         % col-plate diagonals
+        contains={};
         for p=1:12
           for c=1:10
             if mod(c-p,10)==(id-8631)
-              contains=contains|sdf.find((p-1)*10+1,[],c+1);
+              for r=1:8
+                contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,c+1);
+              end
             end
           end
         end
-        assert(sum(contains)==96);
-        compounds.addFromSDF(mzdata{i},sdf,'group','DiagPC','contains',contains);
+        assert(length(contains)==96);
+        compounds.addMS(mzdata{i},'group','DiagPC','contains',contains);
       elseif id==8630
         % TODO: some components dropped out
-        compounds.addFromSDF(mzdata{i},sdf,'group','-Hits');
+        compounds.addMS(mzdata{i},'group','-Hits');
       else
         fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i}.name);
       end
     elseif strncmp(mzdata{i}.name,'Col',3)
       cnum=sscanf(mzdata{i}.name,'Col%d.mzXML');
-      %      compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find([],[],cnum)),'group','Col');
-      compounds.addFromSDF(mzdata{i},sdf,'contains',sdf.find([],[],cnum),'group','Col');
+      contains={};
+      for p=1:12
+        for r=1:8
+          contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,cnum);
+        end
+      end
+      compounds.addMS(mzdata{i},'contains',contains,'group','Col');
     elseif strncmp(mzdata{i}.name,'Row',3)
       row=mzdata{i}.name(4);
-      %compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find([],row)),'group','Row');
-      compounds.addFromSDF(mzdata{i},sdf,'contains',sdf.find([],row),'group','Row');
+      contains={};
+      for p=1:12
+        for c=2:11
+          contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,row,c);
+        end
+      end
+      compounds.addMS(mzdata{i},'contains',contains,'group','Row');
     elseif strncmp(mzdata{i}.name,'CDIV',4)
       pnum=sscanf(mzdata{i}.name,'CDIV%d.mzXML');
-      %compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find(pnum)),'group','Plate');
-      compounds.addFromSDF(mzdata{i},sdf,'contains',sdf.find(pnum),'group','Plate');
+      contains={};
+      for r=1:8
+        for c=2:11
+          contains{end+1}=sprintf('%d%c%02d',pnum,r+'A'-1,c);
+        end
+      end
+      compounds.addMS(mzdata{i},'contains',contains,'group','Plate');
     elseif strncmp(mzdata{i}.name,'Full',4)
-      compounds.addFromSDF(mzdata{i},sdf,'group','Full');
+      compounds.addMS(mzdata{i},'group','Full');
     elseif strcmp(mzdata{i}.name,'A2.mzXML')
-      compounds.addFromSDF(mzdata{i},sdf,'group','Individual','contains',sdf.find(31,'A',2));
+      compounds.addMS(mzdata{i},'group','Individual','contains',{'31A2'});
     elseif strcmp(mzdata{i}.name,'A3.mzXML')
-      compounds.addFromSDF(mzdata{i},sdf,'group','Individual','contains',sdf.find(31,'A',3));
+      compounds.addMS(mzdata{i},'group','Individual','contains',{'31A3'});
     else
       % Assume all compounds
       fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i}.name);
