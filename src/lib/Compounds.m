@@ -132,7 +132,7 @@ classdef Compounds < handle
         if isfinite(meantime(i))
           % Only look for compounds with a known elution time
           isomers=find(abs(meantime-meantime(i))<obj.TIMEFUZZ & abs(mztarget-obj.mztarget')<obj.MZFUZZ);
-          id(i)=ms.findcompound(mztarget,'sdf',obj.sdf{i},'elutetime',meantime(i),'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
+          id(i)=ms.findcompound(mztarget,'elutetime',meantime(i),'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
           if isempty(id(i).ic)
             id(i).ic=0;
             id(i).time=nan;
@@ -383,15 +383,15 @@ classdef Compounds < handle
         obj.time(nindex,findex)=nan;
         obj.ic(nindex,findex)=nan;
         if isfinite(meantime) && nident==1
-          id=ms.findcompound(mztarget,'sdf',s,'elutetime',meantime,'timetol',args.timetol,'mztol',args.mztol,'debug',args.debug);
+          id=ms.findcompound(mztarget,'elutetime',meantime,'timetol',args.timetol,'mztol',args.mztol,'debug',args.debug);
         elseif ~obj.contains(nindex,findex)
           continue;
         elseif nisomers==1
-          id=ms.findcompound(mztarget,'sdf',s,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug);
+          id=ms.findcompound(mztarget,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug);
         elseif nunique==1
           % Have multiple isomers but the other ones all have elution times already
           % Could look for addition peaks
-          id=ms.findcompound(mztarget,'sdf',s,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'ignoreelutetimes',ignoreelutetimes);
+          id=ms.findcompound(mztarget,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'ignoreelutetimes',ignoreelutetimes);
         else
           if args.debug
             fprintf('Have %d indistinguishable isomers for %s in %s\n', nisomers, obj.names{nindex}, obj.files{findex});

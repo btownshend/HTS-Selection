@@ -168,15 +168,8 @@ classdef MassSpec < handle
     % Returns struct containing possible peaks (integrated over peak in both time and m/z) at different elutions times
     % Only peaks with ion count >= peakratio* maximum peak ion count are returned
     % If sdf provided, only used to construct a name for the compound
-      defaults=struct('name','','sdf','','elutetime',[],'mztol',0.01,'timetol',30,'debug',false,'ignoreelutetimes',[],'peakratio',0.05);
+      defaults=struct('elutetime',[],'mztol',0.01,'timetol',30,'debug',false,'ignoreelutetimes',[],'peakratio',0.05);
       args=processargs(defaults,varargin);
-      if isempty(args.name)
-        if ~isempty(args.sdf)
-          args.name=sprintf('%s.%s',args.sdf.BATCH_PLATE,args.sdf.BATCH_WELL);
-        else
-          args.name=sprintf('M/Z=%f',mztarget);
-        end
-      end
       
       % Build a table of elution vs IC for this M/Z
       if isempty(args.elutetime)
