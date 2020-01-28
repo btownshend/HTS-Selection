@@ -71,10 +71,39 @@ end
 for reps=1:1
   fprintf('Pass %d...\n',reps);
   for i=1:length(mzdata)
-    if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5)
+    if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)
       compounds.addFromSDF(mzdata{i},sdf,'group','Full');
     elseif strncmp(mzdata{i}.name,'86',2)
-      compounds.addFromSDF(mzdata{i},sdf,'group','Diag');
+      id=str2num(mzdata{i}.name(1:4));
+      contains=false(size(sdf.sdf));
+      if id>=8611 && id<=8618
+        % row-plate diagonals
+        for p=1:12
+          for r=1:8
+            if mod(r-p,8)==(id-8611)
+              contains=contains|sdf.find((p-1)*10+1,r+'A'-1);
+            end
+          end
+        end
+        assert(sum(contains)==120);
+        compounds.addFromSDF(mzdata{i},sdf,'group','DiagPR','contains',contains);
+      elseif id>=8631 && id<=8640
+        % col-plate diagonals
+        for p=1:12
+          for c=1:10
+            if mod(c-p,10)==(id-8631)
+              contains=contains|sdf.find((p-1)*10+1,[],c+1);
+            end
+          end
+        end
+        assert(sum(contains)==96);
+        compounds.addFromSDF(mzdata{i},sdf,'group','DiagPC','contains',contains);
+      elseif id==8630
+        % TODO: some components dropped out
+        compounds.addFromSDF(mzdata{i},sdf,'group','-Hits');
+      else
+        fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i}.name);
+      end
     elseif strncmp(mzdata{i}.name,'Col',3)
       cnum=sscanf(mzdata{i}.name,'Col%d.mzXML');
       %      compounds.addFromSDF(mzdata{i},sdf.filter(sdf.find([],[],cnum)),'group','Col');
