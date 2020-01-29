@@ -28,21 +28,18 @@ allfiles=[rowdata;coldata;platedata;fulldata;indivdata;diagdata];
 maps=repmat(struct('mz',[],'time',[]),length(allfiles),1);
 for i=1:length(allfiles)
   if ~isempty(strfind(allfiles(i).folder,'200124'))
-    maps(i).mz=[133,133-14e-4;499,499-33e-4];
+    maps(i).mz=[133,133-10e-4;499,499-37e-4];
     maps(i).time=[0.3933    0.3669
                   1.7714    2.0839
                   2.5138    2.6997]*1e3;
-  elseif ~isempty(strfind(allfiles(i).folder,'20190501'))
-    maps(i).mz=[133,1330e-4;499,499-3e-4];
-    maps(i).time=[0 0; 1 1 ];
   elseif ~isempty(strfind(allfiles(i).folder,'20190309'))
-    maps(i).mz=[133,133-01e-4;499,499+19e-4];
+    maps(i).mz=[133,133-02e-4;499,499+21e-4];
     maps(i).time=[0 0; 1 1 ];
   elseif ~isempty(strfind(allfiles(i).folder,'20190427'))
-    maps(i).mz=[133,133-23e-4;499,499-64e-4];
+    maps(i).mz=[133,133-25e-4;499,499-62e-4];
     maps(i).time=[0 0; 1 1 ];
   elseif ~isempty(strfind(allfiles(i).folder,'20190501'))
-    maps(i).mz=[133,133+5e-4;499,499-79e-4];
+    maps(i).mz=[133,133-4e-4;499,499+10e-4];
     maps(i).time=[0 0; 1 1 ];
   else
     error('No mapping for folder %s',allfiles(i).folder);
@@ -64,7 +61,11 @@ for i=1:length(allfiles)
   path=[allfiles(i).folder,'/',allfiles(i).name];
   if i>length(mzdata) || ~strcmp(mzdata{i}.path,path)
       mzdata{i}=MassSpec(path);
-      mzdata{i}.setLoad(2500*1e-15);
+      if ~isempty(strfind(allfiles{i},'200124'))
+        mzdata{i}.setLoad(2000*1e-15);
+      else
+        mzdata{i}.setLoad(2500*1e-15);
+      end
       % Prune out some data
       mzdata{i}.filter([300,2700],[127,505]);  % NOTE: this is using the localtimes to filter
   end
@@ -76,8 +77,6 @@ if ~exist('compounds','var')
   compounds.addCompoundsFromSDF(sdf,'H');
 end
 
-for reps=1:1
-  fprintf('Pass %d...\n',reps);
   for i=1:length(mzdata)
     if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)
       compounds.addMS(mzdata{i},'group','Full','map',maps(i));
@@ -155,7 +154,8 @@ for reps=1:1
       fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i}.name);
     end
   end
-end
+
+compounds.assignTimes();
 compounds.summary();
 
 report=compounds.report();

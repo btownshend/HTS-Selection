@@ -21,7 +21,7 @@ classdef Compounds < handle
   end
   
   properties(Constant)
-    MZFUZZ=0.01; % 0.003;
+    MZFUZZ=0.004; % 0.003;
     TIMEFUZZ=50;   % in seconds
     ADDUCTS=struct('name',{'H','Na'},'mass',{1.007825035,22.9897677});
   end
@@ -316,9 +316,6 @@ classdef Compounds < handle
         obj.filetime=nan(nindex,0);
         obj.ic=nan(nindex,0);
         obj.contains=false(nindex,0);
-        obj.nisomers=nan(nindex,0);
-        obj.nunique=nan(nindex,0);
-        obj.numhits=nan(nindex,0);
         obj.multihits=cell(nindex,0);
       end
     end
@@ -335,11 +332,109 @@ classdef Compounds < handle
       end
     end
     
+    function assignTimes(obj,varargin)
+    % Collect all the MS data and assign elution times to compounds
+    % For each compounds, 
+    %   build list of observations across massspec files (elution time,whether compound is expected)
+    %   find elution time with highest correlation of hit vs. expected
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ);
+      args=processargs(defaults,varargin);
+
+      for i=1:length(obj.names)
+        fprintf('%s: ',obj.names{i});
+        etimes=[];ic=[];cont=false(0,0);
+        for j=1:length(obj.files)
+          m=obj.multihits{i,j};
+          if ~isempty(m)
+            etimes=[etimes,m.time];
+            ic=[ic,m.ic];
+            cont=[cont,repmat(obj.contains(i,j),size(m.ic))];
+          end
+        end
+        contains=obj.contains(i,:);
+        if length(etimes)>1
+          t=clusterdata(etimes','Criterion','distance','cutoff',args.timetol,'linkage','centroid');
+          meantime=[];
+          for j=1:max(t)
+            meantime(j)=mean(etimes(t==j));
+          end
+        
+          hits=false(max(t),length(obj.files));
+          for j=1:length(obj.files)
+            m=obj.multihits{i,j};
+            if ~isempty(m)
+              [~,~,ib]=intersect(m.time,etimes);
+              hits(t(ib),j)=true;
+            end
+          end
+          matches=[];
+          for j=1:size(hits,1)
+            matches(j,1)=sum(hits(j,:)&contains);
+            matches(j,2)=sum(~hits(j,:)&~contains);
+          end
+          score=matches*[5;1];
+          [~,best]=max(score);
+        elseif length(etimes)==1
+          best=1;
+          meantime=etimes;
+        else
+          fprintf('no hits\n');
+          continue;
+        end
+        fprintf('%d/%d hits with %d false hits at T=%.0f ', matches(best,1),sum(contains), sum(~contains)-matches(best,2), meantime(best));
+        % Construct consensus view
+        for j=1:length(obj.files)
+          m=obj.multihits{i,j};
+          obj.ic(i,j)=nan;
+          obj.mz(i,j)=nan;
+          obj.time(i,j)=nan;
+          obj.filetime(i,j)=nan;
+          if ~isempty(m)
+            sel=abs(m.time-meantime(best))<args.timetol;
+            if sum(sel)>0
+              obj.ic(i,j)=sum(m.ic(sel));
+              obj.mz(i,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,j);
+              %obj.filemz(i,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(i,j);
+              obj.time(i,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,j);
+              obj.filetime(i,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,j);
+            end
+          end
+        end
+        
+        if sum(score==max(score))>1
+          fprintf('ambiguous');
+        end
+        fprintf('\n');
+        if args.debug
+          setfig('assignTimes');clf;
+          semilogy(etimes(~cont),ic(~cont),'or');
+          hold on;
+          semilogy(etimes(cont),ic(cont),'xb');
+          ax=axis;
+          for j=1:length(meantime)
+            plot((meantime(j)-args.timetol)*[1,1],ax(3:4),':g');
+            plot((meantime(j)+args.timetol)*[1,1],ax(3:4),':g');
+          end
+          plot(meantime(best)*[1,1],ax(3:4),'g');
+          xlabel('Elution time');
+          ylabel('Ion count');
+          title(obj.names{i});
+          figure(gcf);
+          keyboard;
+        end
+      end
+    end
+    
+    function x=icPerMole(obj)
+    % Get median value of ion count per mole of target loaded
+      x=nanmedian(obj.ic,1)./obj.moles;
+    end
+    
     function addMS(obj,ms,varargin)
     % Add the unique peaks for compounds in given SDF from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
     % or scan all elution times if the no prior data (keep only if a unique peak is determined)
-      defaults=struct('debug',false,'group','','contains',{{}},'mztol',[],'timetol',[],'map',[]);  
+      defaults=struct('debug',false,'group','','contains',{{}},'mztol',[],'timetol',[],'map',[]);
       % mzmap(i,2) - piecewise linear map for M/Z; mzmap(:,1) is true M/Z, mzmap(:,2) is for values in ms file
       % timemap(i,2) - piecewise linear map for elution times; timemap(:,1) is "standard" elution time
       args=processargs(defaults,varargin);
@@ -370,84 +465,32 @@ classdef Compounds < handle
       end
 
       % Attempt to locate each one uniquely
-      for nindex=1:length(obj.mztarget)
-        if ~obj.contains(nindex,findex)
-          continue;
-        end
-        meantime=nanmean(obj.time(nindex,obj.contains(nindex,:)));
-        mztarget=obj.mztarget(nindex);
-        % Check if the M/Z is unique over the compounds in this file
-        samemz=find(obj.contains(:,findex)' & abs(obj.mztarget-mztarget)<=args.mztol);   % Compounds with same M/Z
-        nisomers=1;  nunique=1; ignoreelutetimes=[]; nident=1;
-        for i=1:length(samemz)
-          if samemz(i)~=nindex
-            nisomers=nisomers+1;
-            if ~any(isfinite(obj.time(samemz(i),:)))
-              % This isomer has unknown elution time
-              nunique=nunique+1;
-            else
-              if abs(nanmean(obj.time(samemz(i),:)) - meantime) < args.timetol
-                if obj.contains(nindex,findex) && nindex<samemz(i)
-                  fprintf('%s and %s have same m/z, same elution time\n', obj.names{nindex}, obj.names{samemz(i)});
-                end
-                nunique=nunique+1;  % Same elution times
-                nident=nident+1;
-              else
-                ignoreelutetimes(end+1)=nanmean(obj.time(samemz(i),:));
-              end
-            end
-          end
-        end
-        obj.nisomers(nindex,findex)=nisomers;
-        obj.nunique(nindex,findex)=nunique;
-        
-        obj.multihits{nindex,findex}=[];
-        obj.numhits(nindex,findex)=0;
-        obj.mz(nindex,findex)=nan;
-        obj.time(nindex,findex)=nan;
-        obj.filetime(nindex,findex)=nan;
-        obj.ic(nindex,findex)=nan;
-        mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),mztarget,'linear','extrap');
-        if isfinite(meantime) && nident==1
-          meantimeMS=interp1(args.map.time(:,1),args.map.time(:,2),meantime,'linear','extrap');
-          id=ms.findcompound(mztargetMS,'elutetime',meantimeMS,'timetol',args.timetol,'mztol',args.mztol,'debug',args.debug);
-          assert(~any(isnan(id.mz)));
-        elseif ~obj.contains(nindex,findex)
-          continue;
-        elseif nisomers==1
-          id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug);
-        elseif nunique==1
-          % Have multiple isomers but the other ones all have elution times already
-          % Could look for addition peaks
-          id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'ignoreelutetimes',ignoreelutetimes);
-        else
-          if args.debug
-            [~,filename,~]=fileparts(obj.files(findex));
-            fprintf('Have %d indistinguishable isomers for %s in %s\n', nisomers, obj.names{nindex}, filename);
-          end
-          continue;
-        end
+      maxic=[];   % Maximum IC per target
+      for i=1:length(obj.mztarget)
+        mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i),'linear','extrap');
+        id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug);
         % Map M/Z, time back to global values
         id.filemz=id.mz;
         id.filetime=id.time;
         id.mz=interp1(args.map.mz(:,2),args.map.mz(:,1),id.mz,'linear','extrap');
         id.time=interp1(args.map.time(:,2),args.map.time(:,1),id.time,'linear','extrap');
-
-        obj.multihits{nindex,findex}=id;
-        obj.numhits(nindex,findex)=length(id.mz);
-        if length(id.mz)==1
-          obj.mz(nindex,findex)=id.mz(1);
-          obj.time(nindex,findex)=id.time(1);
-          obj.filetime(nindex,findex)=id.filetime(1);
-          obj.ic(nindex,findex)=id.ic(1);
-        elseif length(id.mz)==0
-          obj.ic(nindex,findex)=0;
-        else
-          ;
-        end
+        obj.multihits{i,findex}=id;
+        maxic(i)=max([0,id.ic]);
       end
-      minic=1000;
-      fprintf('Located %d/%d possible/%d expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & isfinite(obj.mz(:,findex))), sum(obj.contains(:,findex) & obj.nunique(:,findex)==1), sum(obj.contains(:,findex)),sum(~obj.contains(:,findex)&isfinite(obj.mz(:,findex))&obj.ic(:,findex)>=minic),minic);
+      ice=maxic(obj.contains(:,findex));
+      icu=maxic(~obj.contains(:,findex));
+      if isempty(icu) || nanmedian(icu)<200
+        minic=prctile(ice(ice>0),10);
+      else
+        minic=sqrt(median(ice(ice>0))*median(icu(icu>0)));
+      end
+      p=[25,50,75];
+      fprintf('Expected have IC=[%s], unexpected have IC=[%s] (%s) @%.0f: %.1f%%,%.1f%% \n', sprintf('%.0f ',prctile(ice,p)), sprintf('%.0f ',prctile(icu,p)), sprintf('%d%% ',p),minic,100*mean(ice>minic),100*mean(icu>minic));
+      nhits=nan(length(obj.mztarget),1);
+      for i=1:length(obj.mztarget)
+        nhits(i)=sum(obj.multihits{i,findex}.ic>minic);
+      end
+      fprintf('Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
     end
     
     function summary(obj)
@@ -455,7 +498,7 @@ classdef Compounds < handle
       fprintf('Contains %d files, %d compounds (%d with elution time)\n', length(obj.files), length(obj.names), sum(any(isfinite(obj.time'))));
       for i=1:length(obj.files)
         [~,filename,~]=fileparts(obj.files{i});
-        fprintf('%2d %-20.20s %3d/%3d/%3d compounds identified/unique/total\n', i,filename, sum(obj.contains(:,i) & isfinite(obj.mz(:,i))),sum(obj.contains(:,i) & obj.nunique(:,i)==1),sum(obj.contains(:,i)))
+        fprintf('%2d %-20.20s %3d/%3d compounds identified/total\n', i,filename, sum(obj.contains(:,i) & isfinite(obj.mz(:,i))),sum(obj.contains(:,i)));
       end
     end
     
@@ -478,9 +521,6 @@ classdef Compounds < handle
           x(ii).mzoffset(j)=nanmean(obj.mz(i,files)')-obj.mztarget(i);
           x(ii).elution(j)=nanmean(obj.time(i,files)');
           x(ii).ioncount(j)=nanmean(obj.ic(i,files)');
-          x(ii).nisomers(j)=nanmin(obj.nisomers(i,files)');
-          x(ii).nunique(j)=nanmin(obj.nunique(i,files)');
-          x(ii).numhits(j)=nanmin(obj.numhits(i,files)');
           f='';
           for k=1:length(files)
             [~,filename,~]=fileparts(obj.files{k});
@@ -571,19 +611,20 @@ classdef Compounds < handle
     
     function map=checktimeoffset(obj,sel1,sel2)
     % Compare time offsets between two structures with same compound list
-      if nargin<3
-        sel1=1;
-      end
-      if nargin<4
-        sel2=1;
-      end
-      setfig('checktimeoffset2');clf;
+      setfig('checktimeoffset');clf;
       subplot(211);
       t1=obj.filetime(:,sel1); t2=obj.filetime(:,sel2);
       plot(t1,t2,'o'); hold on;
+      [d,f]=fileparts(obj.files{sel1});
+      [~,d]=fileparts(d);
+      xlabel([d,'/',f]);
+      [d,f]=fileparts(obj.files{sel2});
+      [~,d]=fileparts(d);
+      ylabel([d,'/',f]);
       map=piecewise(t1,t2,obj.TIMEFUZZ,4);
       pred=interp1(map(:,1),map(:,2),t1);
-      plot(t1,pred,'r-');
+      [~,ord]=sort(t1);
+      plot(t1(ord),pred(ord),'r-');
       subplot(212);
       resid=t2-pred;
       plot(t1,resid,'o');
@@ -709,11 +750,11 @@ classdef Compounds < handle
           continue;
         end
         [~,filename]=fileparts(obj.files{j});
-        fprintf('%-15.15s: nisomers=%d, nunique=%d, nhits=%-2d ',filename,obj.nisomers(ind,j), obj.nunique(ind,j), obj.numhits(ind,j));
+        fprintf('%-15.15s: m/z=%8.4f t=%4.0f ic=%8.0f',filename,obj.mz(ind,j),obj.time(ind,j),obj.ic(ind,j));
         m=obj.multihits{ind,j};
         if ~isempty(m)
           for k=1:length(m.mz)
-            fprintf('[mz=%8.4f, t=%.2f, ic=%.0f] ', m.mz(k), m.time(k), m.ic(k));
+            fprintf(' [mz=%8.4f, t=%4.0f, ic=%8.0f]', m.mz(k), m.time(k), m.ic(k));
           end
         end
         if ~isempty(args.mzdata)
@@ -730,8 +771,9 @@ classdef Compounds < handle
                 nanmean(obj.time(ind,obj.contains(ind,:)))+obj.TIMEFUZZ*[-1,1],...
                 minic);
         for j=1:length(obj.files)
+          [~,filename]=fileparts(obj.files{j});
           if ~obj.contains(ind,j) && obj.ic(ind,j)>=minic
-            fprintf('%-15.15s: mz=%8.4f, t=%7.2f, ic=%5.0f\n',obj.files{j},obj.mz(ind,j), obj.time(ind,j), obj.ic(ind,j));
+            fprintf('%-15.15s: m/z=%8.4f t=%4.0f ic=%8.0f\n',filename,obj.mz(ind,j), obj.time(ind,j), obj.ic(ind,j));
             if ~isempty(args.mzdata)
               nexttile;
               obj.plotscan(ind,args.mzdata{j});
