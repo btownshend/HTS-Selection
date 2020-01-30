@@ -163,6 +163,8 @@ compounds.summary();
 report=compounds.report();
 
 compounds.checkmzoffset();
+ref=find(strcmp(compounds.files,'/Users/bst/Dropbox/SynBio/HTS-Selection/data/MassSpec/20190427 Row, Column/Full.mzXML'));
+compounds.checktime(ref,obj.TIMEFUZZ/2);
 
 writetable(report,[resultsdir,'report.csv']);
 fprintf('Saving compounds...');
