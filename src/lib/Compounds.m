@@ -337,6 +337,7 @@ classdef Compounds < handle
       defaults=struct('debug',false,'timetol',obj.TIMEFUZZ);
       args=processargs(defaults,varargin);
 
+      fprintf('assignTimes:\n');
       for i=1:length(obj.names)
         fprintf('%s: ',obj.names{i});
         etimes=[];ic=[];cont=false(0,0);
@@ -492,6 +493,7 @@ classdef Compounds < handle
     
     function summary(obj)
     % Summarize data available
+      fprintf('summary():\n');
       fprintf('Contains %d files, %d compounds (%d with elution time)\n', length(obj.files), length(obj.names), sum(any(isfinite(obj.time'))));
       for i=1:length(obj.files)
         [~,filename,~]=fileparts(obj.files{i});
@@ -565,6 +567,7 @@ classdef Compounds < handle
     
     function checkmzoffset(obj)
     % Check whether mzoffset used when reading mass spec files should be changed
+      fprintf('checkmzoffset()\n');
       dirs={};
       for i=1:length(obj.files)
         dirs{i}=fileparts(obj.files{i});
