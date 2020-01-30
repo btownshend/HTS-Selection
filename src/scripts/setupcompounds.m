@@ -79,83 +79,95 @@ if ~exist('compounds','var')
   compounds.addCompoundsFromSDF(sdf,'H');
 end
 
-  for i=1:length(mzdata)
-    if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)
-      compounds.addMS(mzdata{i},'group','Full','map',maps(i));
-    elseif strncmp(mzdata{i}.name,'86',2)
-      id=str2num(mzdata{i}.name(1:4));
-      contains={};
-      if id>=8611 && id<=8618
-        % row-plate diagonals
-        for p=1:12
-          for r=1:8
-            if mod(r-p,8)==(id-8611)
-              for c=2:11
-                contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,c);
-              end
-            end
-          end
-        end
-        assert(length(contains)==120);
-        compounds.addMS(mzdata{i},'group','DiagPR','contains',contains,'map',maps(i));
-      elseif id>=8631 && id<=8640
-        % col-plate diagonals
-        contains={};
-        for p=1:12
-          for c=1:10
-            if mod(c-p,10)==(id-8631)
-              for r=1:8
-                contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,c+1);
-              end
-            end
-          end
-        end
-        assert(length(contains)==96);
-        compounds.addMS(mzdata{i},'group','DiagPC','contains',contains,'map',maps(i));
-      elseif id==8630
-        % TODO: some components dropped out
-        compounds.addMS(mzdata{i},'group','-Hits','map',maps(i));
-      else
-        fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i}.name);
-      end
-    elseif strncmp(mzdata{i}.name,'Col',3)
-      cnum=sscanf(mzdata{i}.name,'Col%d.mzXML');
-      contains={};
+for i=40:42 % 1:length(mzdata)
+  if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)
+    compounds.addMS(mzdata{i},'group','Full','map',maps(i));
+  elseif strncmp(mzdata{i}.name,'86',2)
+    % (plates,columns) dropped out from 8619:8628 and 8630;  also the only contents of 8629
+    dropouts=[1,4;31,3;31,4;31,7;31,8;31,9;41,6;41,7;51,8;61,4;91,2;91,3;91,4;91,5;101,6;101,8;101,10];
+    assert(size(dropouts,1)==17);
+    id=str2num(mzdata{i}.name(1:4));
+    contains={};
+    if id>=8611 && id<=8618
+      % row-plate diagonals
       for p=1:12
         for r=1:8
-          contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,cnum);
+          if mod(r-p,8)==(id-8611)
+            for c=2:11
+              contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,c);
+            end
+          end
         end
       end
-      compounds.addMS(mzdata{i},'contains',contains,'group','Col','map',maps(i));
-    elseif strncmp(mzdata{i}.name,'Row',3)
-      row=mzdata{i}.name(4);
+      assert(length(contains)==120);
+      compounds.addMS(mzdata{i},'group','DiagPR','contains',contains,'map',maps(i));
+    elseif id>=8631 && id<=8640
+      % col-plate diagonals
       contains={};
       for p=1:12
-        for c=2:11
-          contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,row,c);
+        for c=1:10
+          if mod(c-p,10)==(id-8631)
+            for r=1:8
+              contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,c+1);
+            end
+          end
         end
       end
-      compounds.addMS(mzdata{i},'contains',contains,'group','Row','map',maps(i));
-    elseif strncmp(mzdata{i}.name,'CDIV',4)
-      pnum=sscanf(mzdata{i}.name,'CDIV%d.mzXML');
-      contains={};
-      for r=1:8
-        for c=2:11
-          contains{end+1}=sprintf('%d%c%02d',pnum,r+'A'-1,c);
+      assert(length(contains)==96);
+      compounds.addMS(mzdata{i},'group','DiagPC','contains',contains,'map',maps(i));
+    elseif id==8630
+      for p=1:12
+        for r=1:8
+          for c=2:11
+            if ~any((p-1)*10+1==dropouts(:,1) & c==dropouts(:,2))
+              contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,c);
+            end
+          end
         end
       end
-      compounds.addMS(mzdata{i},'contains',contains,'group','Plate','map',maps(i));
-    elseif strncmp(mzdata{i}.name,'Full',4)
-      compounds.addMS(mzdata{i},'group','Full','map',maps(i));
-    elseif strcmp(mzdata{i}.name,'A2.mzXML')
-      compounds.addMS(mzdata{i},'group','Individual','contains',{'31A2'},'map',maps(i));
-    elseif strcmp(mzdata{i}.name,'A3.mzXML')
-      compounds.addMS(mzdata{i},'group','Individual','contains',{'31A3'},'map',maps(i));
+      assert(length(contains)==824);
+      compounds.addMS(mzdata{i},'group','-Hits','map',maps(i),'contains',contains);
     else
-      % Assume all compounds
       fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i}.name);
     end
+  elseif strncmp(mzdata{i}.name,'Col',3)
+    cnum=sscanf(mzdata{i}.name,'Col%d.mzXML');
+    contains={};
+    for p=1:12
+      for r=1:8
+        contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,r+'A'-1,cnum);
+      end
+    end
+    compounds.addMS(mzdata{i},'contains',contains,'group','Col','map',maps(i));
+  elseif strncmp(mzdata{i}.name,'Row',3)
+    row=mzdata{i}.name(4);
+    contains={};
+    for p=1:12
+      for c=2:11
+        contains{end+1}=sprintf('%d%c%02d',(p-1)*10+1,row,c);
+      end
+    end
+    compounds.addMS(mzdata{i},'contains',contains,'group','Row','map',maps(i));
+  elseif strncmp(mzdata{i}.name,'CDIV',4)
+    pnum=sscanf(mzdata{i}.name,'CDIV%d.mzXML');
+    contains={};
+    for r=1:8
+      for c=2:11
+        contains{end+1}=sprintf('%d%c%02d',pnum,r+'A'-1,c);
+      end
+    end
+    compounds.addMS(mzdata{i},'contains',contains,'group','Plate','map',maps(i));
+  elseif strncmp(mzdata{i}.name,'Full',4)
+    compounds.addMS(mzdata{i},'group','Full','map',maps(i));
+  elseif strcmp(mzdata{i}.name,'A2.mzXML')
+    compounds.addMS(mzdata{i},'group','Individual','contains',{'31A2'},'map',maps(i));
+  elseif strcmp(mzdata{i}.name,'A3.mzXML')
+    compounds.addMS(mzdata{i},'group','Individual','contains',{'31A3'},'map',maps(i));
+  else
+    % Assume all compounds
+    fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i}.name);
   end
+end
 
 compounds.assignTimes();
 compounds.summary();
