@@ -800,8 +800,19 @@ classdef Compounds < handle
         ind=name;
       end
       meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
+      minic=nanmin(obj.ic(ind,obj.contains(ind,:)));
       meant=nanmean(obj.time(ind,obj.contains(ind,:)));
       fprintf('%s (%d): m/z=%8.4f t=%7.2f meanic=%.0f\n',obj.names{ind},ind, obj.mztarget(ind),meant,meanic);
+      isomers=setdiff(find(abs(obj.mztarget-obj.mztarget(ind))<obj.MZFUZZ*2),ind);
+      if length(isomers)>0
+        fprintf('Isomers:\n');
+        for ii=1:length(isomers)
+          i=isomers(ii);
+          imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
+          imeant=nanmean(obj.time(i,obj.contains(i,:)));
+          fprintf('\t%s (%d): m/z=%8.4f (d=%.0f) t=%7.2f (d=%.0f) meanic=%.0f\n',obj.names{i},i, obj.mztarget(i),(obj.mztarget(i)-obj.mztarget(ind))*1e4,imeant,imeant-meant,imeanic);
+        end
+      end
       if ~isempty(args.mzdata)
         setfig(obj.names{ind});
         t=tiledlayout('flow');
