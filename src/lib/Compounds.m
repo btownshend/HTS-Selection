@@ -538,9 +538,9 @@ classdef Compounds < handle
       data=obj.ic;
       % Normalize for xxth percentage
       for i=1:size(data,2)
-        data(:,i)=data(:,i)/nanmean(data(:,i));
+        data(:,i)=data(:,i)/prctile(data(:,i),80);
       end
-      data(data<.01)=.01;
+      data(data<.01)=0;
       data(data>10)=10;
       setfig('compounds');clf;
       data(end+1,:)=nan;
