@@ -3,7 +3,6 @@ classdef Compounds < handle
   properties
     names;   % names{i} - Name of compound i (e.g.'51B07')
     adduct;  % adduct(i) - Name of adduct of compound (e.g. 'H')
-    sdf;     % sdf{i} - SDF data for compound i
     mztarget; % mztarget(i) - target m/z for compound i with adduct(i)
     files;   % files{j} - Mass spec filename j
     moles;    % moles(j) - Moles of each compound loaded in run j
@@ -80,12 +79,10 @@ classdef Compounds < handle
 
     function [p,r,c]=getposition(obj,i)
     % Get plate (str),row (int),col(int) of compound i
-      sdf=obj.sdf{i};
-      for ii=1:length(i)
-        p=sdf.BATCH_PLATE;
-        r=sdf.BATCH_WELL(1)-'A'+1;
-        c=sscanf(sdf.BATCH_WELL(2:end),'%d');
-      end
+      A=sscanf(obj.names{i},'%d%c%2d');
+      p=A(1);
+      r=A(2)-'A'+1;
+      c=A(3);
     end
     
     function id=checkComposition(obj,ms,varargin)
