@@ -606,6 +606,73 @@ classdef Compounds < handle
       end
     end
     
+    function map=checktime(obj,ref,varargin)
+    % Check all multiple hits of ref against each other
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ);
+      args=processargs(defaults,varargin);
+
+      fprintf('checktime(%d,''timetol'',%.0f)\n',ref,args.timetol);
+      t = nan(size(obj.mz));
+      ic = nan(size(obj.mz));
+      for i=1:length(obj.mztarget)
+        for j=1:length(obj.files)
+          if obj.contains(i,j)
+            m=obj.multihits{i,j};
+            if ~isempty(m) && ~isempty(m.ic)
+              [ic(i,j),ord]=max(m.ic);
+              t(i,j)=m.filetime(ord);
+            end
+          end
+        end
+      end
+      dirs={};
+      for i=1:length(obj.files)
+        dirs{i}=fileparts(obj.files{i});
+      end
+      udirs=unique(dirs);
+
+      tref=t(:,ref);
+      trefs=sort(tref);
+      setfig('checktime');clf;
+      tiledlayout('flow');
+      map=[];
+      for j=1:length(udirs);
+        nexttile;
+        h=[];leg={};
+        for i=1:length(obj.files)
+          if strcmp(dirs{i},udirs{j})
+            t2=t(:,i);
+            fit=piecewise(tref,t2,args.timetol,2);
+            pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
+            [~,filename]=fileparts(obj.files{i});
+            fprintf('%-20.20s  [%s]\n',filename, sprintf('(%4.0f@%4.0f) ',fit'));
+            h(end+1)=plot(tref,t2-tref,'o');
+            hold on;
+            plot(trefs,pred-trefs,'-','Color',get(h(end),'Color'));
+            leg{end+1}=filename;
+          end
+        end
+        sel=strcmp(dirs,udirs{j});
+        fit=piecewise(tref,nanmedian(t(:,sel),2),args.timetol,2);
+        [~,dirname]=fileparts(udirs{j});
+        fprintf('%-20.20s  [%s] over %s\n\n', '', sprintf('(%4.0f@%4.0f) ',fit'),dirname);
+        pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
+        h(end+1)=plot(trefs,pred-trefs,'k','linewidth',2);
+        leg{end+1}='All';
+        plot(trefs,pred-trefs+obj.TIMEFUZZ,'k:','linewidth',1);
+        plot(trefs,pred-trefs-obj.TIMEFUZZ,'k:','linewidth',1);
+        ax=axis;
+        ax(3)=min(pred-trefs-obj.TIMEFUZZ*2);
+        ax(4)=max(pred-trefs+obj.TIMEFUZZ*2);
+        axis(ax);
+        legend(h,leg,'location','best');
+        xlabel('Reference time');
+        ylabel('File-Ref time');
+        title(udirs{j});
+        map=[map,struct('dir',udirs{j},'map',fit)];
+      end
+    end
+    
     function map=checktimeoffset(obj,sel1,sel2)
     % Compare time offsets between two structures with same compound list
       setfig('checktimeoffset');clf;
