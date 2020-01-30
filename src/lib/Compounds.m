@@ -844,14 +844,14 @@ classdef Compounds < handle
       end
       if isfinite(meanic) && isfinite(meant)
         % False positives
-        minic=meanic/10;
+        thresh=minic/20;
         fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.0f,%.0f], IC >= %.0f:\n',...
                 obj.mztarget(ind)+obj.MZFUZZ*[-1,1],...
                 nanmean(obj.time(ind,obj.contains(ind,:)))+obj.TIMEFUZZ*[-1,1],...
-                minic);
+                thresh);
         for j=1:length(obj.files)
           [~,filename]=fileparts(obj.files{j});
-          if ~obj.contains(ind,j) && obj.ic(ind,j)>=minic
+          if ~obj.contains(ind,j) && obj.ic(ind,j)>=thresh
             fprintf('%-15.15s: m/z=%8.4f t=%4.0f ic=%8.0f\n',filename,obj.mz(ind,j), obj.time(ind,j), obj.ic(ind,j));
             if ~isempty(args.mzdata)
               nexttile;
