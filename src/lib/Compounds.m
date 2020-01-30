@@ -599,8 +599,9 @@ classdef Compounds < handle
         fit=robustfit(obj.mztarget,nanmean(obj.mz(:,sel),2));
         [~,dirname]=fileparts(udirs{j});
         fprintf('%-20.20s  %5.1f [%5.1f, %5.1f] over %s\n', '', 1e4*nanmedian(all), 1e4*(fit(1)+(fit(2)-1)*rng),dirname);
-        rng=[min(obj.mztarget),max(obj.mztarget)];
         h(end+1)=plot(rng,10000*(fit(1)+(fit(2)-1)*rng),'k','linewidth',2);
+        plot(rng,10000*(fit(1)+(fit(2)-1)*rng+obj.MZFUZZ),'k:');
+        plot(rng,10000*(fit(1)+(fit(2)-1)*rng-obj.MZFUZZ),'k:');
         leg{end+1}='All';
         legend(h,leg,'location','best');
         xlabel('True M/Z');
