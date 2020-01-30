@@ -29,18 +29,20 @@ maps=repmat(struct('mz',[],'time',[]),length(allfiles),1);
 for i=1:length(allfiles)
   if ~isempty(strfind(allfiles(i).folder,'200124'))
     maps(i).mz=[133,133-10e-4;499,499-37e-4];
-    maps(i).time=[0.3933    0.3669
-                  1.7714    2.0839
-                  2.5138    2.6997]*1e3;
+    maps(i).time=[0.3036    0.3476
+                  2.0930    1.7762
+                  2.5910    2.3867]*1e3;
   elseif ~isempty(strfind(allfiles(i).folder,'20190309'))
     maps(i).mz=[133,133-02e-4;499,499+21e-4];
-    maps(i).time=[0 0; 1 1 ];
+    maps(i).time=[    0.3036    0.2811
+                      2.5910    2.5782]*1e3;
   elseif ~isempty(strfind(allfiles(i).folder,'20190427'))
     maps(i).mz=[133,133-25e-4;499,499-62e-4];
     maps(i).time=[0 0; 1 1 ];
   elseif ~isempty(strfind(allfiles(i).folder,'20190501'))
     maps(i).mz=[133,133-4e-4;499,499+10e-4];
-    maps(i).time=[0 0; 1 1 ];
+    maps(i).time=[0.3036    0.2835
+                  2.4881    2.4791]*1e3;
   else
     error('No mapping for folder %s',allfiles(i).folder);
   end
