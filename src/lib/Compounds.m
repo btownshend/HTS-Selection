@@ -341,10 +341,15 @@ classdef Compounds < handle
     % For each compounds, 
     %   build list of observations across massspec files (elution time,whether compound is expected)
     %   find elution time with highest correlation of hit vs. expected
-      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ);
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minhits',4);
       args=processargs(defaults,varargin);
 
       fprintf('assignTimes:\n');
+      obj.ic=nan(length(obj.names),length(obj.files));
+      obj.mz=nan(length(obj.names),length(obj.files));
+      obj.time=nan(length(obj.names),length(obj.files));
+      obj.filetime=nan(length(obj.names),length(obj.files));
+
       for i=1:length(obj.names)
         fprintf('%s: ',obj.names{i});
         etimes=[];ic=[];cont=false(0,0);
@@ -387,29 +392,28 @@ classdef Compounds < handle
           continue;
         end
         fprintf('%d/%d hits with %d false hits at T=%.0f ', matches(best,1),sum(contains), sum(~contains)-matches(best,2), meantime(best));
-        % Construct consensus view
-        for j=1:length(obj.files)
-          m=obj.multihits{i,j};
-          obj.ic(i,j)=nan;
-          obj.mz(i,j)=nan;
-          obj.time(i,j)=nan;
-          obj.filetime(i,j)=nan;
-          if ~isempty(m)
-            sel=abs(m.time-meantime(best))<args.timetol;
-            if sum(sel)>0
-              obj.ic(i,j)=sum(m.ic(sel));
-              obj.mz(i,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,j);
-              %obj.filemz(i,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(i,j);
-              obj.time(i,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,j);
-              obj.filetime(i,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,j);
+        if matches(best,1)<args.minhits
+          fprintf('too few hits');
+        elseif sum(score==max(score))>1
+          fprintf('ambiguous');
+        else
+          % Construct consensus view
+          for j=1:length(obj.files)
+            m=obj.multihits{i,j};
+            if ~isempty(m)
+              sel=abs(m.time-meantime(best))<args.timetol;
+              if sum(sel)>0
+                obj.ic(i,j)=sum(m.ic(sel));
+                obj.mz(i,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,j);
+                %obj.filemz(i,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(i,j);
+                obj.time(i,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,j);
+                obj.filetime(i,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,j);
+              end
             end
           end
         end
-        
-        if sum(score==max(score))>1
-          fprintf('ambiguous');
-        end
         fprintf('\n');
+        
         if args.debug
           setfig('assignTimes');clf;
           semilogy(etimes(~cont),ic(~cont),'or');
