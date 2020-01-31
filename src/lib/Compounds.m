@@ -52,10 +52,17 @@ classdef Compounds < handle
           name=c{1};
           adduct=c{2};
         else
-          adduct='H';
+          adduct='';
         end
       end
-      ind=find(strcmp(name,obj.names) & strcmp(obj.adduct,adduct));
+      if isempty(adduct) 
+        ind=find(strcmp(name,obj.names));
+        if length(ind)>1
+          error('Compound %s has multiple adducts: %s',name,strjoin(obj.adduct(ind),','));
+        end
+      else
+        ind=find(strcmp(name,obj.names) & strcmp(obj.adduct,adduct));
+      end
       if length(ind)~=1
         error('Compound %s+%s not found',name,adduct);
       end
