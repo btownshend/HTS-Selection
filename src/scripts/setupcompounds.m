@@ -79,7 +79,7 @@ if ~exist('compounds','var')
   compounds.addCompoundsFromSDF(sdf,'H');
 end
 
-for i=40:42 % 1:length(mzdata)
+for i=1:length(mzdata)
   if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)
     compounds.addMS(mzdata{i},'group','Full','map',maps(i));
   elseif strncmp(mzdata{i}.name,'86',2)
@@ -176,7 +176,7 @@ report=compounds.report();
 
 compounds.checkmzoffset();
 ref=find(strcmp(compounds.files,'/Users/bst/Dropbox/SynBio/HTS-Selection/data/MassSpec/20190427 Row, Column/Full.mzXML'));
-compounds.checktime(ref,obj.TIMEFUZZ/2);
+compounds.checktime(ref,compounds.TIMEFUZZ/2);
 
 writetable(report,[resultsdir,'report.csv']);
 fprintf('Saving compounds...');

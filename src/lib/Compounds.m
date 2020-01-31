@@ -141,9 +141,9 @@ classdef Compounds < handle
       relic=ic;
       refic=ic;
       
-      p={};
+      p=[];r=[];c=[];
       for i=1:length(id)
-        [p{i},r(i),c(i)]=obj.getposition(i);
+        [p(i),r(i),c(i)]=obj.getposition(i);
         if ~isempty(id(i).ic)
           ic(i)=nansum(id(i).ic);
           if ~isempty(args.ref)
@@ -228,7 +228,7 @@ classdef Compounds < handle
         
         for j=1:max(r)
           for k=min(c):max(c)
-            sel=strcmp(p,up{i})&r==j&c==k;
+            sel=p==up(i)&r==j&c==k;
             if any(sel)
               mat(j+row*9+1,(k-1)+col*10)=relic(sel);
               matic(i,j,k-1)=relic(sel);
@@ -271,7 +271,7 @@ classdef Compounds < handle
       for i=1:length(up)
         row=floor((i-1)/3);
         col=i-row*3-1;
-        text(col*10+6,row*9+1.55,up{i},'HorizontalAlignment','center','VerticalAlignment','middle');
+        text(col*10+6,row*9+1.55,sprintf('%d',up(i)),'HorizontalAlignment','center','VerticalAlignment','middle');
       end
       
       caxis(log10([args.thresh,nanmax(relic(isfinite(relic(:))))]));
