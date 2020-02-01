@@ -883,7 +883,7 @@ classdef Compounds < handle
         for j=1:length(obj.files)
           [~,filename]=fileparts(obj.files{j});
           if ~obj.contains(ind,j) && obj.normic(ind,j)>=thresh
-            fprintf('%-15.15s: m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)\n',filename,obj.mz(ind,j), obj.time(ind,j), obj.ic(ind,j),obj.normic(ind,j));
+            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)\n',filename,obj.fsens(j),obj.mz(ind,j), obj.time(ind,j), obj.ic(ind,j),obj.normic(ind,j));
             if ~isempty(args.mzdata)
               nexttile;
               obj.plotscan(ind,args.mzdata{j});
