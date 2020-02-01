@@ -862,7 +862,9 @@ classdef Compounds < handle
         m=obj.multihits{ind,j};
         if ~isempty(m)
           for k=1:length(m.mz)
-            fprintf(' [mz=%8.4f, t=%4.0f, ic=%8.0f]', m.mz(k), m.time(k), m.ic(k));
+            if isnan(obj.time(ind,j)) || abs(m.time(k)-obj.time(ind,j))>1
+              fprintf(' [mz=%8.4f, t=%4.0f, ic=%8.0f]', m.mz(k), m.time(k), m.ic(k));
+            end
           end
         end
         if ~isempty(args.mzdata)
