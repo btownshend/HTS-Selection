@@ -13,6 +13,7 @@ classdef Compounds < handle
     time;    % time(i,j) contains the elution time on compound i, from file j
     filetime;    % filetime(i,j) contains the elution time on compound i, from file j without any time remapping
     ic;    % ic(i,j) contains the total ion count for compound i, from file j
+    normic;	% Normalized ion count (by file and by target)
     nisomers;   % nisomers(i,j) is the number of other compounds that are within MZFUZZ in this file
     nunique;   % nunique(i,j) is the number of other compounds that are within MZFUZZ in this file and with unknown elution time
     numhits;   % numhits(i,j) is the number of possible hits (need to have exactly 1 for the hit to be used)
@@ -716,7 +717,49 @@ classdef Compounds < handle
       hold on; plot(t1(outlier),resid(outlier),'or');
       fprintf('RMSE(resid) = %.1f (outliers are >=%.0f)\n',rmse, min([inf;abs(resid(outlier))])); 
     end
+    function checksensitivity(obj,ref)
+    % Check sensitivity by file relative to ref file
+      sens=[]; lbl={};
+      for i=1:length(obj.files)
+        sel=all(obj.contains(:,[i,ref]),2);
+        sens(i)=nanmedian(obj.ic(sel,i)./obj.ic(sel,ref));
+        [~,lbl{i}]=fileparts(obj.files{i});
+      end
+      setfig('File Sensitivity');
+      bar(sens);
+      set(gca,'YScale','log');
+      logticks(0,1);
+      set(gca,'XTick',1:length(lbl));
+      set(gca,'XTickLabel',lbl);
+      set(gca,'XTickLabelRotation',90);
+      ylabel('Sensitivity');
+      title('File Sensitivity');
+      % Check sensitivity by target
+      for i=1:length(obj.names)
+        sel=obj.contains(i,:);
+        tsens(i)=nanmedian(obj.ic(i,sel)./sens(sel));
+      end
+      setfig('Target Sensitivity');
+      bar(tsens);
+      set(gca,'YScale','log');
+      logticks(0,1);
+      ticks=1:80:length(tsens);
+      set(gca,'XTick',ticks)
+      set(gca,'XTickLabel',obj.names(ticks));
+      set(gca,'XTickLabelRotation',90);
+      ylabel('Sensitivity (Ion count for ref file)');
+      title('Target Sensitivity');
 
+      obj.normic=obj.ic;
+      for i=1:size(obj.normic,1)
+        obj.normic(i,:)=obj.normic(i,:)/tsens(i);
+      end
+      for i=1:size(obj.normic,2)
+        obj.normic(:,i)=obj.normic(:,i)/sens(i);
+      end
+      
+    end
+    
     function plotcompare(obj,f1,f2)
     % Plot comparison of each compound the occurs in both f1 and f2
       ti=sprintf('%s vs %s',obj.files{f1}, obj.files{f2});
@@ -815,7 +858,7 @@ classdef Compounds < handle
         ind=name;
       end
       meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
-      minic=nanmin(obj.ic(ind,obj.contains(ind,:)));
+      minic=nanmin(obj.normic(ind,obj.contains(ind,:)));
       meant=nanmean(obj.time(ind,obj.contains(ind,:)));
       fprintf('%s (%d): m/z=%8.4f t=%7.2f meanic=%.0f\n',obj.names{ind},ind, obj.mztarget(ind),meant,meanic);
       isomers=setdiff(find(abs(obj.mztarget-obj.mztarget(ind))<obj.MZFUZZ*2),ind);
@@ -840,7 +883,7 @@ classdef Compounds < handle
           continue;
         end
         [~,filename]=fileparts(obj.files{j});
-        fprintf('%-15.15s: m/z=%8.4f t=%4.0f ic=%8.0f',filename,obj.mz(ind,j),obj.time(ind,j),obj.ic(ind,j));
+        fprintf('%-15.15s: m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)',filename,obj.mz(ind,j),obj.time(ind,j),obj.ic(ind,j),obj.normic(ind,j));
         m=obj.multihits{ind,j};
         if ~isempty(m)
           for k=1:length(m.mz)
@@ -855,15 +898,15 @@ classdef Compounds < handle
       end
       if isfinite(meanic) && isfinite(meant)
         % False positives
-        thresh=minic/20;
-        fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.0f,%.0f], IC >= %.0f:\n',...
+        thresh=minic/2;
+        fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.0f,%.0f], NormIC >= %.3f:\n',...
                 obj.mztarget(ind)+obj.MZFUZZ*[-1,1],...
                 nanmean(obj.time(ind,obj.contains(ind,:)))+obj.TIMEFUZZ*[-1,1],...
                 thresh);
         for j=1:length(obj.files)
           [~,filename]=fileparts(obj.files{j});
-          if ~obj.contains(ind,j) && obj.ic(ind,j)>=thresh
-            fprintf('%-15.15s: m/z=%8.4f t=%4.0f ic=%8.0f\n',filename,obj.mz(ind,j), obj.time(ind,j), obj.ic(ind,j));
+          if ~obj.contains(ind,j) && obj.normic(ind,j)>=thresh
+            fprintf('%-15.15s: m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)\n',filename,obj.mz(ind,j), obj.time(ind,j), obj.ic(ind,j),obj.normic(ind,j));
             if ~isempty(args.mzdata)
               nexttile;
               obj.plotscan(ind,args.mzdata{j});
@@ -906,11 +949,14 @@ classdef Compounds < handle
 
       ic=obj.ic;
       ic(obj.contains)=0;
-      [~,ord]=sort(ic(:),'desc','MissingPlacement','last');
+      normic=obj.normic;
+      normic(obj.contains)=0;
+      [~,ord]=sort(normic(:),'desc','MissingPlacement','last');
       for i=1:args.nlist
         [ii,ij]=ind2sub(size(obj.contains),ord(i));
-        fprintf('%12.12s:%-7.7s IC=%8.0f', obj.files{ij}, obj.names{ii}, ic(ord(i)));
-        alias=find(obj.contains(:,ij) & abs(obj.mztarget-obj.mztarget(ii))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
+        [~,fname]=fileparts(obj.files{ij});
+        fprintf('%12.12s:%-7.7s IC=%8.0f(%8.3f)', fname, obj.names{ii}, ic(ord(i)),normic(ord(i)));
+        alias=find(obj.contains(:,ij) & abs(obj.mztarget'-obj.mztarget(ii))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
         if ~isempty(alias)
           fprintf(' Indistinguishable from ');
           for j=1:length(alias)
