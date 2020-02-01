@@ -228,6 +228,7 @@ classdef SDF < handle
         end
         if length(sel)>1
           % Multiple structures -- layout in grid
+          clf;
           s=obj.sdf(sel);
           maxsize=[0,0,0];
           for i=1:length(s)
