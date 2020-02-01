@@ -13,8 +13,8 @@ classdef Compounds < handle
     time;    % time(i,j) contains the elution time on compound i, from file j
     filetime;    % filetime(i,j) contains the elution time on compound i, from file j without any time remapping
     ic;    % ic(i,j) contains the total ion count for compound i, from file j
-    normic;	% Normalized ion count (by file and by target)
     multihits;
+    normic;	% Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
   end
@@ -79,6 +79,7 @@ classdef Compounds < handle
         obj.time(:,findex)=nan;
         obj.filetime(:,findex)=nan;
         obj.ic(:,findex)=nan;
+        obj.normic(:,findex)=nan;
         obj.contains(:,findex)=false;
         obj.moles(findex)=ms.moles;
       end
@@ -309,6 +310,7 @@ classdef Compounds < handle
         obj.time(nindex,:)=nan;
         obj.filetime(nindex,:)=nan;
         obj.ic(nindex,:)=nan;
+        obj.normic(nindex,:)=nan;
         obj.contains(nindex,:)=false;
         obj.multihits{nindex,:}=[];
       else
@@ -316,6 +318,7 @@ classdef Compounds < handle
         obj.time=nan(nindex,0);
         obj.filetime=nan(nindex,0);
         obj.ic=nan(nindex,0);
+        obj.normic=nan(nindex,0);
         obj.contains=false(nindex,0);
         obj.multihits=cell(nindex,0);
       end
@@ -343,6 +346,7 @@ classdef Compounds < handle
 
       fprintf('assignTimes:\n');
       obj.ic=nan(length(obj.names),length(obj.files));
+      obj.normic=nan(length(obj.names),length(obj.files));
       obj.mz=nan(length(obj.names),length(obj.files));
       obj.time=nan(length(obj.names),length(obj.files));
       obj.filetime=nan(length(obj.names),length(obj.files));
