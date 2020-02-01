@@ -57,13 +57,13 @@ classdef Compounds < handle
       end
       if isempty(adduct) 
         ind=find(strcmp(name,obj.names));
-        if length(ind)>1
-          error('Compound %s has multiple adducts: %s',name,strjoin(obj.adduct(ind),','));
-        end
+        %if length(ind)>1
+        % fprintf('Warning: Compound %s has multiple adducts: %s',name,strjoin(obj.adduct(ind),','));
+        %end
       else
         ind=find(strcmp(name,obj.names) & strcmp(obj.adduct,adduct));
       end
-      if length(ind)~=1
+      if length(ind)==0
         error('Compound %s+%s not found',name,adduct);
       end
     end
@@ -818,14 +818,23 @@ classdef Compounds < handle
     end
     
     function getinfo(obj,name,varargin)
-      defaults=struct('mzdata',[]);
+      defaults=struct('mzdata',[],'adduct',[]);
       args=processargs(defaults,varargin);
 
       if ischar(name)
-        ind = obj.find(name);
+        ind = obj.find(name,args.adduct);
       else
         ind=name;
       end
+      if length(ind)>1
+        % Show all adducts
+        for i=1:length(ind)
+          obj.getinfo(name,'adduct',obj.adduct{ind(i)});
+          fprintf('\n');
+        end
+        return;
+      end
+      
       meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,obj.contains(ind,:)));
       meant=nanmean(obj.time(ind,obj.contains(ind,:)));
@@ -837,7 +846,7 @@ classdef Compounds < handle
           i=isomers(ii);
           imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
           imeant=nanmean(obj.time(i,obj.contains(i,:)));
-          fprintf('\t%s (%d): m/z=%8.4f (d=%.0f) t=%7.2f (d=%.0f) meanic=%.0f\n',obj.names{i},i, obj.mztarget(i),(obj.mztarget(i)-obj.mztarget(ind))*1e4,imeant,imeant-meant,imeanic);
+          fprintf('\t%s[%s] (%d): m/z=%8.4f (d=%.0f) t=%7.2f (d=%.0f) meanic=%.0f\n',obj.names{i},obj.adduct{i}, i, obj.mztarget(i),(obj.mztarget(i)-obj.mztarget(ind))*1e4,imeant,imeant-meant,imeanic);
         end
       end
       if ~isempty(args.mzdata)
