@@ -14,9 +14,6 @@ classdef Compounds < handle
     filetime;    % filetime(i,j) contains the elution time on compound i, from file j without any time remapping
     ic;    % ic(i,j) contains the total ion count for compound i, from file j
     normic;	% Normalized ion count (by file and by target)
-    nisomers;   % nisomers(i,j) is the number of other compounds that are within MZFUZZ in this file
-    nunique;   % nunique(i,j) is the number of other compounds that are within MZFUZZ in this file and with unknown elution time
-    numhits;   % numhits(i,j) is the number of possible hits (need to have exactly 1 for the hit to be used)
     multihits;
   end
   
@@ -311,9 +308,6 @@ classdef Compounds < handle
         obj.filetime(nindex,:)=nan;
         obj.ic(nindex,:)=nan;
         obj.contains(nindex,:)=false;
-        obj.nisomers(nindex,:)=nan;
-        obj.nunique(nindex,:)=nan;
-        obj.numhits(nindex,:)=nan;
         obj.multihits{nindex,:}=[];
       else
         obj.mz=nan(nindex,0);
