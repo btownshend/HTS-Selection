@@ -15,6 +15,8 @@ classdef Compounds < handle
     ic;    % ic(i,j) contains the total ion count for compound i, from file j
     normic;	% Normalized ion count (by file and by target)
     multihits;
+    tsens;    % tsens(i) is the relative sensitivity to target i
+    fsens;    % fsens(j) is the relative sensitivity for file j
   end
   
   properties(Constant)
@@ -691,7 +693,7 @@ classdef Compounds < handle
         sens(i)=nanmedian(obj.ic(sel,i)./obj.ic(sel,ref));
         [~,lbl{i}]=fileparts(obj.files{i});
       end
-      setfig('File Sensitivity');
+      setfig('File Sensitivity');clf;
       bar(sens);
       set(gca,'YScale','log');
       logticks(0,1);
@@ -705,7 +707,7 @@ classdef Compounds < handle
         sel=obj.contains(i,:);
         tsens(i)=nanmedian(obj.ic(i,sel)./sens(sel));
       end
-      setfig('Target Sensitivity');
+      setfig('Target Sensitivity');clf;
       bar(tsens);
       set(gca,'YScale','log');
       logticks(0,1);
@@ -723,7 +725,8 @@ classdef Compounds < handle
       for i=1:size(obj.normic,2)
         obj.normic(:,i)=obj.normic(:,i)/sens(i);
       end
-      
+      obj.tsens=tsens;
+      obj.fsens=sens;
     end
     
     function plotcompare(obj,f1,f2)
@@ -826,7 +829,7 @@ classdef Compounds < handle
       meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,obj.contains(ind,:)));
       meant=nanmean(obj.time(ind,obj.contains(ind,:)));
-      fprintf('%s (%d): m/z=%8.4f t=%7.2f meanic=%.0f\n',obj.names{ind},ind, obj.mztarget(ind),meant,meanic);
+      fprintf('%s[%s] (%d): m/z=%8.4f t=%7.2f meanic=%.0f sens=%.0f\n',obj.names{ind},obj.adduct{ind}, ind, obj.mztarget(ind),meant,meanic,obj.tsens(ind));
       isomers=setdiff(find(abs(obj.mztarget-obj.mztarget(ind))<obj.MZFUZZ*2),ind);
       if length(isomers)>0
         fprintf('Isomers:\n');
@@ -849,7 +852,7 @@ classdef Compounds < handle
           continue;
         end
         [~,filename]=fileparts(obj.files{j});
-        fprintf('%-15.15s: m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)',filename,obj.mz(ind,j),obj.time(ind,j),obj.ic(ind,j),obj.normic(ind,j));
+        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)',filename,obj.fsens(j),obj.mz(ind,j),obj.time(ind,j),obj.ic(ind,j),obj.normic(ind,j));
         m=obj.multihits{ind,j};
         if ~isempty(m)
           for k=1:length(m.mz)
