@@ -13,8 +13,8 @@ classdef Compounds < handle
     time;    % time(i,j) contains the elution time on compound i, from file j
     filetime;    % filetime(i,j) contains the elution time on compound i, from file j without any time remapping
     ic;    % ic(i,j) contains the total ion count for compound i, from file j
-    multihits;
     normic;	% Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
+    multihits;  % multihits{i,j} is the list of all peaks for target i in file j
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
   end
@@ -443,7 +443,7 @@ classdef Compounds < handle
     
     function x=icPerMole(obj)
     % Get median value of ion count per mole of target loaded
-      x=nanmedian(obj.ic,1)./obj.moles;
+      x=nanmedian(obj.normic,1)./obj.moles;
     end
     
     function addMS(obj,ms,varargin)
