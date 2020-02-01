@@ -689,34 +689,6 @@ classdef Compounds < handle
       end
     end
     
-    function map=checktimeoffset(obj,sel1,sel2)
-    % Compare time offsets between two structures with same compound list
-      setfig('checktimeoffset');clf;
-      subplot(211);
-      t1=obj.filetime(:,sel1); t2=obj.filetime(:,sel2);
-      plot(t1,t2,'o'); hold on;
-      [d,f]=fileparts(obj.files{sel1});
-      [~,d]=fileparts(d);
-      xlabel([d,'/',f]);
-      [d,f]=fileparts(obj.files{sel2});
-      [~,d]=fileparts(d);
-      ylabel([d,'/',f]);
-      map=piecewise(t1,t2,obj.TIMEFUZZ,4);
-      pred=interp1(map(:,1),map(:,2),t1);
-      [~,ord]=sort(t1);
-      plot(t1(ord),pred(ord),'r-');
-      subplot(212);
-      resid=t2-pred;
-      plot(t1,resid,'o');
-      ylabel('Residual');
-      rmse=16;
-      for i=1:4
-        outlier=abs(resid)>rmse*4;
-        rmse=sqrt(nanmean(resid(~outlier).^2));
-      end
-      hold on; plot(t1(outlier),resid(outlier),'or');
-      fprintf('RMSE(resid) = %.1f (outliers are >=%.0f)\n',rmse, min([inf;abs(resid(outlier))])); 
-    end
     function checksensitivity(obj,ref)
     % Check sensitivity by file relative to ref file
       sens=[]; lbl={};
