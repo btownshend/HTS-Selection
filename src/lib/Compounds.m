@@ -11,6 +11,7 @@ classdef Compounds < handle
              % For compounds uniquely located in a particular run:
     mz;    % mz(i,j) contains the observed m/z peak on compound i, from file j
     time;    % time(i,j) contains the elution time on compound i, from file j
+    meantime;   % meantime(i) is the computed mean elution time of compounds i
     filetime;    % filetime(i,j) contains the elution time on compound i, from file j without any time remapping
     ic;    % ic(i,j) contains the total ion count for compound i, from file j
     normic;	% Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
@@ -31,18 +32,6 @@ classdef Compounds < handle
       obj.contains=false(0,0);
     end
 
-    function t=meantime(obj,i)
-      if nargin>1
-        t=nanmean(obj.time(i,obj.contains(i,:)));
-      else
-        t=[];
-        for i=1:size(obj.time,1)
-          t(i)=nanmean(obj.time(i,obj.contains(i,:)));
-        end
-        t=t';
-      end
-    end
-    
     function ind=find(obj,name,adduct)
     % Find given name
     % Try both format stored in names (e.g. 'CDIV0051-B07') and short format (e.g. '51B07')
@@ -78,6 +67,7 @@ classdef Compounds < handle
         obj.mz(:,findex)=nan;
         obj.time(:,findex)=nan;
         obj.filetime(:,findex)=nan;
+        obj.meantime(:,findex)=nan;
         obj.ic(:,findex)=nan;
         obj.normic(:,findex)=nan;
         obj.contains(:,findex)=false;
@@ -99,15 +89,12 @@ classdef Compounds < handle
       args=processargs(defaults,varargin);
       id=[];
       for i=1:length(obj.mztarget)
-        meantime(i)=nanmean(obj.time(i,obj.contains(i,:)));
-      end
-      for i=1:length(obj.mztarget)
         mztarget=obj.mztarget(i);
         id=[id,struct('mztarget',mztarget,'desc','','findargs','','mz',nan,'time',nan,'ic',nan)];
-        if isfinite(meantime(i))
+        if isfinite(obj.meantime(i))
           % Only look for compounds with a known elution time
-          isomers=find(abs(meantime-meantime(i))<obj.TIMEFUZZ & abs(mztarget-obj.mztarget')<obj.MZFUZZ);
-          id(i)=ms.findcompound(mztarget,'elutetime',meantime(i),'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
+          isomers=find(abs(obj.meantime-obj.meantime(i))<obj.TIMEFUZZ & abs(mztarget-obj.mztarget')<obj.MZFUZZ);
+          id(i)=ms.findcompound(mztarget,'elutetime',obj.meantime(i),'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
           if isempty(id(i).ic)
             id(i).ic=0;
             id(i).time=nan;
@@ -308,6 +295,7 @@ classdef Compounds < handle
       if size(obj.mz,2)>0
         obj.mz(nindex,:)=nan;
         obj.time(nindex,:)=nan;
+        obj.meantime(nindex,:)=nan;
         obj.filetime(nindex,:)=nan;
         obj.ic(nindex,:)=nan;
         obj.normic(nindex,:)=nan;
@@ -316,6 +304,7 @@ classdef Compounds < handle
       else
         obj.mz=nan(nindex,0);
         obj.time=nan(nindex,0);
+        obj.meantime=nan(nindex,0);
         obj.filetime=nan(nindex,0);
         obj.ic=nan(nindex,0);
         obj.normic=nan(nindex,0);
@@ -402,9 +391,10 @@ classdef Compounds < handle
           fprintf('ambiguous');
         else
           % Construct consensus view
-          for j=1:length(obj.files)
-            for kk=1:length(itgt)
-              k=itgt(kk);
+          for kk=1:length(itgt)
+            k=itgt(kk);
+            obj.meantime(k)=meantime(best);
+            for j=1:length(obj.files)
               m=obj.multihits{k,j};
               if ~isempty(m)
                 sel=abs(m.time-meantime(best))<args.timetol;
@@ -802,15 +792,14 @@ classdef Compounds < handle
       for i=1:length(obj.mztarget)
         etime(i,1)=nanmin(obj.time(i,:));
         etime(i,2)=nanmax(obj.time(i,:));
-        etime(i,3)=nanmean(obj.time(i,:));
         mz(i,1)=nanmin(obj.mz(i,:));
         mz(i,2)=nanmax(obj.mz(i,:));
       end
-      plot(obj.mztarget,etime(:,3),'.b');
+      plot(obj.mztarget,obj.meantime,'.b');
       hold on;
       ngood=0;
       for i=1:size(etime,1)
-        if isnan(etime(i,3))
+        if isnan(obj.meantime(i))
           continue;
         end
         overlap=sum(etime(:,1)<etime(i,2) & etime(:,2)>etime(:,1) & mz(:,1)<mz(i,2) & mz(:,2)>mz(i,1));
@@ -824,7 +813,7 @@ classdef Compounds < handle
       end
       xlabel('m/z');
       ylabel('Elution time (s)');
-      title(sprintf('Compound Map (%d distinguishable/%d identified)',ngood,sum(isfinite(etime(:,3)))));
+      title(sprintf('Compound Map (%d distinguishable/%d identified)',ngood,sum(isfinite(obj.meantime))));
     end
     
     function getinfo(obj,name,varargin)
@@ -847,22 +836,20 @@ classdef Compounds < handle
       
       meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,obj.contains(ind,:)));
-      meant=nanmean(obj.time(ind,obj.contains(ind,:)));
-      fprintf('%s[%s] (%d): m/z=%8.4f t=%7.2f meanic=%.0f sens=%.0f\n',obj.names{ind},obj.adduct{ind}, ind, obj.mztarget(ind),meant,meanic,obj.tsens(ind));
+      fprintf('%s[%s] (%d): m/z=%8.4f t=%7.2f meanic=%.0f sens=%.0f\n',obj.names{ind},obj.adduct{ind}, ind, obj.mztarget(ind),obj.meantime(ind),meanic,obj.tsens(ind));
       isomers=setdiff(find(abs(obj.mztarget-obj.mztarget(ind))<obj.MZFUZZ*2),ind);
       if length(isomers)>0
         fprintf('Isomers:\n');
         for ii=1:length(isomers)
           i=isomers(ii);
           imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
-          imeant=nanmean(obj.time(i,obj.contains(i,:)));
-          fprintf('\t%s[%s] (%d): m/z=%8.4f (d=%.0f) t=%7.2f (d=%.0f) meanic=%.0f\n',obj.names{i},obj.adduct{i}, i, obj.mztarget(i),(obj.mztarget(i)-obj.mztarget(ind))*1e4,imeant,imeant-meant,imeanic);
+          fprintf('\t%s[%s] (%d): m/z=%8.4f (d=%.0f) t=%7.2f (d=%.0f) meanic=%.0f\n',obj.names{i},obj.adduct{i}, i, obj.mztarget(i),(obj.mztarget(i)-obj.mztarget(ind))*1e4,obj.meantime(i),obj.meantime(i)-obj.meantime(ind),imeanic);
         end
       end
       if ~isempty(args.mzdata)
         setfig(obj.names{ind});
         t=tiledlayout('flow');
-        title(t,sprintf('%s m/z=%.4f t=%.0f',obj.names{ind},obj.mztarget(ind),meant));
+        title(t,sprintf('%s m/z=%.4f t=%.0f',obj.names{ind},obj.mztarget(ind),obj.meantime(ind)));
       end
       
       for j=1:length(obj.files)
@@ -884,12 +871,12 @@ classdef Compounds < handle
         end
         fprintf('\n');
       end
-      if isfinite(meanic) && isfinite(meant)
+      if isfinite(meanic) && isfinite(obj.meantime(ind))
         % False positives
         thresh=minic/2;
         fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.0f,%.0f], NormIC >= %.3f:\n',...
                 obj.mztarget(ind)+obj.MZFUZZ*[-1,1],...
-                nanmean(obj.time(ind,obj.contains(ind,:)))+obj.TIMEFUZZ*[-1,1],...
+                obj.meantime(ind)+obj.TIMEFUZZ*[-1,1],...
                 thresh);
         for j=1:length(obj.files)
           [~,filename]=fileparts(obj.files{j});
@@ -906,13 +893,12 @@ classdef Compounds < handle
 
     function plotscan(obj,ind,mzdata)
       meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
-      meant=nanmean(obj.time(ind,obj.contains(ind,:)));
       [ic,mz,t]=mzdata.mzscan(obj.mztarget(ind),'mztol',obj.MZFUZZ);
       plot(t,ic);
       ax=axis;
       hold on;
-      plot(meant+obj.TIMEFUZZ*[1,1],ax(3:4),':b');
-      plot(meant-obj.TIMEFUZZ*[1,1],ax(3:4),':b');
+      plot(obj.meantime(ind)+obj.TIMEFUZZ*[1,1],ax(3:4),':b');
+      plot(obj.meantime(ind)-obj.TIMEFUZZ*[1,1],ax(3:4),':b');
       ylabel('Ion Count');
       yyaxis right
       plot(t,mz,'r');
@@ -922,8 +908,8 @@ classdef Compounds < handle
       plot(ax(1:2),obj.mztarget(ind)+obj.MZFUZZ*[1,1],':r');
       plot(ax(1:2),obj.mztarget(ind)-obj.MZFUZZ*[1,1],':r');
       ylabel('M/Z');
-      if isfinite(meant)
-        ax(1:2)=meant+obj.TIMEFUZZ*2*[-1,1];
+      if isfinite(obj.meantime(ind))
+        ax(1:2)=obj.meantime(ind)+obj.TIMEFUZZ*2*[-1,1];
       end
       ax(3:4)=obj.mztarget(ind)+obj.MZFUZZ*2*[-1,1];
       axis(ax);
