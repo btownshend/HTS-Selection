@@ -351,18 +351,25 @@ classdef Compounds < handle
       obj.time=nan(length(obj.names),length(obj.files));
       obj.filetime=nan(length(obj.names),length(obj.files));
 
-      for i=1:length(obj.names)
-        fprintf('%s: ',obj.names{i});
-        etimes=[];ic=[];cont=false(0,0);
-        for j=1:length(obj.files)
-          m=obj.multihits{i,j};
-          if ~isempty(m)
-            etimes=[etimes,m.time];
-            ic=[ic,m.ic];
-            cont=[cont,repmat(obj.contains(i,j),size(m.ic))];
+      unames=unique(obj.names,'stable');
+      for i=1:length(unames)
+        fprintf('%s: ',unames{i});
+        etimes=[];ic=[];cont=false(0,0);index=[]; contains=[];
+        itgt=find(strcmp(obj.names,unames{i}));
+        for kk=1:length(itgt)
+          k=itgt(kk);
+          fprintf('[%s] ',obj.adduct{k});
+          for j=1:length(obj.files)
+            m=obj.multihits{k,j};
+            if ~isempty(m)
+              etimes=[etimes,m.time];
+              ic=[ic,m.ic];
+              index=[index,repmat(j+(kk-1)*length(obj.files),1,length(m.time))];
+              cont=[cont,repmat(obj.contains(k,j),size(m.ic))];
+            end
           end
+          contains=[contains,obj.contains(k,:)];   % Should be identical for all the various adducts
         end
-        contains=obj.contains(i,:);
         if length(etimes)>1
           t=clusterdata(etimes','Criterion','distance','cutoff',args.timetol,'linkage','centroid');
           meantime=[];
@@ -370,13 +377,9 @@ classdef Compounds < handle
             meantime(j)=mean(etimes(t==j));
           end
         
-          hits=false(max(t),length(obj.files));
-          for j=1:length(obj.files)
-            m=obj.multihits{i,j};
-            if ~isempty(m)
-              [~,~,ib]=intersect(m.time,etimes);
-              hits(t(ib),j)=true;
-            end
+          hits=false(max(t),length(obj.files)*length(itgt));  % Indexed by cluster number, file
+          for j=1:length(t)
+            hits(t(j),index(j))=true;
           end
           matches=[];
           for j=1:size(hits,1)
@@ -400,15 +403,18 @@ classdef Compounds < handle
         else
           % Construct consensus view
           for j=1:length(obj.files)
-            m=obj.multihits{i,j};
-            if ~isempty(m)
-              sel=abs(m.time-meantime(best))<args.timetol;
-              if sum(sel)>0
-                obj.ic(i,j)=sum(m.ic(sel));
-                obj.mz(i,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,j);
-                %obj.filemz(i,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(i,j);
-                obj.time(i,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,j);
-                obj.filetime(i,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,j);
+            for kk=1:length(itgt)
+              k=itgt(kk);
+              m=obj.multihits{k,j};
+              if ~isempty(m)
+                sel=abs(m.time-meantime(best))<args.timetol;
+                if sum(sel)>0
+                  obj.ic(k,j)=sum(m.ic(sel));
+                  obj.mz(k,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(k,j);
+                  %obj.filemz(k,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(k,j);
+                  obj.time(k,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(k,j);
+                  obj.filetime(k,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(k,j);
+                end
               end
             end
           end
