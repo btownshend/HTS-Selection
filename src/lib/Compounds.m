@@ -327,7 +327,7 @@ classdef Compounds < handle
     
     function assignTimes(obj,varargin)
     % Collect all the MS data and assign elution times to compounds
-    % For each compounds, 
+    % For each compound, 
     %   build list of observations across massspec files (elution time,whether compound is expected)
     %   find elution time with highest correlation of hit vs. expected
       defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minhits',4);
