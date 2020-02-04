@@ -76,8 +76,8 @@ end
 
 if ~exist('compounds','var')
   compounds=Compounds();
-  compounds.addCompoundsFromSDF(sdf,'M+H');
-  compounds.addCompoundsFromSDF(sdf,'M+Na');
+  compounds.addCompoundsFromSDF(sdf);
+  %  compounds.addCompoundsFromSDF(sdf.filter(sdf.find(1,[],2)));
 end
 
 for i=1:length(mzdata)
