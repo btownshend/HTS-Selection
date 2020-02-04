@@ -132,7 +132,8 @@ classdef MassSpec < handle
       mz=nan(last-first+1,1);
       time=obj.time;time=time(first:last);
       for i=first:last
-        sel=abs(obj.peaks{i}(:,1)-mztarget)<=args.mztol;
+        pks=obj.peaks{i}(:,1);
+        sel=abs(pks-mztarget)<=args.mztol;
         if any(sel)
           ic(i-first+1)=sum(obj.peaks{i}(sel,2));
           mz(i-first+1)=sum((obj.peaks{i}(sel,1).*obj.peaks{i}(sel,2)))/ic(i-first+1);
