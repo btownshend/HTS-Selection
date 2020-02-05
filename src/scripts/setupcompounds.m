@@ -19,7 +19,7 @@ coldata=coldata([2,11,4:9,1,10]);   % Use rerun, reorder
 platedata=dir([msdir,'20190309 CDiv Library Plates/CDIV*1.mzXML']);
 fulldata=dir([msdir,'20190* Row, Column/Full.mzXML']);
 indivdata=[]; % dir([msdir,'20190506-Individual/*.mzXML']);
-diagdata=dir([msdir,'200124-Diags-8630/*.mzXML']);
+diagdata=dir([msdir,'200124-Diags-8630/86??.mzXML']);
 
 allfiles=[rowdata;coldata;platedata;fulldata;indivdata;diagdata];
 
