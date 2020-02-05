@@ -85,43 +85,53 @@ classdef Compounds < handle
       end
     end
     
-    function id=checkComposition(obj,ms,varargin)  % TODO - fix
+    function allid=checkComposition(obj,ms,varargin)  % TODO - test
     % Check composition in mass spec file using current set of compounds
-      defaults=struct('debug',false);  
+      defaults=struct('debug',false,'map',[]);  
       args=processargs(defaults,varargin);
-      id=[];
-      for i=1:length(obj.names)
-        for k=1:length(obj.ADDUCTS)
-          id=[id,struct('name',obj.names(i),'adduct',obj.adducts(k).name,'mztarget',obj.mztarget(i,k),'desc','','findargs','','mz',nan,'time',nan,'ic',nan)];
+      if isempty(args.map)
+        args.map=struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]);
+      end
+      allid=[];
+      for k=1:length(obj.ADDUCTS)
+        id=[];
+        for i=1:length(obj.names)
+          id=[id,struct('name',obj.names(i),'adduct',obj.ADDUCTS(k).name,'mztarget',obj.mztarget(i,k),'desc','','findargs','','mz',nan,'time',nan,'ic',nan,'relic',nan)];
           if isfinite(obj.meantime(i))
             % Only look for compounds with a known elution time
             isomers=find(abs(obj.meantime-obj.meantime(i))<obj.TIMEFUZZ & any(abs(obj.mztarget(i,k)-obj.mztarget)<obj.MZFUZZ,2));
-            id(end)=ms.findcompound(mztarget,'elutetime',obj.meantime(i),'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
-            if isempty(id(end).ic)
-              id(end).ic=0;
-              id(end).time=nan;
-              id(end).mz=nan;
+            mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
+            idtmp=ms.findcompound(mztargetMS,'elutetime',obj.meantime(i),'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
+            id(end).findargs=idtmp.findargs;
+            if ~isempty(idtmp.ic)
+              id(end).ic=sum(idtmp.ic);
+              id(end).time=mean(idtmp.time);
+              id(end).mz=mean(idtmp.mz);
             end
             if length(isomers)>1 && sum(id(end).ic)>0
               fprintf('Isomer at compounds %s with ion count = %.0f\n', sprintf('%d,',isomers),sum(id(end).ic));
               id(end).ic=nan;   % Can't use it
             end
-            id(end).relic=sum(id(i).ic)/nanmax(obj.ic(i,k,:));
+            id(end).relic=id(i).ic/obj.tsens(i,k);
           end
         end
+        allid=[allid,id'];
       end
     end
     
     function [matic,id,refid]=plotComposition(obj,ms,varargin)   % TODO - fix
-      defaults=struct('debug',false,'thresh',0.02,'ref',[]);  
+      defaults=struct('debug',false,'thresh',0.02,'ref',[],'adduct',1,'map',[]);  
       args=processargs(defaults,varargin);
 
-      id=obj.checkComposition(ms,'debug',args.debug);
+      id=obj.checkComposition(ms,'debug',args.debug,'map',args.map);
+      id=id(:,args.adduct);
       if ~isempty(args.ref)
         refid=obj.checkComposition(args.ref,'debug',args.debug);
+        refid=refid(:,args.adduct);
       else
         refid=nan;
       end
+      
       
       ic=nan(length(id),1);
       relic=ic;
@@ -190,7 +200,7 @@ classdef Compounds < handle
         
       end
       
-      fprintf('%s: Located %d compounds with relative ion count >%.2f, %d with >0, out of %d with known elution time, %d total compounds\n', ms.name, sum(ic>=args.thresh), args.thresh, sum(ic>0), sum(isfinite(nanmean(obj.time,2))), length(ic));
+      fprintf('%s: Located %d compounds with relative ion count >%.2f, %d with >0, out of %d with known elution time, %d total compounds\n', ms.name, sum(ic>=args.thresh), args.thresh, sum(ic>0), sum(isfinite(obj.meantime)), length(ic));
       up=unique(p,'sorted');
       
       subplot(331);
@@ -507,7 +517,7 @@ classdef Compounds < handle
       end
     end
     
-    function x=report(obj)  % TODO - broken
+    function x=report(obj) 
     % Build table on data by compound
     % Each row is a single compound
     % Data by group
@@ -523,12 +533,12 @@ classdef Compounds < handle
          files=find(strcmp(obj.group,ugroups{j})& obj.contains(i,:));
          if ~isempty(files)
          for k=1:length(obj.ADDUCTS)
-          x(ii).mzoffset(j,k)=nanmean(obj.mz(i,k,files)')-obj.mztarget(i,k);
-          x(ii).elution(j,k)=nanmean(obj.time(i,k,files)');
-          x(ii).ioncount(j,k)=nanmean(obj.ic(i,k,files)');
+          x(ii).mzoffset(j,k)=nanmean(obj.mz(i,k,files),3)-obj.mztarget(i,k);
+          x(ii).elution(j,k)=nanmean(obj.time(i,k,files),3);
+          x(ii).ioncount(j,k)=nanmean(obj.ic(i,k,files),3);
           f='';
           for k=1:length(files)
-            [~,filename,~]=fileparts(obj.files{k});
+            [~,filename,~]=fileparts(obj.files{files(k)});
             f=[f,filename,','];
           end
           f=f(1:end-1);  % Remove trailing comma
@@ -736,11 +746,15 @@ classdef Compounds < handle
     
     function plotcompare(obj,k,f1,f2) % TODO - broken
     % Plot comparison of each compound the occurs in both f1 and f2
+      [~,fname1]=fileparts(obj.files{f1});
+      [~,fname2]=fileparts(obj.files{f2});
+      sel=obj.contains(:,f1) & obj.contains(:,f2);
       mztarget=obj.mztarget([],k);
-      ti=sprintf('%s vs %s',obj.files{f1}, obj.files{f2});
+      mztarget=mztarget(sel);
+      ti=sprintf('%s vs %s',fname1,fname2);
       setfig(ti);clf;
       subplot(221)
-      plot(obj.mz(:,k,f1)-mztarget,obj.mz(:,k,f2)-mztarget,'o');
+      plot(obj.mz(sel,k,f1)-mztarget',obj.mz(sel,k,f2)-mztarget','o');
       hold on;
       ax=axis;
       plot(ax(1:2),obj.MZFUZZ*[1,1],'r:');
@@ -748,12 +762,12 @@ classdef Compounds < handle
       ax=axis;
       plot(obj.MZFUZZ*[1,1],ax(3:4),'r:');
       plot(-obj.MZFUZZ*[1,1],ax(3:4),'r:');
-      xlabel(obj.files{f1},'Interpreter','none');
-      ylabel(obj.files{f2},'Interpreter','none');
+      xlabel(fname1,'Interpreter','none');
+      ylabel(fname2,'Interpreter','none');
       title('m/z offset');
 
       subplot(222);
-      plot(mean(obj.time(:,k,[f1,f2]),2),diff(obj.time(:,k,[f1,f2]),[],2),'o');
+      plot(mean(obj.time(sel,k,[f1,f2]),3),diff(obj.time(sel,k,[f1,f2]),[],3),'o');
       hold on;
       ax=axis;
       plot(ax(1:2),obj.TIMEFUZZ*[1,1],'r:');
@@ -762,22 +776,22 @@ classdef Compounds < handle
       ylabel('Diff (s)');
       title('Elution Times');
       
-      ratio=obj.ic(:,k,f2)./obj.ic(:,k,f1);
+      ratio=obj.ic(sel,k,f2)./obj.ic(sel,k,f1);
       scaling=nanmedian(ratio(ratio>0));
       ratio=ratio/scaling;
       ratio(ratio==0)=.001;
-      ratio(obj.ic(:,k,f1)==0 & obj.ic(:,k,f2)~=0)=1000;
+      ratio(obj.ic(sel,k,f1)==0 & obj.ic(sel,k,f2)~=0)=1000;
 
       subplot(223);
-      x=obj.ic(:,k,f1); y=obj.ic(:,k,f2);
+      x=obj.ic(sel,k,f1); y=obj.ic(sel,k,f2);
       x(x==0)=1;
       y(y==0)=1;
       loglog(x,y,'o');
       hold on;
       ax=axis;
       plot(ax(1:2),ax(1:2)*scaling,':');
-      xlabel(obj.files{f1},'Interpreter','none');
-      ylabel(obj.files{f2},'Interpreter','none');
+      xlabel(fname1,'Interpreter','none');
+      ylabel(fname2,'Interpreter','none');
       title('Ion Counts');
       
       subplot(224);
@@ -787,7 +801,7 @@ classdef Compounds < handle
       ylabel('N');
       title(sprintf('Ion Count Ratio (scaling=%.2f)',scaling));
       
-      h=suptitle(sprintf('%s N=%d',ti,sum(all(isfinite(obj.ic(:,k,[f1,f2])),2))));
+      h=suptitle(sprintf('%s N=%d',ti,sum(sel)));
       set(h,'Interpreter','none');
     end
 
