@@ -77,7 +77,7 @@ for i=1:length(allfiles)
         mzdata{i}.setLoad(2500*1e-15);
       end
       % Prune out some data
-      mzdata{i}.filter([300,2700],[127,505]);  % NOTE: this is using the localtimes to filter
+      mzdata{i}.filter([200,2900],[130,530]);  % NOTE: this is using the localtimes to filter
   end
 end
 
