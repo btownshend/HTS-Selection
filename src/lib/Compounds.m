@@ -515,7 +515,17 @@ classdef Compounds < handle
       fprintf('Contains %d files, %d compounds, %d adducts (%d with elution time)\n', length(obj.files), length(obj.names), length(obj.ADDUCTS), sum(isfinite(obj.meantime)));
       for i=1:length(obj.files)
         [~,filename,~]=fileparts(obj.files{i});
-        fprintf('%2d %-20.20s %3d/%3d compounds identified/total\n', i,filename, sum(obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)),sum(obj.contains(:,i)));
+        fprintf('%2d %-20.20s %3d/%3d/%3d compounds identified/isolated/total\n', i,filename, sum(obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)),sum(obj.contains(:,i)&isfinite(obj.meantime)), sum(obj.contains(:,i)));
+      end
+    end
+    
+    function notfound(obj)
+    % Show compounds that have been isolated, but not found in files where they should be
+      for i=1:length(obj.files)
+        [~,filename,~]=fileparts(obj.files{i});
+        fprintf('%2d %-20.20s %3d/%3d/%3d missing: ', i,filename, sum(obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)),sum(obj.contains(:,i)&isfinite(obj.meantime)), sum(obj.contains(:,i)));
+        ind=obj.contains(:,i)&isfinite(obj.meantime)&~any(isfinite(obj.mz(:,:,i)),2);
+        fprintf('%s\n',strjoin(obj.names(ind),','));
       end
     end
     
