@@ -196,7 +196,7 @@ report=compounds.report();
 compounds.checkmzoffset();
 ref=find(strcmp(compounds.files,'/Users/bst/Dropbox/SynBio/HTS-Selection/data/MassSpec/20190427 Row, Column/Full.mzXML'));
 compounds.checktime(ref,'timetol',compounds.TIMEFUZZ/2);
-compounds.checsensitivity(ref);
+compounds.checksensitivity(ref);
 
 writetable(report,[resultsdir,'report.csv']);
 fprintf('Saving compounds...');
