@@ -19,9 +19,13 @@ coldata=coldata([2,11,4:9,1,10]);   % Use rerun, reorder
 platedata=dir([msdir,'20190309 CDiv Library Plates/CDIV*1.mzXML']);
 fulldata=dir([msdir,'20190* Row, Column/Full.mzXML']);
 indivdata=[]; % dir([msdir,'20190506-Individual/*.mzXML']);
-diagdata=dir([msdir,'200124-Diags-8630/86??.mzXML']);
+diagdata=[];
+for k=8632:8640
+  diagdata=[diagdata;dir([msdir,sprintf('200124-Diags-8630/%d.mzXML',k)])];
+end
+diag2data=dir([msdir,'20200225/*.mzXML']);
 
-allfiles=[rowdata;coldata;platedata;fulldata;indivdata;diagdata];
+allfiles=[rowdata;coldata;platedata;fulldata;indivdata;diag2data;diagdata];
 
 
 % Setup m/z, time remappings
@@ -32,6 +36,10 @@ for i=1:length(allfiles)
     maps(i).time=[0.3036    0.3476
                   2.0930    1.7762
                   2.5910    2.3867]*1e3;
+  elseif ~isempty(strfind(allfiles(i).folder,'20200225'))
+    maps(i).mz=[133,133+3e-4;521,521+19e-4];
+    maps(i).time=[304 302
+                  2591 2580];
   elseif ~isempty(strfind(allfiles(i).folder,'20190309'))
     maps(i).mz=[133,133-02e-4;521,521+19e-4];
     maps(i).time=[    0.3036    0.2811
@@ -160,10 +168,20 @@ for i=1:length(mzdata)
     compounds.addMS(mzdata{i},'contains',contains,'group','Plate','map',maps(i));
   elseif strncmp(mzdata{i}.name,'Full',4)
     compounds.addMS(mzdata{i},'group','Full','map',maps(i));
+  elseif strcmp(mzdata{i}.name,'101H6.mzXML')
+    compounds.addMS(mzdata{i},'group','Individual','contains',{'101H06'},'map',maps(i));
+  elseif strcmp(mzdata{i}.name,'31C2.mzXML')
+    compounds.addMS(mzdata{i},'group','Individual','contains',{'31C02'},'map',maps(i));
+  elseif strcmp(mzdata{i}.name,'41D7.mzXML')
+    compounds.addMS(mzdata{i},'group','Individual','contains',{'41D07'},'map',maps(i));
+  elseif strcmp(mzdata{i}.name,'91A3.mzXML')
+    compounds.addMS(mzdata{i},'group','Individual','contains',{'91A03'},'map',maps(i));
+  elseif strcmp(mzdata{i}.name,'91C2.mzXML')
+    compounds.addMS(mzdata{i},'group','Individual','contains',{'91C02'},'map',maps(i));
   elseif strcmp(mzdata{i}.name,'A2.mzXML')
-    compounds.addMS(mzdata{i},'group','Individual','contains',{'31A2'},'map',maps(i));
+    compounds.addMS(mzdata{i},'group','Individual','contains',{'31A02'},'map',maps(i));
   elseif strcmp(mzdata{i}.name,'A3.mzXML')
-    compounds.addMS(mzdata{i},'group','Individual','contains',{'31A3'},'map',maps(i));
+    compounds.addMS(mzdata{i},'group','Individual','contains',{'31A03'},'map',maps(i));
   else
     % Assume all compounds
     fprintf('Unable to decode filename "%s" -- ignoring\n',mzdata{i}.name);
