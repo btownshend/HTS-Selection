@@ -678,6 +678,9 @@ classdef Compounds < handle
         for i=1:length(obj.files)
           if strcmp(dirs{i},udirs{j})
             t2=t(:,:,i);t2=t2(:);
+            if sum(isfinite(t2))<4
+              continue;
+            end
             fit=piecewise(tref,t2,args.timetol,2);
             pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
             [~,filename]=fileparts(obj.files{i});
