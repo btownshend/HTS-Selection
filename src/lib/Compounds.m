@@ -491,23 +491,22 @@ classdef Compounds < handle
         maxic(i,k)=max([0,id.ic]);
        end
       end
-      ice=maxic(obj.contains(:,findex),:);
-      icu=maxic(~obj.contains(:,findex),:);
-      if isempty(icu) || nanmedian(icu(:))<200
-        minic=prctile(ice(ice(:)>0),10);
-      else
-        minic=sqrt(median(ice(ice(:)>0))*median(icu(icu(:)>0)));
+      for k=1:length(obj.ADDUCTS)
+        ice=maxic(obj.contains(:,findex),k);
+        icu=maxic(~obj.contains(:,findex),k);
+        if isempty(icu) || nanmedian(icu(:))<200
+          minic=prctile(ice(ice(:)>0),10);
+        else
+          minic=sqrt(median(ice(ice(:)>0))*median(icu(icu(:)>0)));
+        end
+        p=[25,50,75];
+        fprintf('%5s: Expected have IC=[%s], unexpected have IC=[%s] (%s) @%.0f: %.1f%%,%.1f%% \n', obj.ADDUCTS(k).name, sprintf('%.0f ',prctile(ice(:),p)), sprintf('%.0f ',prctile(icu(:),p)), sprintf('%d%% ',p),minic,100*mean(ice(:)>minic),100*mean(icu(:)>minic));
+        nhits=nan(length(obj.mass),1);
+        for i=1:length(obj.mass)
+          nhits(i)=sum(obj.multihits{i,k,findex}.ic>minic);
+        end
+        fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
       end
-      p=[25,50,75];
-      fprintf('Expected have IC=[%s], unexpected have IC=[%s] (%s) @%.0f: %.1f%%,%.1f%% \n', sprintf('%.0f ',prctile(ice(:),p)), sprintf('%.0f ',prctile(icu(:),p)), sprintf('%d%% ',p),minic,100*mean(ice(:)>minic),100*mean(icu(:)>minic));
-      nhits=nan(length(obj.mass),1);
-      for i=1:length(obj.mass)
-       for k=1:length(obj.ADDUCTS)
-        nhits(i,k)=sum(obj.multihits{i,k,findex}.ic>minic);
-       end
-      end
-      nhits=sum(nhits,2);  % Total across adducts
-      fprintf('Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
     end
     
     function summary(obj)
