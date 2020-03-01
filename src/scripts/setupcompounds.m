@@ -209,6 +209,10 @@ if false
   fprintf('done\n');
 end       
 
+for i=1:length(compounds.ADDUCTS)
+  compounds.pcolorplot(i);
+end
+
 % Summarize by compound
 namelist={'1A04','91A02','91F03'};
 for i=1:length(namelist)
