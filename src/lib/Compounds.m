@@ -875,7 +875,7 @@ classdef Compounds < handle
       
       meanic=nanmean(obj.ic(ind,k,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,k,obj.contains(ind,:)));
-      fprintf('%s[%s] (%d): m/z=%8.4f t=%7.2f meanic=%.0f sens=%.0f\n',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),meanic,obj.tsens(ind,k));
+      fprintf('%s[%s] (%d): m/z=%8.4f t=%7.2f sens=%.0f\n',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.tsens(ind,k));
       isomers=setdiff(find(abs(obj.mass-obj.mass(ind))<obj.MZFUZZ*2),ind);
       % TODO: Fix to handle same m/z (with adducts) instead of same mass
       if length(isomers)>0
@@ -883,7 +883,7 @@ classdef Compounds < handle
         for ii=1:length(isomers)
           i=isomers(ii);
           imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
-          fprintf('\t%s[%s] (%d): m/z=%8.4f (d=%.0f) t=%7.2f (d=%.0f) meanic=%.0f\n',obj.names{i},obj.ADDUCTS(k).name, i, obj.mass(i),(obj.mass(i)-obj.mass(ind))*1e4,obj.meantime(i),obj.meantime(i)-obj.meantime(ind),imeanic);
+          fprintf('\t%s[%s] (%d): m/z=%8.4f (d=%.0f) t=%7.2f (d=%.0f) meanic=%.0f\n',obj.names{i},obj.ADDUCTS(k).name, i, obj.mass(i)+obj.ADDUCTS(k).mass,(obj.mass(i)-obj.mass(ind))*1e4,obj.meantime(i),obj.meantime(i)-obj.meantime(ind),imeanic);
         end
       end
       if ~isempty(args.mzdata)
@@ -898,7 +898,7 @@ classdef Compounds < handle
           continue;
         end
         [~,filename]=fileparts(obj.files{j});
-        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)',filename,obj.fsens(j,k),obj.mz(ind,k,j),obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j));
+        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)',filename,obj.fsens(j,k),obj.mz(ind,k,j),obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j)/obj.fsens(j,k));
         m=obj.multihits{ind,k,j};
         if ~isempty(m)
           for p=1:length(m.mz)
