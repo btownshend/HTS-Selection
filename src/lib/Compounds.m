@@ -331,7 +331,7 @@ classdef Compounds < handle
     % For each compound, 
     %   build list of observations across massspec files (elution time,whether compound is expected)
     %   find elution time with highest correlation of hit vs. expected
-      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minhits',0.5);
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.5);
       args=processargs(defaults,varargin);
 
       fprintf('assignTimes:\n');
@@ -340,7 +340,6 @@ classdef Compounds < handle
       obj.mz(:)=nan;
       obj.time(:)=nan;
       obj.filetime(:)=nan;
-
       for i=1:length(obj.names)
         fprintf('%s: ',obj.names{i});
         etimes=[];ic=[];srcadduct=[]; srcfile=[];
@@ -360,10 +359,10 @@ classdef Compounds < handle
         if length(etimes)>1
           esort=sort(etimes(cont));
           fprintf('esort=[%s]\n',sprintf('%.0f ',esort));
-          best=[1,1];bestscore=0.001;besttime=nan;
-          falseweight=2;
+          best=[1,1];bestscore=-1e10;besttime=nan;
+          falseweight=length(unique(srcfile(~cont)))/length(unique(srcfile(cont)));
           for m=1:length(esort)
-            for n=ceil(m+bestscore-1):length(esort)
+            for n=ceil(m+max(bestscore-2,.001)-1):length(esort)
               if esort(n)-esort(m) > 2*args.timetol
                 break
               end
@@ -374,10 +373,12 @@ classdef Compounds < handle
               elseif meantime+args.timetol < esort(n)
                 meantime=esort(n)-args.timetol;
               end
-              nfalse=sum(abs(etimes(~cont)-meantime)<args.timetol);
-              ntrue=n-m+1;
+              sel=abs(etimes-meantime)<=args.timetol;
+              nfalse=length(unique(srcfile(~cont & sel)));
+              ntrue=length(unique(srcfile(cont & sel)));
+              
               %fprintf('m=%d,n=%d,true=%d,false=%d,width=%.0f,rng=[%.0f,%.0f]\n',m,n,ntrue,nfalse,esort(n)-esort(m),esort([m,n]));
-              if ntrue-nfalse/falseweight>bestscore|| (ntrue-nfalse/5==bestscore && esort(n)-esort(m)<esort(best(2))-esort(best(1)))
+              if ntrue-nfalse/falseweight>bestscore|| (ntrue-nfalse/falseweight==bestscore && esort(n)-esort(m)<esort(best(2))-esort(best(1)))
                 best=[m,n];
                 bestscore=ntrue-nfalse/falseweight;
                 besttime=meantime;
@@ -386,21 +387,23 @@ classdef Compounds < handle
             end
           end
           rng=besttime+args.timetol*[-1,1];
-          nfalse=sum(abs(etimes(~cont)-besttime)<args.timetol);
-          ntrue=diff(best)+1;
+          nfalse=length(unique(srcfile(~cont & abs(etimes-besttime)<=args.timetol)));
+          ntrue=length(unique(srcfile(cont & abs(etimes-besttime)<=args.timetol)));
           fprintf('Best has %d true and %d false hits over [%.0f,%.0f], width=%.0f\n',ntrue,nfalse,rng,diff(esort(best)));
         elseif length(etimes)==1
           besttime=etimes;
-          nhits=length(etimes(cont));
-          nfals=length(etimers(~cont));
+          ntrue=length(etimes(cont));
+          nfalse=length(etimes(~cont));
         else
           fprintf('no hits\n');
           continue;
         end
-        nmax=sum(obj.contains(i,:))*length(obj.ADDUCTS);
-        fprintf('%d/%d hits with %d false hits at T=%.0f ', ntrue,nmax, nfalse, besttime);
-        if ntrue/nmax < args.minhits
-          fprintf('too few hits (%d/%d < %.2f)',ntrue,nmax,args.minhits);
+        nmax=sum(obj.contains(i,:));
+        fprintf('%d/%d hits with %d false hits at T=%.0f ', ntrue, nmax, nfalse, besttime);
+        if ntrue/nmax < args.minhitfrac 
+          fprintf('too few hits (%d hits/%d files < %.2f)',ntrue,nmax,args.minhitfrac);
+        elseif ntrue<args.minhits
+          fprintf('too few hits (%d hits < %d)',ntrue,args.minhits);
         else
           % Construct consensus view
           obj.meantime(i)=besttime;
