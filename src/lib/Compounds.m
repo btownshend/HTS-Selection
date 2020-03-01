@@ -564,6 +564,9 @@ classdef Compounds < handle
     
     function pcolorplot(obj,adduct)
     % Heat map of ioncount in matrix of compounds * files
+      if nargin<2
+        adduct=1;
+      end
       data=squeeze(obj.ic(:,adduct,:));
       % Normalize for xxth percentage
       for i=1:size(data,2)
