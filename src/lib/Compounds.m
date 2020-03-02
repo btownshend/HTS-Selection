@@ -331,7 +331,7 @@ classdef Compounds < handle
     % For each compound, 
     %   build list of observations across massspec files (elution time,whether compound is expected)
     %   find elution time with highest correlation of hit vs. expected
-      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.5);
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.6);
       args=processargs(defaults,varargin);
 
       fprintf('assignTimes:\n');
@@ -340,11 +340,16 @@ classdef Compounds < handle
       obj.mz(:)=nan;
       obj.time(:)=nan;
       obj.filetime(:)=nan;
-      for i=1:length(obj.names)
-        fprintf('%s: ',obj.names{i});
-        etimes=[];ic=[];srcadduct=[]; srcfile=[];
-        for k=1:length(obj.ADDUCTS)
-          fprintf('[%s] ',obj.ADDUCTS(k).name);
+      obj.meantime(:)=nan;
+      for k=1:length(obj.ADDUCTS)
+        % Try assignment for each adduct; only work on ones that haven't been assigned using a prior adduct
+        fprintf('\n\n[%s] ',obj.ADDUCTS(k).name);
+        for i=1:length(obj.names)
+          if k>1 && isfinite(obj.meantime(i))
+            continue;
+          end
+          fprintf('\n%s: ',obj.names{i});
+          etimes=[];ic=[];srcadduct=[]; srcfile=[];
           for j=1:length(obj.files)
             m=obj.multihits{i,k,j};
             if ~isempty(m)
@@ -354,91 +359,92 @@ classdef Compounds < handle
               srcfile=[srcfile,repmat(j,1,length(m.time))];
             end
           end
-        end
-        cont=obj.contains(i,srcfile);
-        if length(etimes)>1
-          esort=sort(etimes(cont));
-          fprintf('esort=[%s]\n',sprintf('%.0f ',esort));
-          best=[1,1];bestscore=-1e10;besttime=nan;
-          falseweight=length(unique(srcfile(~cont)))/length(unique(srcfile(cont)));
-          for m=1:length(esort)
-            for n=ceil(m+max(bestscore-2,.001)-1):length(esort)
-              if esort(n)-esort(m) > 2*args.timetol
-                break
-              end
-              meantime=median(esort(m:n));
-              % Make sure we include m,n in our tolerances
-              if meantime-args.timetol > esort(m)
-                meantime=esort(m)+args.timetol;
-              elseif meantime+args.timetol < esort(n)
-                meantime=esort(n)-args.timetol;
-              end
-              sel=abs(etimes-meantime)<=args.timetol;
-              nfalse=length(unique(srcfile(~cont & sel)));
-              ntrue=length(unique(srcfile(cont & sel)));
-              
-              %fprintf('m=%d,n=%d,true=%d,false=%d,width=%.0f,rng=[%.0f,%.0f]\n',m,n,ntrue,nfalse,esort(n)-esort(m),esort([m,n]));
-              if ntrue-nfalse/falseweight>bestscore|| (ntrue-nfalse/falseweight==bestscore && esort(n)-esort(m)<esort(best(2))-esort(best(1)))
-                best=[m,n];
-                bestscore=ntrue-nfalse/falseweight;
-                besttime=meantime;
-                %fprintf('bestcore=%.1f\n',bestscore);
+          cont=obj.contains(i,srcfile);
+          if length(etimes(cont))>1
+            esort=sort(etimes(cont));
+            fprintf('esort=[%s]\n',sprintf('%.0f ',esort));
+            best=[1,1];bestscore=-1e10;besttime=nan;
+            falseweight=length(unique(srcfile(~cont)))/length(unique(srcfile(cont)));
+            for m=1:length(esort)
+              for n=ceil(m+max(bestscore-2,.001)-1):length(esort)
+                if esort(n)-esort(m) > 2*args.timetol
+                  break
+                end
+                meantime=median(esort(m:n));
+                % Make sure we include m,n in our tolerances
+                if meantime-args.timetol > esort(m)
+                  meantime=esort(m)+args.timetol;
+                elseif meantime+args.timetol < esort(n)
+                  meantime=esort(n)-args.timetol;
+                end
+                sel=abs(etimes-meantime)<=args.timetol;
+                nfalse=length(unique(srcfile(~cont & sel)));
+                ntrue=length(unique(srcfile(cont & sel)));
+                
+                %fprintf('m=%d,n=%d,true=%d,false=%d,width=%.0f,rng=[%.0f,%.0f]\n',m,n,ntrue,nfalse,esort(n)-esort(m),esort([m,n]));
+                if ntrue-nfalse/falseweight>bestscore|| (ntrue-nfalse/falseweight==bestscore && esort(n)-esort(m)<esort(best(2))-esort(best(1)))
+                  best=[m,n];
+                  bestscore=ntrue-nfalse/falseweight;
+                  besttime=meantime;
+                  %fprintf('bestcore=%.1f\n',bestscore);
+                end
               end
             end
+            rng=besttime+args.timetol*[-1,1];
+            nfalse=length(unique(srcfile(~cont & abs(etimes-besttime)<=args.timetol)));
+            ntrue=length(unique(srcfile(cont & abs(etimes-besttime)<=args.timetol)));
+            fprintf('Best has %d true and %d false hits over [%.0f,%.0f], width=%.0f\n',ntrue,nfalse,rng,diff(esort(best)));
+          elseif length(etimes)==1
+            besttime=etimes;
+            ntrue=length(etimes(cont));
+            nfalse=length(etimes(~cont));
+          else
+            fprintf('no hits\n');
+            continue;
           end
-          rng=besttime+args.timetol*[-1,1];
-          nfalse=length(unique(srcfile(~cont & abs(etimes-besttime)<=args.timetol)));
-          ntrue=length(unique(srcfile(cont & abs(etimes-besttime)<=args.timetol)));
-          fprintf('Best has %d true and %d false hits over [%.0f,%.0f], width=%.0f\n',ntrue,nfalse,rng,diff(esort(best)));
-        elseif length(etimes)==1
-          besttime=etimes;
-          ntrue=length(etimes(cont));
-          nfalse=length(etimes(~cont));
-        else
-          fprintf('no hits\n');
-          continue;
-        end
-        nmax=sum(obj.contains(i,:));
-        fprintf('%d/%d hits with %d false hits at T=%.0f ', ntrue, nmax, nfalse, besttime);
-        if ntrue/nmax < args.minhitfrac 
-          fprintf('too few hits (%d hits/%d files < %.2f)',ntrue,nmax,args.minhitfrac);
-        elseif ntrue<args.minhits
-          fprintf('too few hits (%d hits < %d)',ntrue,args.minhits);
-        else
-          % Construct consensus view
-          obj.meantime(i)=besttime;
-          for k=1:length(obj.ADDUCTS)
-            for j=1:length(obj.files)
-              m=obj.multihits{i,k,j};
-              if ~isempty(m)
-                sel=abs(m.time-besttime)<args.timetol;
-                if sum(sel)>0
-                  obj.ic(i,k,j)=sum(m.ic(sel));
-                  obj.mz(i,k,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,k,j);
-                  %obj.filemz(k,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(k,j);
-                  obj.time(i,k,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,k,j);
-                  obj.filetime(i,k,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,k,j);
+          nmax=sum(obj.contains(i,:));
+          fprintf('%d/%d hits with %d false hits at T=%.0f ', ntrue, nmax, nfalse, besttime);
+          if ntrue/nmax < args.minhitfrac 
+            fprintf('too few hits (%d hits/%d files < %.2f)',ntrue,nmax,args.minhitfrac);
+          elseif ntrue<args.minhits
+            fprintf('too few hits (%d hits < %d)',ntrue,args.minhits);
+          else
+            % Construct consensus view
+            obj.meantime(i)=besttime;
+            for kk=1:length(obj.ADDUCTS)
+              for j=1:length(obj.files)
+                m=obj.multihits{i,kk,j};
+                if ~isempty(m)
+                  sel=abs(m.time-besttime)<args.timetol;
+                  if sum(sel)>0
+                    obj.ic(i,kk,j)=sum(m.ic(sel));
+                    obj.mz(i,kk,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,kk,j);
+                    %obj.filemz(kk,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(kk,j);
+                    obj.time(i,kk,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,kk,j);
+                    obj.filetime(i,kk,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,kk,j);
+                  end
                 end
               end
             end
           end
-        end
-        fprintf('\n');
+          fprintf('\n');
         
-        if args.debug
-          setfig('assignTimes');clf;
-          semilogy(etimes(~cont),ic(~cont),'or');
-          hold on;
-          semilogy(etimes(cont),ic(cont),'xb');
-          ax=axis;
-          plot((besttime-args.timetol)*[1,1],ax(3:4),':g');
-          plot((besttime+args.timetol)*[1,1],ax(3:4),':g');
-          xlabel('Elution time');
-          ylabel('Ion count');
-          title(obj.names{i});
-          figure(gcf);
-          keyboard;
+          if args.debug
+            setfig('assignTimes');clf;
+            semilogy(etimes(~cont),ic(~cont),'or');
+            hold on;
+            semilogy(etimes(cont),ic(cont),'xb');
+            ax=axis;
+            plot((besttime-args.timetol)*[1,1],ax(3:4),':g');
+            plot((besttime+args.timetol)*[1,1],ax(3:4),':g');
+            xlabel('Elution time');
+            ylabel('Ion count');
+            title(obj.names{i});
+            figure(gcf);
+            keyboard;
+          end
         end
+        fprintf('Have times for %d compounds\n', sum(isfinite(obj.meantime)));
       end
     end
     
