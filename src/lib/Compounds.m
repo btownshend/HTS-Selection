@@ -322,7 +322,7 @@ classdef Compounds < handle
       for i=1:length(sdf.sdf)
         s=sdf.sdf(i);
         name=sprintf('%d%s',str2num(s.BATCH_PLATE(5:end)),s.BATCH_WELL);
-        obj.addCompound(name,s.MonoisotopicMass);
+        obj.addCompound(name,s.MostAbundantMass);  % May be different from monoisotopic mass
       end
     end
     
