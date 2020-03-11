@@ -19,10 +19,11 @@ coldata=coldata([2,11,4:9,1,10]);   % Use rerun, reorder
 platedata=dir([msdir,'20190309 CDiv Library Plates/CDIV*1.mzXML']);
 fulldata=dir([msdir,'20190* Row, Column/Full.mzXML']);
 indivdata=[]; % dir([msdir,'20190506-Individual/*.mzXML']);
-diagdata=[];
-for k=8632:8640
-  diagdata=[diagdata;dir([msdir,sprintf('200124-Diags-8630/%d.mzXML',k)])];
-end
+%diagdata=[];
+%for k=8632:8640
+%  diagdata=[diagdata;dir([msdir,sprintf('200124-Diags-8630/%d.mzXML',k)])];
+%end
+diagdata=dir([msdir,'20200310/*.mzXML']);
 diag2data=dir([msdir,'20200225/*.mzXML']);
 
 allfiles=[rowdata;coldata;platedata;fulldata;indivdata;diag2data;diagdata];
@@ -37,6 +38,10 @@ for i=1:length(allfiles)
                   2015 1700
                   2591 2380];
   elseif ~isempty(strfind(allfiles(i).folder,'20200225'))
+    maps(i).mz=[133,133+3e-4;521,521+19e-4];
+    maps(i).time=[304 302
+                  2591 2580];
+  elseif ~isempty(strfind(allfiles(i).folder,'20200310'))
     maps(i).mz=[133,133+3e-4;521,521+19e-4];
     maps(i).time=[304 302
                   2591 2580];
