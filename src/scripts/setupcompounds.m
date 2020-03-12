@@ -94,7 +94,6 @@ if ~exist('compounds','var')
 end
 
 for i=1:length(mzdata)
-  if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)
   if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)  || strncmp(mzdata{i}.name,'old-CDIV',8)
     compounds.addMS(mzdata{i},'group','Full','map',maps(i));
   elseif strncmp(mzdata{i}.name,'86',2)
