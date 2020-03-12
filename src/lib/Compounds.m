@@ -723,48 +723,79 @@ classdef Compounds < handle
     % Check sensitivity by file relative to ref file
       obj.normic=obj.ic;
 
+      h1=[];h2=[];
       for k=1:length(obj.ADDUCTS)
-      sens=[]; lbl={};
-      for i=1:length(obj.files)
-        sel=all(obj.contains(:,[i,ref]),2);
-        sens(i)=nanmedian(obj.ic(sel,k,i)./obj.ic(sel,k,ref));
-        [~,lbl{i}]=fileparts(obj.files{i});
+        sens=[]; lbl={};
+        for i=1:length(obj.files)
+          sel=all(obj.contains(:,[i,ref]),2);
+          sens(i)=nanmedian(obj.ic(sel,k,i)./obj.ic(sel,k,ref));
+          [~,lbl{i}]=fileparts(obj.files{i});
+        end
+        ti=['File Sensitivity - ',obj.ADDUCTS(k).name];
+        setfig(ti);clf;
+        bar(sens);
+        h1(k)=gca;
+        set(gca,'YScale','log');
+        set(gca,'XTick',1:length(lbl));
+        set(gca,'XTickLabel',lbl);
+        set(gca,'XTickLabelRotation',90);
+        ylabel('Sensitivity');
+        title(ti);
+        % Check sensitivity by target
+        for i=1:length(obj.names)
+          sel=obj.contains(i,:);
+          tsens(i)=nanmedian(squeeze(obj.ic(i,k,sel))./sens(sel)');
+        end
+        ti=['Target Sensitivity - ',obj.ADDUCTS(k).name];
+        setfig(ti);clf;
+        bar(tsens);
+        h2(k)=gca;
+        set(gca,'YScale','log');
+        ticks=1:80:length(tsens);
+        set(gca,'XTick',ticks)
+        set(gca,'XTickLabel',obj.names(ticks));
+        set(gca,'XTickLabelRotation',90);
+        ylabel('Sensitivity (Ion count for ref file)');
+        title(ti);
+        ax(:,k)=axis;
+        for i=1:size(obj.normic,1)
+          obj.normic(i,k,:)=obj.ic(i,k,:)/tsens(i);
+        end
+        for i=1:size(obj.normic,2)
+          obj.normic(:,k,i)=obj.normic(:,k,i)/sens(i);
+        end
+        obj.tsens(:,k)=tsens;
+        obj.fsens(:,k)=sens;
       end
-      ti=['File Sensitivity - ',obj.ADDUCTS(k).name];
-      setfig(ti);clf;
-      bar(sens);
-      set(gca,'YScale','log');
-      logticks(0,1);
-      set(gca,'XTick',1:length(lbl));
-      set(gca,'XTickLabel',lbl);
-      set(gca,'XTickLabelRotation',90);
-      ylabel('Sensitivity');
-      title(ti);
-      % Check sensitivity by target
-      for i=1:length(obj.names)
-        sel=obj.contains(i,:);
-        tsens(i)=nanmedian(squeeze(obj.ic(i,k,sel))./sens(sel)');
+      linkaxes(h1);
+      linkaxes(h2);
+
+      % Show relative sensitivity of targets
+      setfig('Rel Target Sensitivity');clf;
+      rel=obj.tsens;
+      total=sum(rel,2);
+      for i=1:size(rel,2)
+        rel(:,i)=rel(:,i)./total;
       end
-      ti=['Target Sensitivity - ',obj.ADDUCTS(k).name];
-      setfig(ti);clf;
-      bar(tsens);
-      set(gca,'YScale','log');
-      logticks(0,1);
-      ticks=1:80:length(tsens);
+      bar(rel,'stacked');
       set(gca,'XTick',ticks)
       set(gca,'XTickLabel',obj.names(ticks));
       set(gca,'XTickLabelRotation',90);
-      ylabel('Sensitivity (Ion count for ref file)');
-      title(ti);
+      legend({obj.ADDUCTS.name});
 
-      for i=1:size(obj.normic,1)
-        obj.normic(i,k,:)=obj.ic(i,k,:)/tsens(i);
-      end
-      for i=1:size(obj.normic,2)
-        obj.normic(:,k,i)=obj.normic(:,k,i)/sens(i);
-      end
-      obj.tsens(:,k)=tsens;
-      obj.fsens(:,k)=sens;
+      % Cross-scatter of adduct sensitivities
+      setfig('Ion Count compare');clf;
+      t=tiledlayout('flow');
+      t.Title.String='Ion Count Compare';
+      h=[];
+      for k=2:length(obj.ADDUCTS)
+        nexttile;
+        h(end+1)=loglog(obj.tsens(:,1),obj.tsens(:,k),'.','MarkerSize',8);
+        hold on;
+        ax=axis;
+        plot(ax(1:2),ax(1:2),':');
+        xlabel(sprintf('Ion Count %s',obj.ADDUCTS(1).name));
+        ylabel(sprintf('Ion Count %s',obj.ADDUCTS(k).name));
       end
     end
     
