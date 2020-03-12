@@ -676,7 +676,7 @@ classdef Compounds < handle
     
     function map=checktime(obj,ref,varargin)
     % Check all multiple hits of ref against each other
-      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ);
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'refrange',[500,2500]);
       args=processargs(defaults,varargin);
 
       fprintf('checktime(%d,''timetol'',%.0f)\n',ref,args.timetol);
@@ -702,6 +702,7 @@ classdef Compounds < handle
       udirs=unique(dirs);
 
       tref=t(:,:,ref);tref=tref(:);
+      tsel=tref>=args.refrange(1) & tref<=args.refrange(2);
       trefs=sort(tref);
       setfig('checktime');clf;
       tiledlayout('flow');
@@ -712,10 +713,10 @@ classdef Compounds < handle
         for i=1:length(obj.files)
           if strcmp(dirs{i},udirs{j})
             t2=t(:,:,i);t2=t2(:);
-            if sum(isfinite(t2))<4
+            if sum(isfinite(t2(tsel)))<4
               continue;
             end
-            fit=piecewise(tref,t2,args.timetol,2);
+            fit=piecewise(tref(tsel),t2(tsel),args.timetol,2);
             pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
             [~,filename]=fileparts(obj.files{i});
             fprintf('%-20.20s  [%s]\n',filename, sprintf('(%4.0f@%4.0f) ',fit'));
@@ -727,7 +728,7 @@ classdef Compounds < handle
         end
         sel=strcmp(dirs,udirs{j});
         tmed=nanmedian(t(:,:,sel),3);
-        fit=piecewise(tref,tmed(:),args.timetol,2);
+        fit=piecewise(tref(tsel),tmed(tsel),args.timetol,2);
         [~,dirname]=fileparts(udirs{j});
         fprintf('%-20.20s  [%s] over %s\n\n', '', sprintf('(%4.0f@%4.0f) ',fit'),dirname);
         pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
