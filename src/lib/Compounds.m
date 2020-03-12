@@ -474,6 +474,8 @@ classdef Compounds < handle
       end
       if isempty(args.contains)
         obj.contains(:,findex)=true;
+      elseif strcmp(args.contains{1},'NONE')
+        obj.contains(:,findex)=false;
       else
         badnames=setdiff(args.contains,obj.names);
         if ~isempty(badnames)

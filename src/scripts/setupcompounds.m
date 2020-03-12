@@ -175,7 +175,7 @@ for i=1:length(mzdata)
   elseif strncmp(mzdata{i}.name,'Full',4)
     compounds.addMS(mzdata{i},'group','Full','map',maps(i));
   elseif strncmp(mzdata{i}.name,'DMSO',4)
-    compounds.addMS(mzdata{i},'group','None','contains',{},'map',maps(i));
+    compounds.addMS(mzdata{i},'group','None','contains',{'NONE'},'map',maps(i));
   elseif strcmp(mzdata{i}.name,'101H6.mzXML')
     compounds.addMS(mzdata{i},'group','Individual','contains',{'101H06'},'map',maps(i));
   elseif strcmp(mzdata{i}.name,'31C2.mzXML')
