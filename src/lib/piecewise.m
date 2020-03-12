@@ -8,7 +8,10 @@ sel=isfinite(x)&isfinite(y);
 x=x(sel); y=y(sel);
 [fit,stats]=robustfit(x,y);
 %fprintf('Piecewise over %d points [%f-%f] -> %f\n', length(x), min(x), max(x),stats.robust_s);
-assert(fit(2)>0); % Make sure it is monotonic increasing
+if fit(2)<0
+  % Make sure it is monotonic increasing
+  fprintf('Non-monotonic fit:  %f, %f\n', fit);
+end
 if stats.robust_s<maxrmse || length(x)<minpoints*2 || maxsegments<2
   map=[min(x),fit(1)+fit(2)*min(x); max(x), fit(1)+fit(2)*max(x)];
   sigma=stats.robust_s;
