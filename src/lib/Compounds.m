@@ -1025,21 +1025,24 @@ classdef Compounds < handle
       title(sprintf('%s',mzdata.name));
     end
     
-    function listunexpected(obj,k,varargin)
+    function listunexpected(obj,varargin)
     % List peaks that shouldn't be present, in order of descending ion count
-      defaults=struct('nlist',20);
+      defaults=struct('nlist',30,'adduct',1);
       args=processargs(defaults,varargin);
 
+      fprintf('Comparing for adduct %s:\n', obj.ADDUCTS(args.adduct).name);
       ic=obj.ic;
       ic(obj.contains)=0;
-      normic=squeeze(obj.normic(:,k,:));
+      normic=squeeze(obj.normic(:,args.adduct,:));
       normic(obj.contains)=0;
       [~,ord]=sort(normic(:),'desc','MissingPlacement','last');
+      mztarget=obj.mztarget;
+      mztarget=mztarget(:,args.adduct);
       for i=1:args.nlist
         [ii,ij]=ind2sub(size(obj.contains),ord(i));
         [~,fname]=fileparts(obj.files{ij});
-        fprintf('%12.12s:%-7.7s IC=%8.0f(%8.3f)', fname, obj.names{ii}, ic(ord(i)),normic(ord(i)));
-        alias=find(obj.contains(:,ij) & abs(obj.mztarget(:,k)-obj.mztarget(ii,k))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
+        fprintf('%12.12s:%-7.7s IC=%8.0f(%8.3f)', fname, obj.names{ii}, ic(ii,args.adduct,ij),normic(ord(i)));
+        alias=find(obj.contains(:,ij) & abs(mztarget-mztarget(ii))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
         if ~isempty(alias)
           fprintf(' Indistinguishable from ');
           for j=1:length(alias)
