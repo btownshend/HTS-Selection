@@ -42,15 +42,15 @@ for i=1:length(allfiles)
     maps(i).time=[203 202
                   2894 2880];
   elseif ~isempty(strfind(allfiles(i).folder,'20200310'))
-    maps(i).mz=[133,133-4e-8;521,521-3e-4];
+    maps(i).mz=[133,133-9e-4;521,521-5e-4];
     maps(i).time=[203 211
                   2894 2891];
   elseif ~isempty(strfind(allfiles(i).folder,'20190309'))
-    maps(i).mz=[133,133-3e-4;521,521+20e-4];
+    maps(i).mz=[133,133-1e-4;521,521+20e-4];
     maps(i).time=[203 179
                   2894 2883];
   elseif ~isempty(strfind(allfiles(i).folder,'20190427'))
-    maps(i).mz=[133,133-24e-4;521,521-64e-4];
+    maps(i).mz=[133,133-24e-4;521,521-66e-4];
     maps(i).time=[0 0; 1 1 ];
   elseif ~isempty(strfind(allfiles(i).folder,'20190501'))
     maps(i).mz=[133,133+1e-4;521,521+6e-4];
