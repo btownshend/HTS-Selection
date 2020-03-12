@@ -162,7 +162,7 @@ for i=1:length(mzdata)
       end
     end
     compounds.addMS(mzdata{i},'contains',contains,'group','Row','map',maps(i));
-  elseif strncmp(mzdata{i}.name,'CDIV',4)
+  elseif strncmp(mzdata{i}.name,'CDIV',4) || strcmp(mzdata{i}.name,'old-CDIV')
     pnum=sscanf(mzdata{i}.name,'CDIV%d.mzXML');
     contains={};
     for r=1:8
@@ -173,6 +173,8 @@ for i=1:length(mzdata)
     compounds.addMS(mzdata{i},'contains',contains,'group','Plate','map',maps(i));
   elseif strncmp(mzdata{i}.name,'Full',4)
     compounds.addMS(mzdata{i},'group','Full','map',maps(i));
+  elseif strncmp(mzdata{i}.name,'DMSO',4)
+    compounds.addMS(mzdata{i},'group','None','contains',{},'map',maps(i));
   elseif strcmp(mzdata{i}.name,'101H6.mzXML')
     compounds.addMS(mzdata{i},'group','Individual','contains',{'101H06'},'map',maps(i));
   elseif strcmp(mzdata{i}.name,'31C2.mzXML')
