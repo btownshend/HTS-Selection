@@ -580,25 +580,51 @@ classdef Compounds < handle
       for i=1:size(data,2)
         data(:,i)=data(:,i)/prctile(data(:,i),80);
       end
-      data(data<.01)=0;
       data(data>10)=10;
       ti=['compounds ',obj.ADDUCTS(adduct).name];
       setfig(ti);clf;
-      data(end+1,:)=nan;
-      data(:,end+1)=nan;
-      pcolor(log10(data)');
-      shading flat;
-      colorbar;
-      xlabel('Compound');
-      ylabel('File');
-      set(gca,'YTick',(1:length(obj.files))+0.5);
-      filenames={};
-      for i=1:length(obj.files)
-        [~,filenames{i},~]=fileparts(obj.files{i});
+      t=tiledlayout(2,1);
+      t.Title.String=ti;
+      h=[];
+      for i=1:2
+        nexttile();
+        pdata=data;
+        if i==1
+          %pdata(isnan(pdata))=0;
+          pdata(~obj.contains)=nan;
+          pdata(pdata<.01)=0.01;
+        else
+          pdata(obj.contains)=nan;
+          pdata(pdata<.01)=0.01;
+        end
+        pdata(end+1,:)=nan;
+        pdata(:,end+1)=nan;
+        pcolor(log10(pdata)');
+        h(i)=gca;
+        shading flat;
+        colorbar;
+        xlabel('Compound');
+        ylabel('File');
+        set(gca,'YTick',(1:length(obj.files))+0.5);
+        filenames={};
+        for j=1:length(obj.files)
+          [~,filenames{j},~]=fileparts(obj.files{j});
+        end
+        set(gca,'YTickLabels',filenames);
+        set(gca,'ticklabelinterpreter','none');
+        set(gca,'TickDir','out');
+        set(gca,'TickLength',[1,1]*.002)
+        ticks=1:80:length(obj.names);
+        set(gca,'XTick',ticks)
+        set(gca,'XTickLabel',obj.names(ticks));
+        set(gca,'XTickLabelRotation',90);
+        if i==1
+          title('Expected');
+        else
+          title('Unexpected');
+        end
       end
-      set(gca,'YTickLabels',filenames);
-      set(gca,'ticklabelinterpreter','none');
-      title(ti);
+      linkaxes(h);
     end
     
     function checkmzoffset(obj)
