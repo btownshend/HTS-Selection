@@ -996,22 +996,21 @@ classdef Compounds < handle
       title(sprintf('%s',mzdata.name));
     end
     
-    function listunexpected(obj,varargin)
+    function listunexpected(obj,k,varargin)
     % List peaks that shouldn't be present, in order of descending ion count
       defaults=struct('nlist',20);
       args=processargs(defaults,varargin);
 
       ic=obj.ic;
       ic(obj.contains)=0;
-      normic=obj.normic;
+      normic=squeeze(obj.normic(:,k,:));
       normic(obj.contains)=0;
       [~,ord]=sort(normic(:),'desc','MissingPlacement','last');
       for i=1:args.nlist
         [ii,ij]=ind2sub(size(obj.contains),ord(i));
         [~,fname]=fileparts(obj.files{ij});
         fprintf('%12.12s:%-7.7s IC=%8.0f(%8.3f)', fname, obj.names{ii}, ic(ord(i)),normic(ord(i)));
-        alias=find(obj.contains(:,ij) & abs(obj.mztarget'-obj.mztarget(ii))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
-        % TODO: Fix to handle adducts
+        alias=find(obj.contains(:,ij) & abs(obj.mztarget(:,k)-obj.mztarget(ii,k))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
         if ~isempty(alias)
           fprintf(' Indistinguishable from ');
           for j=1:length(alias)
