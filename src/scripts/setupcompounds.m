@@ -95,6 +95,7 @@ end
 
 for i=1:length(mzdata)
   if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)
+  if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)  || strncmp(mzdata{i}.name,'old-CDIV',8)
     compounds.addMS(mzdata{i},'group','Full','map',maps(i));
   elseif strncmp(mzdata{i}.name,'86',2)
     % (plates,columns) dropped out from 8619:8628 and 8630;  also the only contents of 8629
@@ -162,7 +163,7 @@ for i=1:length(mzdata)
       end
     end
     compounds.addMS(mzdata{i},'contains',contains,'group','Row','map',maps(i));
-  elseif strncmp(mzdata{i}.name,'CDIV',4) || strcmp(mzdata{i}.name,'old-CDIV')
+  elseif strncmp(mzdata{i}.name,'CDIV',4)
     pnum=sscanf(mzdata{i}.name,'CDIV%d.mzXML');
     contains={};
     for r=1:8
