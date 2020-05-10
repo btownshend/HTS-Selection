@@ -5,7 +5,7 @@ from rdkit.Chem import AllChem
 
 def load():
     # Read in the CDIV molecules
-    suppl = AllChem.SDMolSupplier(os.getenv("DATA")+"/HTBCFiles/ChemDivFull.sdf")
+    suppl = AllChem.SDMolSupplier(os.getenv("DATA") + "/HTBCFiles/ChemDivFull.sdf")
 
     # Extract only the 960 tested molecules
     plates = ["CDIV%04d" % p for p in range(1, 121, 10)]
@@ -20,9 +20,9 @@ def load():
         plate = mol.GetProp("BATCH_PLATE")
         plate = int(plate[5:])
         well = mol.GetProp("BATCH_WELL")
-        #if well[-2] == '0':
-            # Remove leading 0 from column number
-            #well = well[:-2] + well[-1]
+        # if well[-2] == '0':
+        # Remove leading 0 from column number
+        # well = well[:-2] + well[-1]
         name = "%d%s" % (plate, well)
         # print(plate, well, name)
         mol.SetProp("NAME", name)

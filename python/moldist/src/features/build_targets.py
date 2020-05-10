@@ -4,6 +4,7 @@ import math
 import numpy as np
 import os
 
+
 def build_fold(tested, keep=None):
     fold = []  # fold[i][j] is the fold change for aptamer j in the presence of target i
     targets = []  # Names of the targets in the form, for example,  91A2  (PlateRowCol)
@@ -46,11 +47,12 @@ def build_fold(tested, keep=None):
         y = [y[i] for i in sel]
     return y, aptamers
 
-def build_hitbyapt(tested, keep=None):
+
+def build_hitbyapt(tested):
     hits = []  # hits[i][j] is [0,1,or NaN] for aptamer j in the presence of target i to flag [not hit, hit, indet.]
     targets = []  # Names of the targets in the form, for example,  91A2  (PlateRowCol)
     aptamers = []  # Names of the aptamers
-    with open(os.getenv("DATA")+'/Hits/hits.csv') as csv_file:   # From matlab:   TRPSummary.dumphits()
+    with open(os.getenv("DATA") + '/Hits/hits.csv') as csv_file:  # From matlab:   TRPSummary.dumphits()
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
@@ -68,21 +70,22 @@ def build_hitbyapt(tested, keep=None):
     # Setup ML output as y
 
     # verify targets to match order in tested
-    assert(len(targets) == len(tested))
-    ord=[]
+    assert (len(targets) == len(tested))
+    ordering = []
     for i in range(len(tested)):
-        ind=[j for j in range(len(targets)) if tested[i].GetProp("NAME")==targets[j]]
-        assert(len(ind)==1)
-        ord.append(ind[0])
-    targets=[targets[i] for i in ord]
-    y = np.transpose([hits[i] for i in ord])  # y will be first indexed by aptamer and then by target
+        ind = [j for j in range(len(targets)) if tested[i].GetProp("NAME") == targets[j]]
+        assert (len(ind) == 1)
+        ordering.append(ind[0])
+    targets = [targets[i] for i in ordering]
+    y = np.transpose([hits[i] for i in ordering])  # y will be first indexed by aptamer and then by target
 
     for i in range(len(targets)):
-        if (targets[i] != tested[i].GetProp("NAME")):
-            print("Target[",i,"]=",targets[i],"but molecule[",i,"] is",tested[i].GetProp("NAME"))
-            assert(False)
+        if targets[i] != tested[i].GetProp("NAME"):
+            print("Target[", i, "]=", targets[i], "but molecule[", i, "] is", tested[i].GetProp("NAME"))
+            assert False
 
     return y, aptamers, targets
+
 
 def build_hit(tested):
     # Set categorization of molecules

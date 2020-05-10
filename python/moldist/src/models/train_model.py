@@ -35,12 +35,12 @@ def train_dtr(random_state=42):
     return DecisionTreeRegressor(random_state=random_state, max_leaf_nodes=10)
 
 
-def train_svr(random_state=42):
+def train_svr():
     return SVR(gamma="auto")
 
 
-def train_multi(basemdl, X, y, random_state=42):
-    mdl = [copy.deepcopy(basemdl) for yi in y]
+def train_multi(basemdl, X, y):
+    mdl = [copy.deepcopy(basemdl) for _ in y]
     for i in range(len(mdl)):
         mdl[i].fit(X, y[i])
     return mdl
@@ -53,8 +53,8 @@ def cv_model(mdl, X, y, scoring='neg_mean_squared_error'):
     scores = cvres['test_score']
     tscores = cvres['train_score']
     print("Cross-validation scores: test=%.3f+-%.3f, train=%.3f+-%.3f" % (
-    np.asscalar(np.mean(scores)), np.asscalar(np.std(scores)), np.asscalar(np.mean(tscores)),
-    np.asscalar(np.std(tscores))))
+        np.asscalar(np.mean(scores)), np.asscalar(np.std(scores)), np.asscalar(np.mean(tscores)),
+        np.asscalar(np.std(tscores))))
 
 
 def cv_model_sfm(mdl, X, y, max_features=3, scoring='neg_mean_squared_error'):

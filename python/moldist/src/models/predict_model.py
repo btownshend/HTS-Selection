@@ -14,7 +14,7 @@ def predict(mdl, X, y_true, molecules):
     return y
 
 
-def predict_reg(mdl, X, y_true, molecules):
+def predict_reg(mdl, X, y_true):
     y = np.transpose([mdl[i].predict(X) for i in range(len(mdl))])
     score = [mdl[i].score(X, y_true[i]) for i in range(len(mdl))]
     print("score=", score)

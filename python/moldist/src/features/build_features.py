@@ -24,13 +24,15 @@ def build(molecules, fpSize=2048):
 def buildPharm(molecules):
     fdefName = '../data/external/MinimalFeatures.fdef'
     featFactory = ChemicalFeatures.BuildFeatureFactory(fdefName)
-    # The fingerprints themselves are calculated using a signature (fingerprint) factory, which keeps track of all the parameters required to generate the pharmacophore:
+    # The fingerprints themselves are calculated using a signature (fingerprint) factory,
+    # which keeps track of all the parameters required to generate the pharmacophore:
 
     sigFactory = SigFactory(featFactory, minPointCount=2, maxPointCount=3)
     sigFactory.SetBins([(0, 2), (2, 5), (5, 8)])
     sigFactory.Init()
     sigFactory.GetSigSize()
-    # The signature factory is now ready to be used to generate fingerprints, a task which is done using the rdkit.Chem.Pharm2D.Generate module:
+    # The signature factory is now ready to be used to generate fingerprints, a task
+    # which is done using the rdkit.Chem.Pharm2D.Generate module:
     fp = []
     for m in molecules:
         # fp.append(AllChem.RDKFingerprint(m, fpSize=fpSize))
@@ -61,5 +63,5 @@ def buildFragment(molecules):
     for m in molecules:
         # fp.append(AllChem.RDKFingerprint(m, fpSize=fpSize))
         fp.append(fpgen.GetFPForMol(m, fcat))
-    #fp = np.array(list(fp))
+    # fp = np.array(list(fp))
     return fp, fcat
