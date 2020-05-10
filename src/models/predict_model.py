@@ -10,15 +10,17 @@ def predict(mdl, X, y_true, molecules):
     print("ROC_AUC Score = %.3f" % sm.roc_auc_score(y_true, y))
     for i in range(len(X)):
         if y[i] != y_true[i]:
-            print("%6.6s: predict=%.1f, actual=%.1f" % (molecules[i].GetProp("NAME"), y[i], y_true[i]))
+            print("%6.6s: predict=%.1f, actual=%.1f" % (molecules[i], y[i], y_true[i]))
     return y
+
 
 def predict_reg(mdl, X, y_true, molecules):
     y = np.transpose([mdl[i].predict(X) for i in range(len(mdl))])
     score = [mdl[i].score(X, y_true[i]) for i in range(len(mdl))]
-    print("score=",score)
-    print("mean(score)=%.3f"%np.mean(score))
+    print("score=", score)
+    print("mean(score)=%.3f" % np.mean(score))
     return y
+
 
 def predictLOO(mdl, X, y_true, molecules):
     loo = LeaveOneOut()
@@ -33,7 +35,7 @@ def predictLOO(mdl, X, y_true, molecules):
         p = mdl.predict(X_test)
         y[test_index[0]] = p[0]
         if p != y_test[0]:
-            print("\n%6.6s: predict=%.1f, actual=%.1f" % (molecules[test_index[0]].GetProp("NAME"), p, y_test[0]))
+            print("\n%6.6s: predict=%.1f, actual=%.1f" % (molecules[test_index[0]], p, y_test[0]))
     print('done')
     print(sm.classification_report(y_true, y))
     print(sm.confusion_matrix(y_true, y))

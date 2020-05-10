@@ -18,9 +18,9 @@ def load():
         plate = mol.GetProp("BATCH_PLATE")
         plate = int(plate[5:])
         well = mol.GetProp("BATCH_WELL")
-        if well[-2] == '0':
+        #if well[-2] == '0':
             # Remove leading 0 from column number
-            well = well[:-2] + well[-1]
+            #well = well[:-2] + well[-1]
         name = "%d%s" % (plate, well)
         # print(plate, well, name)
         mol.SetProp("NAME", name)
