@@ -1,9 +1,11 @@
+import os
+
 from rdkit.Chem import AllChem
 
 
 def load():
     # Read in the CDIV molecules
-    suppl = AllChem.SDMolSupplier('../data/raw/ChemDivFull.sdf')
+    suppl = AllChem.SDMolSupplier(os.getenv("DATA")+"/HTBCFiles/ChemDivFull.sdf")
 
     # Extract only the 960 tested molecules
     plates = ["CDIV%04d" % p for p in range(1, 121, 10)]

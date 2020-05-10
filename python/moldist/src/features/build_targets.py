@@ -2,7 +2,7 @@
 import csv
 import math
 import numpy as np
-
+import os
 
 def build_fold(tested, keep=None):
     fold = []  # fold[i][j] is the fold change for aptamer j in the presence of target i
@@ -50,7 +50,7 @@ def build_hitbyapt(tested, keep=None):
     hits = []  # hits[i][j] is [0,1,or NaN] for aptamer j in the presence of target i to flag [not hit, hit, indet.]
     targets = []  # Names of the targets in the form, for example,  91A2  (PlateRowCol)
     aptamers = []  # Names of the aptamers
-    with open('../data/raw/hits.csv') as csv_file:   # From matlab:   TRPSummary.dumphits()
+    with open(os.getenv("DATA")+'/Hits/hits.csv') as csv_file:   # From matlab:   TRPSummary.dumphits()
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
