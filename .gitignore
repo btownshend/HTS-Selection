@@ -1,10 +1,10 @@
 data/HTBCFiles
 data/MassSpec
-src/lib/dump_editted.numbers
-src/lib/dump_editted.xlsx
+matlab/lib/dump_editted.numbers
+matlab/lib/dump_editted.xlsx
 .#*
-src/lib/dump.csv
-src/scripts/html/compositions.pdf
+matlab/lib/dump.csv
+matlab/scripts/html/compositions.pdf
 data/matfiles/mzdata.mat
 data/matfiles/compounds-20200226-2255.mat
 results/report-20200226-2255.csv
