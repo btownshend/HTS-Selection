@@ -10,3 +10,4 @@ data/matfiles/compounds-20200226-2255.mat
 results/report-20200226-2255.csv
 data/Hits/hits.csv
 data/Hits/fold.csv
+matlab/scripts/ops.csv
