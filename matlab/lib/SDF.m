@@ -222,13 +222,13 @@ classdef SDF < handle
         fclose(fd);
       end
 
-      function plot(obj,sel,pos,align)
+      function plot(obj,sel,pos,align,aspect)
         if islogical(sel)
           sel=find(sel);
         end
         if length(sel)>1
           % Multiple structures -- layout in grid
-          clf;
+          %clf;
           s=obj.sdf(sel);
           maxsize=[0,0,0];
           for i=1:length(s)
@@ -236,7 +236,10 @@ classdef SDF < handle
             maxsize=max(maxsize,high-low);
           end
           nz=1; % ceil(length(sel)^(1/3));
-          nx=ceil(sqrt(length(sel)/nz));
+          if nargin<5
+            aspect=1;
+          end
+          nx=ceil(sqrt(aspect*length(sel)/nz));
           ny=ceil(length(sel)/nx/nz);
           i=1;
           shift=maxsize+[0.5,1.5,2];
@@ -254,11 +257,16 @@ classdef SDF < handle
           
           return;
         end
-
-        if nargin<4
+        
+        if isempty(sel)
+          fprintf('Nothing to plot\n');
+          return;
+        end
+        
+        if nargin<4 || isempty(align)
           align='center';
         end
-        if nargin<3
+        if nargin<3 || isempty(pos)
           pos=[0,0,0];
         end
         s=obj.sdf(sel);
