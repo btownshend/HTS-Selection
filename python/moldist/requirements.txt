@@ -1,9 +1,5 @@
 numpy
 matplotlib
-# local package
--e .
-
-# external requirements
 scikit-learn
 rdkit
 python-dotenv
