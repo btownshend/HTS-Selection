@@ -138,7 +138,7 @@ classdef SDF < handle
           end
           assert(strcmp(line,'$$$$'));
           nread=nread+1;
-          if nargin>1 && nread>=maxrecords
+          if nargin>2 && nread>=maxrecords
             break;
           end
         end
