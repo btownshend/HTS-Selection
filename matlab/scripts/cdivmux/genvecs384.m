@@ -14,26 +14,30 @@ ntargets=length(s7sdf.sdf);
 tmass=[s7sdf.sdf.MonoisotopicMass];
 
 v64pertarget=nv64*targetsperv64/ntargets;
-fprintf('Generating %d v64 vectors from %d source plates with %d targets/vector, %d vectors/target\n', nv64, length(unique({s7sdf.sdf.Plate384})), targetsperv64, v64pertarget);
 
-if topdown
-  % Build v256 vectors than split them for v64
-  % Gives better v256 vectors
-  fprintf('Build V256 vectors...\n');
-  v256=buildvecs(nv64/4,tmass,targetsperv64*4);
-  fprintf('Build V64 vectors...\n');
-  v64parts={};
-  v64=false(nv64,ntargets);
-  for i=1:size(v256,1)
-    v64parts{i}=buildvecs(4,tmass(v256(i,:)),targetsperv64);
-    v64((i-1)*4+(1:4),v256(i,:))=v64parts{i};
-  end
+if exist('v64','var') && exist('v256','var')
+  fprintf('Reusing existing v64, v256 vars\n');
 else
-  % Bottom-up - build v64 vectors, then join them for v256
-  fprintf('Build V64 vectors...\n');
-  v64=buildvecs(v64perplate*length(v64plates),tmass,targetsperv64);
-  fprintf('Build V256 vectors...\n');
-  v256=v64(1:4:end,:)|v64(2:4:end,:)|v64(3:4:end,:)|v64(4:4:end,:);
+  fprintf('Generating %d v64 vectors from %d source plates with %d targets/vector, %d vectors/target\n', nv64, length(unique({s7sdf.sdf.Plate384})), targetsperv64, v64pertarget);
+  if topdown
+    % Build v256 vectors than split them for v64
+    % Gives better v256 vectors
+    fprintf('Build V256 vectors...\n');
+    v256=buildvecs(nv64/4,tmass,targetsperv64*4);
+    fprintf('Build V64 vectors...\n');
+    v64parts={};
+    v64=false(nv64,ntargets);
+    for i=1:size(v256,1)
+      v64parts{i}=buildvecs(4,tmass(v256(i,:)),targetsperv64);
+      v64((i-1)*4+(1:4),v256(i,:))=v64parts{i};
+    end
+  else
+    % Bottom-up - build v64 vectors, then join them for v256
+    fprintf('Build V64 vectors...\n');
+    v64=buildvecs(v64perplate*length(v64plates),tmass,targetsperv64);
+    fprintf('Build V256 vectors...\n');
+    v256=v64(1:4:end,:)|v64(2:4:end,:)|v64(3:4:end,:)|v64(4:4:end,:);
+  end
 end
 
 fprintf('V64:\n');
