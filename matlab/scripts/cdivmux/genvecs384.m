@@ -58,5 +58,6 @@ for i=1:length(s7sdf.sdf)
   fprintf(file,'\n');
 end
 fclose(file);
-save('vecs.mat','v64','v256');
+csvdata=readtable('V64.csv');   % To be sure our data matches
+save('vecs.mat','v64','v256','csvdata');
 
