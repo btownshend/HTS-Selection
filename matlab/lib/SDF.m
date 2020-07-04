@@ -124,7 +124,11 @@ classdef SDF < handle
             dataval='';
             line=fgetl(fd);
             while line(1)~='>' && ~strcmp(line,'$$$$')
-              dataval=[dataval,line];
+              if isempty(dataval)
+                dataval=line;
+              else
+                dataval=[dataval,',',line];
+              end
               line=fgetl(fd);
               while (isempty(line))
                 line=fgetl(fd);
