@@ -26,20 +26,22 @@ end
 
 % Check mass overlap
 if nargin<3
-  mzminsep=0.006;
+  mzminsep=[0.003,0.006,0.010];
 end
-d=nan(length(mass));   % minimum sep
-for i=1:length(mass)
-  [~,dtmp]=aliased(mass(i),mass([1:i-1,i+1:end]),mzminsep);
-  d(i,[1:i-1,i+1:end])=dtmp;
+for sep=mzminsep
+  d=nan(length(mass));   % minimum sep
+  for i=1:length(mass)
+    [~,dtmp]=aliased(mass(i),mass([1:i-1,i+1:end]),sep);
+    d(i,[1:i-1,i+1:end])=dtmp;
+  end
+  nalias=sum(d<sep);
+  fprintf('Targets are indistinguishable within M/Z of %.4f from an average of %.1f other target\n', sep, mean(nalias));
+  
+  nalias=[];
+  for i=1:size(vecs,1)
+    nalias(i)=sum(sum(d(vecs(i,:),vecs(i,:))<sep));
+  end
+  fprintf('Within vectors, an average of %.1f [%d-%d] targets are indistinguishable within M/Z of %.4f from another target\n', mean(nalias),min(nalias),max(nalias),sep);
 end
-nalias=sum(d<mzminsep);
-fprintf('Targets are indistinguishable within M/Z of %.4f from an average of %.1f other target\n', mzminsep, mean(nalias));
-
-nalias=[];
-for i=1:size(vecs,1)
-  nalias(i)=sum(sum(d(vecs(i,:),vecs(i,:))<mzminsep));
-end
-fprintf('Within vectors, an average of %.1f [%d-%d] targets are indistinguishable within M/Z of %.4f from another targets\n', mean(nalias),min(nalias),max(nalias),mzminsep);
 
 end
