@@ -146,6 +146,29 @@ classdef SDF < handle
         fprintf('%d done\n',nread);
       end
 
+      function set384(self)
+      % Add fields for 384-well layout
+      % A1 of plate 1 -> A1, A1 of plate 2 -> A2, A1 of plate 3 -> B1, A1 of plate 4 -> B2; etc
+        fprintf('Added 384-well fields: ');
+        for i=1:length(self.sdf)
+          if mod(i-1,100)==0
+            fprintf('%d...',i);
+          end
+          plate=self.sdf(i).BATCH_PLATE;
+          well=self.sdf(i).BATCH_WELL;
+          assert(strncmp(plate,'CDIV',4));
+          pnum=str2num(plate(5:end));
+          row=well(1)-'A'+1;
+          col=str2num(well(2:end));
+          pnum384=floor((pnum-1)/4)*4+1;
+          offset=pnum-pnum384;
+          row384=(row-1)*2+floor(offset/2)+1;
+          col384=(col-1)*2+mod(offset,2)+1;
+          self.sdf(i).Plate384=sprintf('CDIQ%04d',pnum384);   % Use CDIQ for "quad" plates (384-well)
+          self.sdf(i).Well384=sprintf('%c%02d',row384+'A'-1,col384);
+        end
+        fprintf('done\n');
+      end
       
       function getformulae(obj,force)
       % Get formulae for each entry
