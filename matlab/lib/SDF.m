@@ -214,7 +214,7 @@ classdef SDF < handle
             end
             expectedAvgMass=obj.sdf(i).BATCH_MW;
             if ~isempty(obj.sdf(i).Addend_Display) && ~strcmp(obj.sdf(i).Addend_Display,'Hydrate')
-              expectedAvgMass=expectedAvgMass-obj.sdf(i).Addend_MolWeight*obj.sdf(i).BatAdd_Equivalents;
+              expectedAvgMass=expectedAvgMass-sum(obj.sdf(i).Addend_MolWeight.*obj.sdf(i).BatAdd_Equivalents);
             end
             extraHs = expectedAvgMass-obj.sdf(i).ObservedAverageMass;
             if abs(extraHs)>2.5 || extraHs+f.H < -0.5
