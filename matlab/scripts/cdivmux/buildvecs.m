@@ -41,10 +41,15 @@ function vecs=buildset(mass,nvectors,debug,ndiffs)
   if nargin<4
     ndiffs=[];
   end
+  bygroup=nvectors==80;
   targetspervec=length(mass)/nvectors;
   assert(floor(targetspervec)==targetspervec);   % Perfect fit
   vecs=false(nvectors,length(mass));
-  mzminsep=[0.01,0.008,0.006,0.005]; 
+  if ~bygroup
+    mzminsep=[0.01,0.008,0.006,0.005,.003,.002,.001,0]; 
+  else
+    mzminsep=[0.01,0.008,0.006,0.005]; 
+  end
   ndebug=0;
   cnt=zeros(length(mass),2,length(mzminsep));
   while sum(vecs(:))<length(mass)
@@ -52,7 +57,7 @@ function vecs=buildset(mass,nvectors,debug,ndiffs)
     tbest=find(sum(vecs,1)==0);
     t=tbest(randi(length(tbest),1,1));
     valias=false(nvectors,1);
-    aliasbygroup=true;   % Try to avoid aliasing by group first
+    aliasbygroup=bygroup;   % Try to avoid aliasing by group first
     mzsepindex=1;	% Start with largest separation if possible
     nbackup=0;
     while ~any(vecs(:,t))
