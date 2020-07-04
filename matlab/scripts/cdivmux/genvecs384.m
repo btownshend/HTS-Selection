@@ -60,7 +60,3 @@ end
 fclose(file);
 save('vecs.mat','v64','v256');
 
-function s=wellname384(i)
-  s=sprintf('%c%02d',char('A'+mod(i-1,16)),floor((i-1)/16)+1);
-end
-
