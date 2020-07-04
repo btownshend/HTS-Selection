@@ -3,21 +3,35 @@ wellsperplate=320;
 v64plates={"V64A","V64B"};
 vecsperplate=360;
 targetspervec=64;
-
+nvectors=vecsperplate*length(v64plates);
 if ~exist('s7sdf','var')
   load('../../../data/matfiles/S7sdf.mat');
 end
 tmass=[s7sdf.sdf.MonoisotopicMass];
 uplates=sort(unique({s7sdf.sdf.Plate384}));
+topdown=true;
 
-vecs=buildvecs(vecsperplate*length(v64plates),tmass,targetspervec);
+if topdown
+  %v256=buildvecs(nvectors/4,tmass,targetspervec*4);
+  v64parts={};
+  vecs=false(nvectors,length(tmass));
+  for i=1:size(v256,1)
+    v64parts{i}=buildvecs(4,tmass(v256(i,:)),targetspervec);
+    vecs((i-1)*4+(1:4),v256(i,:))=v64parts{i};
+  end
+else
+  % Bottom-up
+  vecs=buildvecs(vecsperplate*length(v64plates),tmass,targetspervec);
+  v256=vecs(1:4:end,:)|vecs(2:4:end,:)|vecs(3:4:end,:)|vecs(4:4:end,:);
+end
+
 vecspertarget=unique(sum(vecs));
 fprintf('Generated %d vectors from %d source plates with %d targets/vector, %d vectors/target\n', size(vecs,1), length(uplates), targetspervec, vecspertarget);
+
 fprintf('V64:\n');
 verifyvecs(vecs,tmass);
 
 fprintf('\nV256:\n');
-v256=vecs(1:4:end,:)|vecs(2:4:end,:)|vecs(3:4:end,:)|vecs(4:4:end,:);
 verifyvecs(v256,tmass);
 
 file=fopen('V64.csv','w');
