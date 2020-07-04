@@ -31,11 +31,10 @@ function plotseparation(vecs,usemax)
     h(i)=plot(1:size(vecs,1),v);
     leg{end+1}=sprintf('%d hits',i);
     hold on;
-    enough=find(mean(npos,2)<=i*2,1);
-    if isempty(enough)
-      enough=size(vecs,1)+1;
+    enough=find(v<=i*2,1);
+    if ~isempty(enough)
+      plot(enough,v(enough),'o','Color',get(h(i),'Color'));
     end
-    plot(enough,i,'o','Color',get(h(i),'Color'));
   end
   legend(h,leg);
   xlabel('Num Vectors');
