@@ -13,15 +13,16 @@ function [vecs,vecspertarget]=buildvecs(nvectors,mass,targetspervec)
     fprintf('%d ',i);
 
     if i>1
-      % Compute matrix of indistinguishable targets with vectors so far
-      indist=true(size(vecs,2));
+      % Compute matrix of number of distinguishing vectors between each pair of targets with vectors so far
+      ndiffs=zeros(size(vecs,2));
       for i=1:size(vecs,1)
-        indist(vecs(i,:),~vecs(i,:))=false;
-        indist(~vecs(i,:),vecs(i,:))=false;
+        ndiffs(vecs(i,:),~vecs(i,:))=ndiffs(vecs(i,:),~vecs(i,:))+1;
+        ndiffs(~vecs(i,:),vecs(i,:))=ndiffs(~vecs(i,:),vecs(i,:))+1;
       end
-      fprintf('For vecs 1..%d, each vector is indistinguishable from an average of %.1f others\n', size(vecs,1), mean(sum(indist)));
-      keyboard;
-      vecs=[vecs;buildset(mass,vecsperset,debug,indist)];
+      mindiffs=prctile(ndiffs(:),10);
+      fprintf('Over vecs 1..%d, each target is distinguishable from an average of %.0f others in at least %.0f different vectors\n', ...
+              size(vecs,1), mean(sum(ndiffs>=mindiffs)), mindiffs);
+      vecs=[vecs;buildset(mass,vecsperset,debug,ndiffs)];
     else
       vecs=[vecs;buildset(mass,vecsperset,debug)];
     end
@@ -36,9 +37,9 @@ end
 
 % Build a set of vectors where each target occurs exactly once and no two targets in the same vector have aliased masses
 % Also, attempt to put targets that are indistinguishable based on 'indist' matrix into separate vectors, if possible (just a hint)
-function vecs=buildset(mass,nvectors,debug,indist)
+function vecs=buildset(mass,nvectors,debug,ndiffs)
   if nargin<4
-    indist=[];
+    ndiffs=[];
   end
   targetspervec=length(mass)/nvectors;
   assert(floor(targetspervec)==targetspervec);   % Perfect fit
@@ -96,9 +97,10 @@ function vecs=buildset(mass,nvectors,debug,indist)
         % Stuck!
         assert(false);
       end
-      if ~isempty(indist)
-        avoid=sum(vecs(vbest,indist(t,:)),2);  % Number of targets in each vector that we're trying to avoid
-        % Only attempt to place in vectors that have the minimum avoidance count
+      if ~isempty(ndiffs)
+        % Try to design vectors that increases the number of diffs with other target in the cumulative vector set
+        avoid=sum(vecs(vbest,ndiffs(t,:)==min(ndiffs(t,:))),2);  % Number of targets in each vector that we're trying to avoid
+        % Only attempt to place in vectors that have the minimum number of targets that we're trying to avoid
         vbest=vbest(avoid==min(avoid));
       end
       v=vbest(randi(length(vbest),1,1));

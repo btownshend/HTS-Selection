@@ -34,7 +34,7 @@ for i=1:length(mass)
   d(i,[1:i-1,i+1:end])=dtmp;
 end
 nalias=sum(d<mzminsep);
-fprintf('Targets are indistinguishable within M/Z of %.4f from an average of %.1f other targets\n', mzminsep, mean(nalias));
+fprintf('Targets are indistinguishable within M/Z of %.4f from an average of %.1f other target\n', mzminsep, mean(nalias));
 
 nalias=[];
 for i=1:size(vecs,1)
