@@ -1,7 +1,7 @@
 % Build a logic matrix size (nvectors,ntargets) such that each row has targetspervec true values
 % Total number of trues in each column should be equal within 1
 function [vecs,vecspertarget]=buildvecs(nvectors,mass,targetspervec)
-  debug=1;
+  debug=false;
   ntargets=length(mass);
   vecs=false(nvectors,ntargets);
   vecspertarget=targetspervec*nvectors/ntargets;
@@ -157,7 +157,9 @@ function vecs=buildset(mass,nvectors,debug,ndiffs)
   total=squeeze(sum(cnt,1));
   for i=1:size(total,1)
     for j=1:size(total,2)
-      fprintf('%c %.3f: %d\n', ccodes(i),mzminsep(j), total(i,j));
+      if total(i,j)>0
+        fprintf('%c %.3f: %d\n', ccodes(i),mzminsep(j), total(i,j));
+      end
     end
   end
 end
