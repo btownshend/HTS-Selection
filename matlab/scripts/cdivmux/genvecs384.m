@@ -10,6 +10,20 @@ nv64=v64perplate*length(v64plates);
 if ~exist('s7sdf','var')
   load('../../../data/matfiles/S7sdf.mat');
 end
+% Sort by 384 well, then by column, then odd rows in order followed by even rows
+% Row interleaving is so that we can access with tipspacing=2
+% eg. P1A1,P1C1,P1E1,...P1O1; 
+%     P1B1,P1D1,P1F1,...P1P1;
+%     P1A2,P1C2,...
+%     P1B24,P1C24,...,P1P24;
+%     P2A1,...
+key={};
+for i=1:length(s7sdf.sdf)
+  s=s7sdf.sdf(i);
+  key{i}=sprintf('%s;%02d;%d;%c',s.Plate384,str2num(s.Well384(2:end)),mod(s.Well384(1)-'A',2),s.Well384(1));
+end
+[~,ord]=sort(key);
+s7sdf.sdf=s7sdf.sdf(ord);
 ntargets=length(s7sdf.sdf);
 tmass=[s7sdf.sdf.MonoisotopicMass];
 
@@ -48,7 +62,7 @@ verifyvecs(v256,tmass);
 
 file=fopen('V64.csv','w');
 fprintf(file,'srcplate384\tsrcwell384\tsrcplate96\tsrcwell96\tmass');
-for i=1:v64pertarget
+for i=1:v64pertarget+1
   fprintf(file,'\tdestplate%d\tdestwell%d',i,i);
 end
 fprintf(file,'\n');
@@ -59,6 +73,8 @@ for i=1:length(s7sdf.sdf)
   for m=1:length(v)
     fprintf(file,'\t%s\t%s',v64plates{ceil(v(m)/384)},wellname384(rem(v(m)-1,384)+1));
   end
+  % Transfer to row sum tube
+  fprintf(file,'\tR%s\t1',s.Well384(1));
   fprintf(file,'\n');
 end
 fclose(file);
