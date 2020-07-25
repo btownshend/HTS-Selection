@@ -295,12 +295,17 @@ classdef MassSpec < handle
       ic=cellfun(@(z) sum(z(:,2)),obj.peaks);
     end
     
-    function plotTIC(obj)
+    function plotTIC(obj,newfig,time)
     % Plot TIC showing best traces
       ti=[obj.name,'-TIC'];
-      setfig(ti);clf;
-      plot(obj.time,obj.TIC());
-      title(ti)
+      if nargin<2 || isempty(newfig) || newfig
+        setfig(ti);clf;
+      end
+      if nargin<3 || isempty(time)
+        time=obj.time;
+      end
+      plot(time,obj.TIC());
+      title(ti,'Interpreter','None')
       xlabel('Retention Time')
       ylabel('Relative Intensity')
       hold on;
