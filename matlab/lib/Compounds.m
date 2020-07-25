@@ -536,12 +536,15 @@ classdef Compounds < handle
       end
       if isempty(args.contains)
         obj.contains(:,findex)=true;
+      elseif islogical(args.contains)
+        assert(length(contains)=size(obj.contains,1));
+        obj.contains(:,findex)=contains;
       elseif strcmp(args.contains{1},'NONE')
         obj.contains(:,findex)=false;
       else
         badnames=setdiff(args.contains,obj.names);
         if ~isempty(badnames)
-          fprintf('addMS: contains list has %d nonexistent compounds names\n',length(badnames));
+          fprintf('addMS: contains list has %d nonexistent compound names\n',length(badnames));
         end
         obj.contains(:,findex)=ismember(obj.names,args.contains);
       end
