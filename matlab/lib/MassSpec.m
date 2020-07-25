@@ -3,7 +3,7 @@ classdef MassSpec < handle
     path;    % Full path
     name;    % Short name for this file
     moles;   % Nominal number of moles (per compound) loaded
-    peaks;  % Peaks from mzxml2peaks;  peaks{i}(k,1:2) is [mz,time] for elution i, at peak k 
+    peaks;  % Peaks from mzxml2peaks;  peaks{i}(k,1:2) is [mz,ic] for elution i, at peak k 
     time;   % Time of elutions
     mzrange;   % Range [low,high] of m/z to plot/consider
     resamp;   % struct (mz,y,n) of uniformly sampled data
