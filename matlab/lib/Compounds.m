@@ -327,6 +327,61 @@ classdef Compounds < handle
       end
     end
     
+    function map=computeMap(obj,ms)
+    % Compute time mapping for given ms file
+      filetime=str2num(ms.mzxml.mzXML.msRun.endTime(3:end-1));
+      objtime=3300;   % Baseline time
+      fprintf('Normalizing file end time of %.1f to baseline of %.1f\n', filetime, objtime);
+      map=struct('mz',[0,0;1,1], 'time',[0,0;objtime,filetime]);
+      ti=['computeMap-',ms.name];
+      setfig(ti);clf;
+      niter=3;
+      for iter=1:niter
+        allid=obj.checkComposition(ms,'map',map,'timetol',500/iter,'mztol',obj.MZFUZZ*4/iter);
+        t=[];mz=[];
+        for i=1:length(allid(:))
+          if isfinite(allid(i).time)
+            t(end+1,1:2)=[allid(i).findargs.elutetime,allid(i).time];
+            mz(end+1,1:2)=[allid(i).mztarget,allid(i).mz];
+          end
+        end
+        % Undo mapping to get reference times,mz
+        t(:,1)=interp1(map.time(:,2),map.time(:,1),t(:,1),'linear','extrap');
+        mz(:,1)=interp1(map.mz(:,2),map.mz(:,1),mz(:,1),'linear','extrap');
+        
+        subplot(niter,2,iter*2-1);
+        plot(t(:,1),t(:,2),'.');
+        xlabel('Reference Time');  
+        ylabel([ms.name,' Time'],'Interpreter','none');
+        tfit=robustfit(t(:,1),t(:,2),'cauchy',.1);
+        hold on;
+        rng=[min(t(:)),max(t(:))];
+        plot(rng,rng*tfit(2)+tfit(1),'r-');
+        plot(rng,rng*tfit(2)+tfit(1)+obj.TIMEFUZZ,'r:');
+        plot(rng,rng*tfit(2)+tfit(1)-obj.TIMEFUZZ,'r:');
+        title(sprintf('Iteration %d',iter));
+        
+        subplot(niter,2,iter*2);
+        plot(mz(:,1),mz(:,2)-mz(:,1),'.');
+        xlabel('Reference m/z');  
+        ylabel([ms.name,' - ref m/z'],'Interpreter','none');
+        title(sprintf('Iteration %d',iter));
+        mzfit=robustfit(mz(:,1),mz(:,2));
+        hold on;
+        rng=[min(mz(:)),max(mz(:))];
+        plot(rng,rng*mzfit(2)+mzfit(1)-rng,'r-');
+        plot(rng,rng*mzfit(2)+mzfit(1)-rng+obj.MZFUZZ,'r:');
+        plot(rng,rng*mzfit(2)+mzfit(1)-rng-obj.MZFUZZ,'r:');
+        
+        % Update mapping
+        map.time(:,2)=map.time(:,1)*tfit(2)+tfit(1);
+        map.mz(:,2)=map.mz(:,1)*mzfit(2)+mzfit(1);
+        fprintf('After iteration %d, time fit=[%f,%f], m/z fit=[%f,%f]\n',iter,tfit,mzfit);
+        pause(0.1);
+      end
+      h=suptitle(ti);set(h,'Interpreter','none');
+    end
+    
     function assignTimes(obj,varargin)
     % Collect all the MS data and assign elution times to compounds
     % For each compound, 
