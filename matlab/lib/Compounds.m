@@ -87,7 +87,7 @@ classdef Compounds < handle
     
     function allid=checkComposition(obj,ms,varargin)  % TODO - test
     % Check composition in mass spec file using current set of compounds
-      defaults=struct('debug',false,'map',[]);  
+      defaults=struct('debug',false,'map',[],'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ);  
       args=processargs(defaults,varargin);
       if isempty(args.map)
         args.map=struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]);
@@ -99,9 +99,10 @@ classdef Compounds < handle
           id=[id,struct('name',obj.names(i),'adduct',obj.ADDUCTS(k).name,'mztarget',obj.mztarget(i,k),'desc','','findargs','','mz',nan,'time',nan,'ic',nan,'relic',nan)];
           if isfinite(obj.meantime(i))
             % Only look for compounds with a known elution time
-            isomers=find(abs(obj.meantime-obj.meantime(i))<obj.TIMEFUZZ & any(abs(obj.mztarget(i,k)-obj.mztarget)<obj.MZFUZZ,2));
+            isomers=find(abs(obj.meantime-obj.meantime(i))<args.timetol & any(abs(obj.mztarget(i,k)-obj.mztarget)<args.mztol,2));
             mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
-            idtmp=ms.findcompound(mztargetMS,'elutetime',obj.meantime(i),'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'debug',args.debug);
+            timetarget=interp1(args.map.time(:,1),args.map.time(:,2),obj.meantime(i),'linear','extrap');
+            idtmp=ms.findcompound(mztargetMS,'elutetime',timetarget,'timetol',args.timetol,'mztol',args.mztol,'debug',args.debug);
             id(end).findargs=idtmp.findargs;
             if ~isempty(idtmp.ic)
               id(end).ic=sum(idtmp.ic);
@@ -120,13 +121,13 @@ classdef Compounds < handle
     end
     
     function [matic,id,refid]=plotComposition(obj,ms,varargin)   % TODO - fix
-      defaults=struct('debug',false,'thresh',0.02,'ref',[],'adduct',1,'map',[]);  
+      defaults=struct('debug',false,'thresh',0.02,'ref',[],'adduct',1,'map',[],'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'refmap',[]);  
       args=processargs(defaults,varargin);
 
-      id=obj.checkComposition(ms,'debug',args.debug,'map',args.map);
+      id=obj.checkComposition(ms,'debug',args.debug,'map',args.map,'timetol',args.timetol,'mztol',args.mztol);
       id=id(:,args.adduct);
       if ~isempty(args.ref)
-        refid=obj.checkComposition(args.ref,'debug',args.debug);
+        refid=obj.checkComposition(args.ref,'debug',args.debug,'map',args.refmap,'timetol',args.timetol,'mztol',args.mztol);
         refid=refid(:,args.adduct);
       else
         refid=nan;
@@ -191,8 +192,8 @@ classdef Compounds < handle
         sel=relic>args.thresh;
         h(2)=plot(reftime(sel),time(sel)-reftime(sel),'.g');
         ax=axis;
-        plot(ax(1:2),-obj.TIMEFUZZ*[1,1],':r');
-        plot(ax(1:2),obj.TIMEFUZZ*[1,1],':r');
+        plot(ax(1:2),-args.timetol*[1,1],':r');
+        plot(ax(1:2),args.timetol*[1,1],':r');
         xlabel(args.ref.name,'Interpreter','none');
         ylabel('Time diff (s)','Interpreter','none');
         legend(h,{sprintf('RelIC<=%1.g',args.thresh),sprintf('RelIC>%.1g',args.thresh)},'location','best');
