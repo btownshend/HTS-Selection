@@ -110,7 +110,9 @@ classdef Compounds < handle
               id(end).mz=mean(idtmp.mz);
             end
             if length(isomers)>1 && sum(id(end).ic)>0
-              fprintf('Isomer at compounds %s with ion count = %.0f\n', sprintf('%d,',isomers),sum(id(end).ic));
+              if args.debug
+                fprintf('Isomer at compounds %s with ion count = %.0f\n', sprintf('%d,',isomers),sum(id(end).ic));
+              end
               id(end).ic=nan;   % Can't use it
             end
             id(end).relic=id(i).ic/obj.tsens(i,k);
