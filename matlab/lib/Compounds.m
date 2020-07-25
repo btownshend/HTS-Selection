@@ -135,7 +135,6 @@ classdef Compounds < handle
         refid=nan;
       end
       
-      
       ic=nan(length(id),1);
       relic=ic;
       refic=ic;
@@ -201,6 +200,7 @@ classdef Compounds < handle
         legend(h,{sprintf('RelIC<=%1.g',args.thresh),sprintf('RelIC>%.1g',args.thresh)},'location','best');
         title('Elution Time Compare');
         
+        fprintf('IC/Ref IC:  [1,5,50,95,99-pct]: %s\n',sprintf('%.2f ',prctile(relic(sel),[1,5,50,95,99])));
       end
       
       fprintf('%s: Located %d compounds with relative ion count >%.2f, %d with >0, out of %d with known elution time, %d total compounds\n', ms.name, sum(ic>=args.thresh), args.thresh, sum(ic>0), sum(isfinite(obj.meantime)), length(ic));
