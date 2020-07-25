@@ -4,6 +4,7 @@ classdef Compounds < handle
     names;   % names{i} - Name of compound i (e.g.'51B07')
     mass;    % mass(i) - monoisotpic mass of compounds i
     files;   % files{j} - Mass spec filename j
+    maps;    % Piecewise linear maps for converting between references (col 1) and file values (col2)
     moles;   % moles(j) - Moles of each compound loaded in run j
     group;   % group{j} - name of group this file belongs to
     contains;% contains(i,j) is true if we expected to find compound i in file j
@@ -531,13 +532,14 @@ classdef Compounds < handle
       
       fprintf('Adding data from %s\n',ms.name);
       findex=obj.lookupMS(ms);
+      obj.maps{findex}=args.map;
       if ~isempty(args.group)
         obj.group{findex}=args.group;
       end
       if isempty(args.contains)
         obj.contains(:,findex)=true;
       elseif islogical(args.contains)
-        assert(length(contains)=size(obj.contains,1));
+        assert(length(contains)==size(obj.contains,1));
         obj.contains(:,findex)=contains;
       elseif strcmp(args.contains{1},'NONE')
         obj.contains(:,findex)=false;
