@@ -17,3 +17,4 @@ IDT Lib Order.xlsx
 data/matfiles/S7SDF.mat
 ~$IDT Lib Order.xlsx
 .DS_Store
+matlab/S7/cdivmux/ops.csv

@@ -17,6 +17,7 @@ classdef Compounds < handle
     multihits;% multihits{i,k,j} is the list of all peaks for target i in file j with adduct k
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
+    sdf;      % SDF data
   end
   
   properties(Constant)
@@ -296,6 +297,7 @@ classdef Compounds < handle
       end
 
       obj.names{end+1}=name;
+      obj.sdf{end+1}=[];
       nindex=length(obj.names);
       obj.mass(nindex)=mass;
       obj.tsens(nindex,1:length(obj.ADDUCTS))=nan;
@@ -326,6 +328,8 @@ classdef Compounds < handle
         s=sdf.sdf(i);
         name=sprintf('%d%s',str2num(s.BATCH_PLATE(5:end)),s.BATCH_WELL);
         obj.addCompound(name,s.MostAbundantMass);  % May be different from monoisotopic mass
+        index=strcmp(obj.names,name);
+        obj.sdf{index}=s;
       end
     end
     
