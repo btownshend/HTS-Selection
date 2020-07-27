@@ -1046,7 +1046,7 @@ classdef Compounds < handle
         end
         if ~isempty(args.mzdata)
           nexttile;
-          obj.plotscan(ind,args.mzdata{j});
+          obj.plotscan(ind,args.mzdata{j},'adduct',args.adduct);
         end
         fprintf('\n');
       end
@@ -1062,37 +1062,47 @@ classdef Compounds < handle
             fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j), obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
             if ~isempty(args.mzdata)
               nexttile;
-              obj.plotscan(ind,args.mzdata{j});
+              obj.plotscan(ind,args.mzdata{j},'adduct',args.adduct);
+              ti=get(gca,'Title');
+              ti.String=[ti.String,'[Unexp]'];
+              set(gca,'Title',ti);
             end
           end
         end
       end
     end
 
-    function plotscan(obj,ind,mzdata)
-    % TODO: Broken
+    function plotscan(obj,ind,mzdata,varargin)
+      defaults=struct('adduct',1);
+      args=processargs(defaults,varargin);
+
       meanic=nanmean(obj.ic(ind,obj.contains(ind,:)));
-      [ic,mz,t]=mzdata.mzscan(obj.mztarget(ind,k),'mztol',obj.MZFUZZ);
-      plot(t,ic);
-      ax=axis;
+      [ic,mz,t]=mzdata.mzscan(obj.mztarget(ind,args.adduct),'mztol',obj.MZFUZZ);
+      %plot(t,ic,'o-','MarkerSize',2);
+      stem(t,ic,'-','MarkerSize',2);
       hold on;
+      set(gca,'YScale','log');
+      ax=axis;
+      ax(3)=100; ax(4)=max(ax(4),1e5); axis(ax);
       plot(obj.meantime(ind)+obj.TIMEFUZZ*[1,1],ax(3:4),':b');
       plot(obj.meantime(ind)-obj.TIMEFUZZ*[1,1],ax(3:4),':b');
       ylabel('Ion Count');
       yyaxis right
-      plot(t,mz,'r');
+      plot(t,mz,'ro','MarkerSize',2);
       hold on;
       ax=axis;
       axis(ax);
-      plot(ax(1:2),obj.mztarget(ind,k)+obj.MZFUZZ*[1,1],':r');
-      plot(ax(1:2),obj.mztarget(ind,k)-obj.MZFUZZ*[1,1],':r');
+      mzrange=obj.mztarget(ind,args.adduct)+obj.MZFUZZ*[-1,1];
+      plot(ax(1:2),mzrange(1)*[1,1],':r');
+      plot(ax(1:2),mzrange(2)*[1,1],':r');
       ylabel('M/Z');
       if isfinite(obj.meantime(ind))
         ax(1:2)=obj.meantime(ind)+obj.TIMEFUZZ*2*[-1,1];
       end
-      ax(3:4)=obj.mztarget(ind,k)+obj.MZFUZZ*2*[-1,1];
+      ax(3:4)=obj.mztarget(ind,args.adduct)+obj.MZFUZZ*2*[-1,1];
       axis(ax);
-      title(sprintf('%s',mzdata.name));
+      set(gca,'YTick',mzrange);
+      title(sprintf('%s - %s',mzdata.name,obj.ADDUCTS(args.adduct).name));
     end
     
     function listunexpected(obj,varargin)
