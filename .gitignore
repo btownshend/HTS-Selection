@@ -18,3 +18,9 @@ data/matfiles/S7SDF.mat
 ~$IDT Lib Order.xlsx
 .DS_Store
 matlab/S7/cdivmux/ops.csv
+matlab/S7/d.txt
+matlab/S7/mzfind.m
+matlab/S7/run-20200726-2220.txt
+matlab/S7/run-20200727-1000.txt
+matlab/S7/s7compounds.mat
+*.mat

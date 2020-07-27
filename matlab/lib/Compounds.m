@@ -23,7 +23,7 @@ classdef Compounds < handle
   end
   
   properties(Constant)
-    MZFUZZ=0.003;
+    MZFUZZ=0.008;
     TIMEFUZZ=40;   % in seconds
     ADDUCTS=struct('name',{'M+H','M+Na','M+K'},'mass',{1.007825035,22.9897677,38.963708});
   end
