@@ -104,7 +104,7 @@ end
 
 for i=1:size(data,1)
   n=strsplit(data(i).name,'-');
-  compounds.addMS(mzdata{i},'group',n{1},'map',struct('mz',data(i).mzmap,'time',data(i).timemap),'contains',data(i).contains);
+  s7compounds.addMS(mzdata{i},'group',n{1},'map',struct('mz',data(i).mzmap,'time',data(i).timemap),'contains',data(i).contains,'sample',data(i).name);
 end
 
 compounds.assignTimes();

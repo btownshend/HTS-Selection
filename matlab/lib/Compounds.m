@@ -3,6 +3,7 @@ classdef Compounds < handle
   properties
     names;   % names{i} - Name of compound i (e.g.'51B07')
     mass;    % mass(i) - monoisotpic mass of compounds i
+    samples;   % Name of sample (mass spec file)
     files;   % files{j} - Mass spec filename j
     maps;    % Piecewise linear maps for converting between references (col 1) and file values (col2)
     moles;   % moles(j) - Moles of each compound loaded in run j
@@ -515,7 +516,7 @@ classdef Compounds < handle
     % Add the unique peaks for compounds in given SDF from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
     % or scan all elution times if the no prior data (keep only if a unique peak is determined)
-      defaults=struct('debug',false,'group','','contains',{{}},'mztol',[],'timetol',[],'map',[]);
+      defaults=struct('debug',false,'group','','contains',{{}},'mztol',[],'timetol',[],'map',[],'sample',[]);
       % mzmap(i,2) - piecewise linear map for M/Z; mzmap(:,1) is true M/Z, mzmap(:,2) is for values in ms file
       % timemap(i,2) - piecewise linear map for elution times; timemap(:,1) is "standard" elution time
       args=processargs(defaults,varargin);
@@ -532,6 +533,12 @@ classdef Compounds < handle
       
       fprintf('Adding data from %s\n',ms.name);
       findex=obj.lookupMS(ms);
+      if ~isempty(args.sample)
+        obj.samples(findex)=args.sample;
+      else
+        [~,filename,~]=fileparts(obj.files{findex});
+        obj.samples(findex)=filename;
+      end
       obj.maps{findex}=args.map;
       if ~isempty(args.group)
         obj.group{findex}=args.group;
@@ -589,16 +596,14 @@ classdef Compounds < handle
       fprintf('summary():\n');
       fprintf('Contains %d files, %d compounds, %d adducts (%d with elution time)\n', length(obj.files), length(obj.names), length(obj.ADDUCTS), sum(isfinite(obj.meantime)));
       for i=1:length(obj.files)
-        [~,filename,~]=fileparts(obj.files{i});
-        fprintf('%2d %-20.20s %3d/%3d/%3d compounds identified/isolated/total\n', i,filename, sum(obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)),sum(obj.contains(:,i)&isfinite(obj.meantime)), sum(obj.contains(:,i)));
+        fprintf('%2d %-25.25s %3d/%3d/%3d compounds identified/isolated/total, %d false positives\n', i,obj.samples{i}, sum(obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)),sum(obj.contains(:,i)&isfinite(obj.meantime)), sum(obj.contains(:,i)),sum(~obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)));
       end
     end
     
     function notfound(obj)
     % Show compounds that have been isolated, but not found in files where they should be
       for i=1:length(obj.files)
-        [~,filename,~]=fileparts(obj.files{i});
-        fprintf('%2d %-20.20s %3d/%3d/%3d missing: ', i,filename, sum(obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)),sum(obj.contains(:,i)&isfinite(obj.meantime)), sum(obj.contains(:,i)));
+        fprintf('%2d %-20.20s %3d/%3d/%3d missing: ', i,obj.samples{i}, sum(obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)),sum(obj.contains(:,i)&isfinite(obj.meantime)), sum(obj.contains(:,i)));
         ind=obj.contains(:,i)&isfinite(obj.meantime)&~any(isfinite(obj.mz(:,:,i)),2);
         fprintf('%s\n',strjoin(obj.names(ind),','));
       end
@@ -625,8 +630,7 @@ classdef Compounds < handle
           x(ii).ioncount(j,k)=nanmean(obj.ic(i,k,files),3);
           f='';
           for k=1:length(files)
-            [~,filename,~]=fileparts(obj.files{files(k)});
-            f=[f,filename,','];
+            f=[f,obj.samples{files(k)},','];
           end
           f=f(1:end-1);  % Remove trailing comma
           x(ii).files{j}=f;
@@ -673,11 +677,7 @@ classdef Compounds < handle
         xlabel('Compound');
         ylabel('File');
         set(gca,'YTick',(1:length(obj.files))+0.5);
-        filenames={};
-        for j=1:length(obj.files)
-          [~,filenames{j},~]=fileparts(obj.files{j});
-        end
-        set(gca,'YTickLabels',filenames);
+        set(gca,'YTickLabels',obj.samples);
         set(gca,'ticklabelinterpreter','none');
         set(gca,'TickDir','out');
         set(gca,'TickLength',[1,1]*.002)
@@ -716,8 +716,7 @@ classdef Compounds < handle
             x=obj.mztarget;y=obj.mz(:,:,i);
             err=nanmedian(x(:)-y(:));
             fit=robustfit(x(:),y(:));
-            [~,filename]=fileparts(obj.files{i});
-            fprintf('%-20.20s  %5.1f [%5.1f, %5.1f]\n',filename, err*1e4,1e4*(fit(1)+(fit(2)-1)*rng));
+            fprintf('%-20.20s  %5.1f [%5.1f, %5.1f] N=%d\n',obj.samples{i}, err*1e4,1e4*(fit(1)+(fit(2)-1)*rng),npts);
             h(end+1)=plot(x(:),1e4*(y(:)-x(:)),'o');
             hold on;
             plot(rng,1e4*(fit(1)+(fit(2)-1)*rng),'-','Color',get(h(end),'Color'));
@@ -785,12 +784,11 @@ classdef Compounds < handle
             end
             fit=piecewise(tref(tsel),t2(tsel),args.timetol,2);
             pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
-            [~,filename]=fileparts(obj.files{i});
-            fprintf('%-20.20s  [%s]\n',filename, sprintf('(%4.0f@%4.0f) ',fit'));
+            fprintf('%-20.20s  [%s]\n',obj.samples{i}, sprintf('(%4.0f@%4.0f) ',fit'));
             h(end+1)=plot(tref,t2-tref,'o');
             hold on;
             plot(trefs,pred-trefs,'-','Color',get(h(end),'Color'));
-            leg{end+1}=filename;
+            leg{end+1}=obj.samples{i};
           end
         end
         sel=strcmp(dirs,udirs{j});
@@ -1030,8 +1028,7 @@ classdef Compounds < handle
           % TODO: Could list false positives here
           continue;
         end
-        [~,filename]=fileparts(obj.files{j});
-        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)',filename,obj.fsens(j,k),obj.mz(ind,k,j),obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j)/obj.fsens(j,k));
+        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%4.0f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j)/obj.fsens(j,k));
         m=obj.multihits{ind,k,j};
         if ~isempty(m)
           for p=1:length(m.mz)
@@ -1054,9 +1051,8 @@ classdef Compounds < handle
                 obj.meantime(ind)+obj.TIMEFUZZ*[-1,1],...
                 thresh);
         for j=1:length(obj.files)
-          [~,filename]=fileparts(obj.files{j});
           if ~obj.contains(ind,j) && obj.normic(ind,k,j)>=thresh
-            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)\n',filename,obj.fsens(j,k),obj.mz(ind,k,j), obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
+            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j), obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
             if ~isempty(args.mzdata)
               nexttile;
               obj.plotscan(ind,args.mzdata{j});
