@@ -13,9 +13,9 @@ if ~exist('s7vecs','var')
   s7vecs=load([matdir,'s7vecs.mat']);
 end
 
-if ~exist('compounds','var')
-  compounds=Compounds();
-  compounds.addCompoundsFromSDF(s7sdf);
+if ~exist('s7compounds','var')
+  s7compounds=Compounds();
+  s7compounds.addCompoundsFromSDF(s7sdf);
 end
 
 
@@ -78,7 +78,7 @@ data=cell2struct(data,{'well','name','filename','mzmap','timemap','contains'},2)
 for i=1:size(data,1)
   if isempty(data(i).contains)
     % Map from name to what the sample should contain
-    data(i).contains=s7contains(compounds,s7vecs,data(i).name);
+    data(i).contains=s7contains(s7compounds,s7vecs,data(i).name);
   end
 end
 
@@ -107,28 +107,28 @@ for i=1:size(data,1)
   s7compounds.addMS(mzdata{i},'group',n{1},'map',struct('mz',data(i).mzmap,'time',data(i).timemap),'contains',data(i).contains,'sample',data(i).name);
 end
 
-compounds.assignTimes();
-compounds.summary();
+s7compounds.assignTimes();
+s7compounds.summary();
 
-report=compounds.report();
+report=s7compounds.report();
 
-compounds.checkmzoffset();
 ref=1;
-compounds.checktime(ref,'timetol',compounds.TIMEFUZZ/2);
-compounds.checksensitivity(ref);
+s7compounds.checkmzoffset();
+s7compounds.checktime(ref,'timetol',s7compounds.TIMEFUZZ/2);
+s7compounds.checksensitivity(ref);
 
 writetable(report,[resultsdir,'report.csv']);
 fprintf('Saving compounds...');
-save([matdir,'compoundsS7.mat'],'compounds');
+save([matdir,'s7compounds.mat'],'s7compounds');
 fprintf('done\n');
 
-for i=1:length(compounds.ADDUCTS)
-  compounds.pcolorplot(i);
+for i=1:length(s7compounds.ADDUCTS)
+  s7compounds.pcolorplot(i);
 end
 
 % Summarize by compound
 namelist={'5A02'};
 for i=1:length(namelist)
-  compounds.getinfo(namelist{i})
+  s7compounds.getinfo(namelist{i})
   fprintf('\n');
 end
