@@ -437,14 +437,7 @@ classdef Compounds < handle
                 if esort(n)-esort(m) > 2*args.timetol
                   break
                 end
-                meantime=median(esort(m:n));
-                % Make sure we include m,n in our tolerances
-                if meantime-args.timetol > esort(m)
-                  meantime=esort(m)+args.timetol;
-                elseif meantime+args.timetol < esort(n)
-                  meantime=esort(n)-args.timetol;
-                end
-                sel=abs(etimes-meantime)<=args.timetol;
+                sel=etimes>=esort(m) & etimes<=esort(n);
                 nfalse=length(unique(srcfile(~cont & sel)));
                 ntrue=length(unique(srcfile(cont & sel)));
                 
@@ -452,7 +445,7 @@ classdef Compounds < handle
                 if ntrue-nfalse/falseweight>bestscore|| (ntrue-nfalse/falseweight==bestscore && esort(n)-esort(m)<esort(best(2))-esort(best(1)))
                   best=[m,n];
                   bestscore=ntrue-nfalse/falseweight;
-                  besttime=meantime;
+                  besttime=mean(esort([m,n]));
                   %fprintf('bestcore=%.1f\n',bestscore);
                 end
               end
