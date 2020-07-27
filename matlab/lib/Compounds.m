@@ -395,7 +395,7 @@ classdef Compounds < handle
     % For each compound, 
     %   build list of observations across massspec files (elution time,whether compound is expected)
     %   find elution time with highest correlation of hit vs. expected
-      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.6);
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.6,'mztol',obj.MZFUZZ);
       args=processargs(defaults,varargin);
 
       fprintf('assignTimes:\n');
@@ -417,10 +417,13 @@ classdef Compounds < handle
           for j=1:length(obj.files)
             m=obj.multihits{i,k,j};
             if ~isempty(m)
-              etimes=[etimes,m.time];
-              ic=[ic,m.ic];
-              srcadduct=[srcadduct,repmat(k,1,length(m.time))];
-              srcfile=[srcfile,repmat(j,1,length(m.time))];
+              mzsel=abs(m.filemz-m.mztarget)<=args.mztol;
+              if any(mzsel)
+                etimes=[etimes,m.time(mzsel)];
+                ic=[ic,m.ic(mzsel)];
+                srcadduct=[srcadduct,repmat(k,1,length(m.time(mzsel)))];
+                srcfile=[srcfile,repmat(j,1,length(m.time(mzsel)))];
+              end
             end
           end
           cont=obj.contains(i,srcfile);
