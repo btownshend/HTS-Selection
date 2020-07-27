@@ -730,7 +730,7 @@ classdef Compounds < handle
             h(end+1)=plot(x(:),1e4*(y(:)-x(:)),'o');
             hold on;
             plot(rng,1e4*(fit(1)+(fit(2)-1)*rng),'-','Color',get(h(end),'Color'));
-            leg{end+1}=filename;
+            leg{end+1}=obj.samples{i};
             allx=[allx;x(:)];
             ally=[ally;y(:)];
           end
@@ -1028,7 +1028,7 @@ classdef Compounds < handle
         end
       end
       if ~isempty(args.mzdata)
-        setfig(obj.names{ind});
+        setfig([obj.names{ind},'-',obj.ADDUCTS(args.adduct).name]);
         t=tiledlayout('flow');
         title(t,sprintf('%s m/z=%.4f t=%.0f',obj.names{ind},obj.mztarget(ind,k),obj.meantime(ind)));
       end
