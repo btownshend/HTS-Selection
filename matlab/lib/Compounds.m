@@ -412,7 +412,6 @@ classdef Compounds < handle
           if k>1 && isfinite(obj.meantime(i))
             continue;
           end
-          fprintf('\n%s: ',obj.names{i});
           etimes=[];ic=[];srcadduct=[]; srcfile=[];
           for j=1:length(obj.files)
             m=obj.multihits{i,k,j};
@@ -427,9 +426,10 @@ classdef Compounds < handle
             end
           end
           cont=obj.contains(i,srcfile);
+
           if length(etimes(cont))>1
             esort=sort(etimes(cont));
-            fprintf('esort=[%s]\n',sprintf('%.0f ',esort));
+            fprintf('%s esort=[%s]\n',obj.names{i}, sprintf('%.0f ',esort));
             best=[1,1];bestscore=-1e10;besttime=nan;
             falseweight=length(unique(srcfile(~cont)))/length(unique(srcfile(cont)));
             for m=1:length(esort)
@@ -466,7 +466,7 @@ classdef Compounds < handle
             ntrue=length(etimes(cont));
             nfalse=length(etimes(~cont));
           else
-            fprintf('no hits\n');
+            fprintf('%s: no hits',obj.names{i});
             continue;
           end
           nmax=sum(obj.contains(i,:));
@@ -534,7 +534,7 @@ classdef Compounds < handle
         args.map=struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]);
       end
       
-      fprintf('Adding data from %s\n',ms.name);
+      fprintf('Adding data from %s...',ms.name);
       findex=obj.lookupMS(ms);
       if ~isempty(args.sample)
         obj.samples(findex)=args.sample;
@@ -564,6 +564,9 @@ classdef Compounds < handle
       % Attempt to locate each one uniquely
       maxic=[];   % Maximum IC per target
       for i=1:length(obj.mass)
+        if mod(i,100)==1
+          fprintf('%d...',i);
+        end
        for k=1:length(obj.ADDUCTS)
         mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
         id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug);
@@ -576,6 +579,7 @@ classdef Compounds < handle
         maxic(i,k)=max([0,id.ic]);
        end
       end
+      fprintf('done.\n');
       for k=1:length(obj.ADDUCTS)
         ice=maxic(obj.contains(:,findex),k);
         icu=maxic(~obj.contains(:,findex),k);
