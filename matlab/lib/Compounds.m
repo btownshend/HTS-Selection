@@ -694,8 +694,11 @@ classdef Compounds < handle
       linkaxes(h);
     end
     
-    function checkmzoffset(obj)
+    function checkmzoffset(obj,varargin)
     % Check whether mzoffset used when reading mass spec files should be changed
+      defaults=struct('files',1:length(obj.files));
+      args=processargs(defaults,varargin);
+
       fprintf('checkmzoffset()\n');
       dirs={};
       for i=1:length(obj.files)
@@ -711,7 +714,8 @@ classdef Compounds < handle
         allx=[];ally=[];
         h=[];
         leg={};
-        for i=1:length(obj.files)
+        for ii=1:length(args.files)
+          i=args.files(ii);
           if strcmp(dirs{i},udirs{j})
             x=obj.mztarget;y=obj.mz(:,:,i);
             err=nanmedian(x(:)-y(:));
