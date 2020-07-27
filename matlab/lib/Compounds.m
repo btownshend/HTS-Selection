@@ -1037,7 +1037,7 @@ classdef Compounds < handle
         if ~isempty(m)
           for p=1:length(m.mz)
             if isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1
-              fprintf(' [mz=%8.4f, t=%4.0f, ic=%8.0f]', m.mz(p), m.time(p), m.ic(p));
+              fprintf(' [mz=%8.4f (d=%3.0f), t=%4.0f, ic=%8.0f]', m.mz(p), (m.mz(p)-obj.mztarget(ind,k))*1e4,m.time(p), m.ic(p));
             end
           end
         end
