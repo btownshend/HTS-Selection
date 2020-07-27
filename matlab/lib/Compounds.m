@@ -964,17 +964,20 @@ classdef Compounds < handle
       set(h,'Interpreter','none');
     end
 
-    function plotmap(obj,k)
+    function plotmap(obj,varargin)
+      defaults=struct('adduct',1);
+      args=processargs(defaults,varargin);
+
     % Plot map of compounds in mass vs time space
-      setfig(sprintf('Compound Map [%s]',obj.ADDUCTS(k).name));clf;
+      setfig(sprintf('Compound Map [%s]',obj.ADDUCTS(args.adduct).name));clf;
       etime=[];
       for i=1:length(obj.mass)
-        etime(i,1)=nanmin(obj.time(i,k,:));
-        etime(i,2)=nanmax(obj.time(i,k,:));
-        mz(i,1)=nanmin(obj.mz(i,k,:));
-        mz(i,2)=nanmax(obj.mz(i,k,:));
+        etime(i,1)=nanmin(obj.time(i,args.adduct,:));
+        etime(i,2)=nanmax(obj.time(i,args.adduct,:));
+        mz(i,1)=nanmin(obj.mz(i,args.adduct,:));
+        mz(i,2)=nanmax(obj.mz(i,args.adduct,:));
       end
-      plot(obj.mztarget([],k),obj.meantime,'.b');
+      plot(obj.mztarget([],args.adduct),obj.meantime,'.b');
       hold on;
       ngood=0;
       for i=1:size(etime,1)
@@ -992,7 +995,7 @@ classdef Compounds < handle
       end
       xlabel('m/z');
       ylabel('Elution time (s)');
-      title(sprintf('Compound Map [%s] (%d distinguishable/%d identified)',obj.ADDUCTS(k).name,ngood,sum(isfinite(obj.meantime))));
+      title(sprintf('Compound Map [%s] (%d distinguishable/%d identified)',obj.ADDUCTS(args.adduct).name,ngood,sum(isfinite(obj.meantime))));
     end
     
     function getinfo(obj,name,varargin)
