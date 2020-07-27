@@ -1001,7 +1001,7 @@ classdef Compounds < handle
       if isempty(args.adduct)
         % Show all adducts
         for i=1:length(obj.ADDUCTS)
-          obj.getinfo(name,'adduct',i);
+          obj.getinfo(name,'adduct',i,'mzdata',args.mzdata);
           fprintf('\n');
         end
         return;
