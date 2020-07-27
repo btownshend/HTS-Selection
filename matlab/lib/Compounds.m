@@ -542,8 +542,8 @@ classdef Compounds < handle
       if isempty(args.contains)
         obj.contains(:,findex)=true;
       elseif islogical(args.contains)
-        assert(length(contains)==size(obj.contains,1));
-        obj.contains(:,findex)=contains;
+        assert(length(args.contains)==size(obj.contains,1));
+        obj.contains(:,findex)=args.contains;
       elseif strcmp(args.contains{1},'NONE')
         obj.contains(:,findex)=false;
       else
