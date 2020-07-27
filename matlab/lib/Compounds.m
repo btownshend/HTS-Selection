@@ -718,6 +718,12 @@ classdef Compounds < handle
           i=args.files(ii);
           if strcmp(dirs{i},udirs{j})
             x=obj.mztarget;y=obj.mz(:,:,i);
+            x(~obj.contains(:,i))=nan;   % Only ones that it is supposed to contain
+            npts=sum(isfinite(y(:)) & isfinite(x(:)));
+            if npts<10
+              fprintf('Only %d data points for %s ... skipping\n', npts, obj.files{i});
+              continue;
+            end
             err=nanmedian(x(:)-y(:));
             fit=robustfit(x(:),y(:));
             fprintf('%-20.20s  %5.1f [%5.1f, %5.1f] N=%d\n',obj.samples{i}, err*1e4,1e4*(fit(1)+(fit(2)-1)*rng),npts);
