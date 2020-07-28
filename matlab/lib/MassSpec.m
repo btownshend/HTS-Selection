@@ -148,8 +148,13 @@ classdef MassSpec < handle
     % Returns struct containing possible peaks (integrated over peak in both time and m/z) at different elutions times
     % Only peaks with ion count >= peakratio* maximum peak ion count are returned
     % If sdf provided, only used to construct a name for the compound
-      defaults=struct('elutetime',[],'mztol',0.01,'timetol',30,'debug',false,'ignoreelutetimes',[],'peakratio',0.05);
+    % overseg is minimum separation between peaks; could be less than TIMEFUZZ, since the fuzz also includes misalignment of times
+      defaults=struct('elutetime',[],'mztol',0.01,'timetol',30,'debug',false,'ignoreelutetimes',[],'peakratio',0.05,'overseg',nan,'showplot',false,'heightfilter',100);
       args=processargs(defaults,varargin);
+      
+      if isnan(args.overseg)
+        args.overseg=args.timetol;
+      end
       
       % Build a table of elution vs IC for this M/Z
       if isempty(args.elutetime)
@@ -169,12 +174,12 @@ classdef MassSpec < handle
       
       % Find peaks
       if ~isempty(ic) && length(ic)>1
-        [p,pfwhh]=mspeaks(time,ic,'OVERSEGMENTATIONFILTER',args.timetol);
       maxtime=[]; maxic=[]; maxmz=[]; pfwhh=[];
+        [p,pfwhh]=mspeaks(time,ic,'denoising',false,'OVERSEGMENTATIONFILTER',args.timetol,'heightfilter',args.heightfilter,'showplot',args.showplot,'style','fwhhtriangle');
         if ~isempty(p)
           for i=1:size(p,1)
             sel=time>=pfwhh(i,1) & time<=pfwhh(i,2);
-            maxic(i)=sum(ic(sel));
+            maxic(i)=sum(ic(sel));   % Integrate instead of just using the max height
             maxmz(i)=nansum(mz(sel).*ic(sel))/maxic(i);
             maxtime(i)=p(i,1);
           end
@@ -215,7 +220,7 @@ classdef MassSpec < handle
         end
       else
         if args.debug
-          fprintf('Have multiple peaks for %s with peak ratio=%f\n', desc, maxic(2)/maxic(1));
+          fprintf('Have %d peaks for %s with peak ratio=%f\n',length(maxmz), desc, maxic(2)/maxic(1));
         end
       end
     end
