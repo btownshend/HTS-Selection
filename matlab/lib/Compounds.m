@@ -1092,8 +1092,8 @@ classdef Compounds < handle
                 obj.timewindow(ind,:),...
                 args.falsethresh);
         for j=1:length(obj.files)
-            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j), obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
           if ~obj.contains(ind,j) && obj.normic(ind,k,j)>=args.falsethresh && obj.time(ind,k,j)>=obj.timewindow(ind,1) && obj.time(ind,k,j) <= obj.timewindow(ind,2)
+            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%4.0f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j), (obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4, obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
             if ~isempty(args.mzdata)
               nexttile;
               obj.plotscan(ind,args.mzdata{j},'adduct',args.adduct);
