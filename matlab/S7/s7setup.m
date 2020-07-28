@@ -71,7 +71,7 @@ data={ % Well, name, filename, mzmap, timemap,contains
           'F6','V256B-H2','F6.mzXML',mzmap,timemap,{},
           'G6','V256B-A3','G6.mzXML',mzmap,timemap,{},
           'H6','V256B-B3','H6.mzXML',mzmap,timemap,{},
-          'A7','V256B-C3','A7.mzXML',mzmap,timemap,{},
+% 'A7','V256B-C3','A7.mzXML',mzmap,timemap,{},
           'B7','DMSO','B7.mzXML',mzmap,timemap,{}
           };
 data=cell2struct(data,{'well','name','filename','mzmap','timemap','contains'},2);
