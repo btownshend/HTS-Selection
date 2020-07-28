@@ -181,13 +181,6 @@ classdef MassSpec < handle
             maxmz(i)=nansum(mz(sel).*ic(sel))/maxic(i);
             maxtime(i)=p(i,1);
           end
-          [maxic,ord]=sort(maxic,'desc');
-          maxmz=maxmz(ord);
-          maxtime=maxtime(ord);
-          keep=maxic>=max(maxic)*args.peakratio;
-          maxic=maxic(keep);
-          maxmz=maxmz(keep);
-          maxtime=maxtime(keep);
         else
           %fprintf('m/z scan gave %d peaks, but none from mspeaks\n', length(ic));
           maxmz=sum(ic.*mz)/sum(ic);
@@ -197,6 +190,14 @@ classdef MassSpec < handle
             pfwhh(i,1:2)=[1,1]*time(i);
           end
         end
+        [maxic,ord]=sort(maxic,'desc');
+        maxmz=maxmz(ord);
+        maxtime=maxtime(ord);
+        pfwhh=pfwhh(ord,:);
+        keep=maxic>=max(maxic)*args.peakratio;
+        maxic=maxic(keep);
+        maxmz=maxmz(keep);
+        maxtime=maxtime(keep);
         pfwhh=pfwhh(keep,:);
       end
       assert(all(isfinite(maxmz)));
