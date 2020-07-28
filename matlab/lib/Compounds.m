@@ -721,7 +721,7 @@ classdef Compounds < handle
           i=args.files(ii);
           if strcmp(dirs{i},udirs{j})
             x=obj.mztarget;y=obj.mz(:,:,i);
-            x(~obj.contains(:,i))=nan;   % Only ones that it is supposed to contain
+            x(~obj.contains(:,i),:)=nan;   % Only ones that it is supposed to contain
             npts=sum(isfinite(y(:)) & isfinite(x(:)));
             if npts<10
               fprintf('Only %d data points for %s ... skipping\n', npts, obj.files{i});
