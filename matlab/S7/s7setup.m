@@ -20,17 +20,17 @@ end
 
 
 msdir=[datadir,'MassSpec/20200724'];
-mzmap=[113,113-17e-4;500,500-42e-4];
+mzmap=[113,113-13e-4;500,500-32e-4];
 timemap=[0,0;1,1];
 data={ % Well, name, filename, mzmap, timemap,contains
           'A1','DMSO','A1.mzXML',mzmap,timemap,{},
-          'B1','V256B-D3','B1.mzXML',mzmap,timemap,{},
-          'C1','PR80-A1','C1.mzXML',mzmap,timemap,{},
-          'D1','PR80-H11','D1.mzXML',mzmap,timemap,{},
-          'E1','R320-A','E1.mzXML',mzmap,timemap,{},
-          'F1','R320-P','F1.mzXML',mzmap,timemap,{},
+          'B1','V256B-D3','B1.mzXML',[113,113-17e-4;500,500-117e-4],timemap,{},
+          'C1','PR80-A1','C1.mzXML',[113,113-29e-4;500,500-101e-4],timemap,{},
+          'D1','PR80-H11','D1.mzXML',[113,113-17e-4;500,500-87e-4],timemap,{},
+          'E1','R320-A','E1.mzXML',[113,113-22e-4;500,500-73e-4],timemap,{},
+          'F1','R320-P','F1.mzXML',[113,113-21e-4;500,500-69e-4],timemap,{},
           'G1','V5120','G1.mzXML',mzmap,timemap,{},
-          'H1','CDIQ0005-Col3','H1.mzXML',mzmap,timemap,{'5A02','5B02','5C02','5D02','5E02','5F02','5G02','5H02','7A02','7B02','7C02','7D02','7E02','7F02','7G02','7H02'},
+          'H1','CDIQ0005-Col3','H1.mzXML',[113,113-7e-4;500,500-59e-4],timemap,{'5A02','5B02','5C02','5D02','5E02','5F02','5G02','5H02','7A02','7B02','7C02','7D02','7E02','7F02','7G02','7H02'},
           'A2','CDIQ0005-Col22','A2.mzXML',mzmap,timemap,{'6A11','6B11','6C11','6D11','6E11','6F11','6G11','6H11','8A11','8B11','8C11','8D11','8E11','8F11','8G11','8H11'},
           'B2','DMSO','B2.mzXML',mzmap,timemap,{},
           'C2','V256A-A1','C2.mzXML',mzmap,timemap,{},
