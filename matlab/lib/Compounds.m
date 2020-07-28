@@ -790,11 +790,8 @@ classdef Compounds < handle
        for k=1:length(obj.ADDUCTS)
         for j=args.files
           if obj.contains(i,j)
-            m=obj.multihits{i,k,j};
-            if ~isempty(m) && ~isempty(m.ic)
-              [ic(i,k,j),ord]=max(m.ic);
-              t(i,k,j)=m.filetime(ord);
-            end
+            t(i,k,j)=obj.time(i,k,j);
+            ic(i,k,j)=obj.ic(i,k,j);
           end
         end
        end
@@ -815,6 +812,9 @@ classdef Compounds < handle
         nexttile;
         h=[];leg={};
         for i=args.files
+          if i==ref
+            continue;
+          end
           if strcmp(dirs{i},udirs{j})
             t2=t(:,:,i);t2=t2(:);
             if sum(isfinite(t2(tsel)))<4
