@@ -1117,6 +1117,39 @@ classdef Compounds < handle
       title(sprintf('%s - %s',mzdata.name,obj.ADDUCTS(args.adduct).name));
     end
     
+    function overlaps(obj)
+      [stime,ord]=sort(obj.timewindow(:,1));
+      nover=0;
+      for i=1:length(stime)
+        if isnan(stime(i))
+          break;
+        end
+        ii=ord(i);
+        for j=i+1:length(stime)
+          if isnan(stime(j))
+            break;
+          end
+          jj=ord(j);
+          if obj.timewindow(jj,1)>=obj.timewindow(ii,2)
+            break;
+          end
+          assert(obj.timewindow(ii,2)>obj.timewindow(jj,1));
+          for k1=1:length(obj.ADDUCTS)
+            m1=(obj.mass(ii)+obj.ADDUCTS(k1).mass);
+            for k2=1:length(obj.ADDUCTS)
+              m2=(obj.mass(jj)+obj.ADDUCTS(k2).mass);
+              mdiff=m1-m2;
+              if abs(mdiff) < 2*obj.MZFUZZ
+                fprintf('Overlap: %6.6s+%-4.4s (%.4f,[%4.0f,%4.0f]) and %6.6s+%-4.4s (%.4f,[%4.0f,%4.0f]) dmz=%.4f\n', obj.names{ii},obj.ADDUCTS(k1).name,m1,obj.timewindow(ii,:),obj.names{jj},obj.ADDUCTS(k2).name,m2,obj.timewindow(jj,:),abs(mdiff));
+                nover=nover+1;
+              end
+            end
+          end
+        end
+      end
+      fprintf('Have %d overlaps (%.3f/compound)\n', nover, nover*2/length(obj.names));
+    end
+    
     function listunexpected(obj,varargin)
     % List peaks that shouldn't be present, in order of descending ion count
       defaults=struct('nlist',30,'adduct',1);
