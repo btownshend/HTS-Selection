@@ -397,7 +397,7 @@ classdef Compounds < handle
     % For each compound, 
     %   build list of observations across massspec files (elution time,whether compound is expected)
     %   find elution time with highest correlation of hit vs. expected
-      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.6,'mztol',obj.MZFUZZ);
+      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.6,'mztol',obj.MZFUZZ,'plot','');
       args=processargs(defaults,varargin);
 
       fprintf('assignTimes:\n');
@@ -410,7 +410,7 @@ classdef Compounds < handle
       obj.timewindow(:,:)=nan;
       for k=1:length(obj.ADDUCTS)
         % Try assignment for each adduct; only work on ones that haven't been assigned using a prior adduct
-        fprintf('\n\n[%s] ',obj.ADDUCTS(k).name);
+        fprintf('[%s]\n',obj.ADDUCTS(k).name);
         for i=1:length(obj.names)
           if k>1 && isfinite(obj.meantime(i))
             continue;
@@ -432,7 +432,9 @@ classdef Compounds < handle
 
           if length(etimes(cont))>1
             esort=sort(etimes(cont));
-            fprintf('%s esort=[%s]\n',obj.names{i}, sprintf('%.0f ',esort));
+            if args.debug || strcmp(args.plot,obj.names{i})
+              fprintf('%s esort=[%s]\n',obj.names{i}, sprintf('%.0f ',esort));
+            end
             best=[1,1];bestscore=-1e10;besttime=nan;
             falseweight=length(unique(srcfile(~cont)))/length(unique(srcfile(cont)));
             for m=1:length(esort)
@@ -456,21 +458,31 @@ classdef Compounds < handle
             rng=besttime+args.timetol*[-1,1];
             nfalse=length(unique(srcfile(~cont & abs(etimes-besttime)<=args.timetol)));
             ntrue=length(unique(srcfile(cont & abs(etimes-besttime)<=args.timetol)));
-            fprintf('Best has %d true and %d false hits over [%.0f,%.0f], width=%.0f\n',ntrue,nfalse,rng,diff(esort(best)));
+            if args.debug || strcmp(args.plot,obj.names{i})
+              fprintf('Best has %d true and %d false hits over [%.0f,%.0f], width=%.0f\n',ntrue,nfalse,rng,diff(esort(best)));
+            end
           elseif length(etimes)==1
             besttime=etimes;
             ntrue=length(etimes(cont));
             nfalse=length(etimes(~cont));
           else
-            fprintf('%s: no hits',obj.names{i});
+            if args.debug || strcmp(args.plot,obj.names{i})
+              fprintf('%s: no hits',obj.names{i});
+            end
             continue;
           end
           nmax=sum(obj.contains(i,:));
-          fprintf('%d/%d hits with %d false hits at T=%.0f ', ntrue, nmax, nfalse, besttime);
+          if args.debug || strcmp(args.plot,obj.names{i})
+            fprintf('%d/%d hits with %d false hits at T=%.0f ', ntrue, nmax, nfalse, besttime);
+          end
           if ntrue/nmax < args.minhitfrac 
-            fprintf('too few hits (%d hits/%d files < %.2f)',ntrue,nmax,args.minhitfrac);
+            if args.debug || strcmp(args.plot,obj.names{i})
+              fprintf('too few hits (%d hits/%d files < %.2f)',ntrue,nmax,args.minhitfrac);
+            end
           elseif ntrue<args.minhits
-            fprintf('too few hits (%d hits < %d)',ntrue,args.minhits);
+            if args.debug || strcmp(args.plot,obj.names{i})
+              fprintf('too few hits (%d hits < %d)',ntrue,args.minhits);
+            end
           else
             % Construct consensus view
             obj.meantime(i)=besttime;
@@ -491,10 +503,12 @@ classdef Compounds < handle
               end
             end
           end
-          fprintf('\n');
+          if args.debug || strcmp(args.plot,obj.names{i})
+            fprintf('\n');
+          end
         
-          if args.debug
-            setfig('assignTimes');clf;
+          if strcmp(args.plot,obj.names{i})
+            setfig(['assignTimes-',obj.names{i}]);clf;
             semilogy(etimes(~cont),ic(~cont),'or');
             hold on;
             semilogy(etimes(cont),ic(cont),'xb');
