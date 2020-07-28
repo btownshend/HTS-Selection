@@ -140,7 +140,6 @@ classdef MassSpec < handle
           mz(i-first+1)=sum((p(sel,1).*p(sel,2)))/ic(i-first+1);
         end
       end
-      %sel=ic>0;
     end
     
     function res=findcompound(obj, mztarget, varargin)
