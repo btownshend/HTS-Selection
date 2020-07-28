@@ -1051,14 +1051,23 @@ classdef Compounds < handle
       meanic=nanmean(obj.ic(ind,k,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,k,obj.contains(ind,:)));
       fprintf('%s[%s] (%d): m/z=%8.4f t=%.0f [%.0f-%.0f] sens=%.0f\n',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.timewindow(ind,:),obj.tsens(ind,k));
-      isomers=setdiff(find(abs(obj.mass-obj.mass(ind))<obj.MZFUZZ*2),ind);
-      % TODO: Fix to handle same m/z (with adducts) instead of same mass
-      if length(isomers)>0
-        fprintf('Isomers:\n');
-        for ii=1:length(isomers)
-          i=isomers(ii);
-          imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
-          fprintf('\t%s[%s] (%d): m/z=%8.4f (d=%.0f) t=%7.2f (d=%.0f) meanic=%.0f\n',obj.names{i},obj.ADDUCTS(k).name, i, obj.mass(i)+obj.ADDUCTS(k).mass,(obj.mass(i)-obj.mass(ind))*1e4,obj.meantime(i),obj.meantime(i)-obj.meantime(ind),imeanic);
+      isomers=[];
+      label=true;
+      for k1=1:length(obj.ADDUCTS)
+        isomers=setdiff(find(abs(obj.mass+obj.ADDUCTS(k1).mass-(obj.mass(ind)+obj.ADDUCTS(k).mass))<obj.MZFUZZ*2),ind);
+        if length(isomers)>0
+          if label
+            fprintf('Isomers:\n');
+            label=false;
+          end
+          for ii=1:length(isomers)
+            i=isomers(ii);
+            imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
+            fprintf('\t%-6.6s[%-4.4s]: m/z=%8.4f (d=%4.0f) t=%4.0f (d=%4.0f) meanic=%.0f\n',...
+                    obj.names{i},obj.ADDUCTS(k1).name, obj.mass(i)+obj.ADDUCTS(k1).mass,...
+                    (obj.mass(i)+obj.ADDUCTS(k1).mass-(obj.mass(ind)+obj.ADDUCTS(k).mass))*1e4,...
+                    obj.meantime(i),obj.meantime(i)-obj.meantime(ind),imeanic);
+          end
         end
       end
       if ~isempty(args.mzdata)
