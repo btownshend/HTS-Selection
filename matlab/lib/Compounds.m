@@ -779,15 +779,16 @@ classdef Compounds < handle
     
     function map=checktime(obj,ref,varargin)
     % Check all multiple hits of ref against each other
-      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'refrange',[500,2500]);
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'refrange',[500,2500],'files',1:length(obj.files));
       args=processargs(defaults,varargin);
 
+      args.files=union(args.files,ref);
       fprintf('checktime(%d,''timetol'',%.0f)\n',ref,args.timetol);
       t = nan(size(obj.mz));
       ic = nan(size(obj.mz));
       for i=1:length(obj.names)
        for k=1:length(obj.ADDUCTS)
-        for j=1:length(obj.files)
+        for j=args.files
           if obj.contains(i,j)
             m=obj.multihits{i,k,j};
             if ~isempty(m) && ~isempty(m.ic)
@@ -799,10 +800,10 @@ classdef Compounds < handle
        end
       end
       dirs={};
-      for i=1:length(obj.files)
+      for i=args.files
         dirs{i}=fileparts(obj.files{i});
       end
-      udirs=unique(dirs);
+      udirs=unique(dirs(args.files));
 
       tref=t(:,:,ref);tref=tref(:);
       tsel=tref>=args.refrange(1) & tref<=args.refrange(2);
@@ -813,7 +814,7 @@ classdef Compounds < handle
       for j=1:length(udirs);
         nexttile;
         h=[];leg={};
-        for i=1:length(obj.files)
+        for i=args.files
           if strcmp(dirs{i},udirs{j})
             t2=t(:,:,i);t2=t2(:);
             if sum(isfinite(t2(tsel)))<4
