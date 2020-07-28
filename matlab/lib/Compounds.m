@@ -33,6 +33,7 @@ classdef Compounds < handle
     function obj=Compounds()
       obj.multihits={};
       obj.contains=false(0,0);
+      obj.samples={};
     end
 
     function ind=find(obj,name)
@@ -533,10 +534,10 @@ classdef Compounds < handle
       fprintf('Adding data from %s...',ms.name);
       findex=obj.lookupMS(ms);
       if ~isempty(args.sample)
-        obj.samples(findex)=args.sample;
+        obj.samples{findex}=args.sample;
       else
         [~,filename,~]=fileparts(obj.files{findex});
-        obj.samples(findex)=filename;
+        obj.samples{findex}=filename;
       end
       obj.maps{findex}=args.map;
       if ~isempty(args.group)
