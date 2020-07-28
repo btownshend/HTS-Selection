@@ -455,16 +455,16 @@ classdef Compounds < handle
                   best=[m,n];
                   bestscore=ntrue-nfalse/falseweight;
                   besttime=mean(esort([m,n]));
-                  bestwindow=[min(ewind(m:n,1)),max(ewind(m:n,2))];
+                  %bestwindow=[min(ewind(m:n,1)),max(ewind(m:n,2))];
+                  bestwindow=esort([m,n]);
                   %fprintf('bestcore=%.1f\n',bestscore);
                 end
               end
             end
-            rng=besttime+args.timetol*[-1,1];
-            nfalse=length(unique(srcfile(~cont & abs(etimes-besttime)<=args.timetol)));
-            ntrue=length(unique(srcfile(cont & abs(etimes-besttime)<=args.timetol)));
+            nfalse=length(unique(srcfile(~cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
+            ntrue=length(unique(srcfile(cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
             if args.debug || strcmp(args.plot,obj.names{i})
-              fprintf('Best has %d true and %d false hits over [%.0f,%.0f], width=%.0f\n',ntrue,nfalse,rng,diff(esort(best)));
+              fprintf('Best has %d true and %d false hits over [%.0f,%.0f], width=%.0f\n',ntrue,nfalse,bestwindow,diff(esort(best)));
             end
           elseif length(etimes)==1
             besttime=etimes;
