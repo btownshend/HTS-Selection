@@ -100,9 +100,11 @@ for i=1:size(data,1)
       % Prune out some data
       mzdata{i}.filter([0,mzdata{i}.time(end)-300],[130,530]);  % NOTE: this is using the localtimes to filter
   end
-end
-
-for i=1:size(data,1)
+  mzdata{i}.name=data(i).name;   % Reset name to our list
+  if ismember(mzdata{i}.path,s7compounds.files)
+    fprintf('Skipping reload of %s\n', mzdata{i}.name);
+    continue;
+  end
   n=strsplit(data(i).name,'-');
   s7compounds.addMS(mzdata{i},'group',n{1},'map',struct('mz',data(i).mzmap,'time',data(i).timemap),'contains',data(i).contains,'sample',data(i).name);
 end
