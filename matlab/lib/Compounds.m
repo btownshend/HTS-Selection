@@ -861,7 +861,11 @@ classdef Compounds < handle
         sens=[];
         for i=1:length(obj.files)
           sel=all(obj.contains(:,[i,ref]),2);
-          sens(i)=nanmedian(obj.ic(sel,k,i)./obj.ic(sel,k,ref));
+          if any(sel)
+            sens(i)=nanmedian(obj.ic(sel,k,i)./obj.ic(sel,k,ref));
+          else
+            sens(i)=1;
+          end
         end
         ti=['File Sensitivity - ',obj.ADDUCTS(k).name];
         setfig(ti);clf;
