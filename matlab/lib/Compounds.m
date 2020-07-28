@@ -610,12 +610,15 @@ classdef Compounds < handle
       end
     end
     
-    function summary(obj)
+    function summary(obj,varargin)
+      defaults=struct('thresh',0.1);
+      args=processargs(defaults,varargin);
     % Summarize data available
       fprintf('summary():\n');
-      fprintf('Contains %d files, %d compounds, %d adducts (%d with elution time)\n', length(obj.files), length(obj.names), length(obj.ADDUCTS), sum(isfinite(obj.meantime)));
+      fprintf('Contains %d files, %d compounds, %d adducts (%d with elution time) Counts for norm IC>=%.2f\n', length(obj.files), length(obj.names), length(obj.ADDUCTS), sum(isfinite(obj.meantime)),args.thresh);
       for i=1:length(obj.files)
-        fprintf('%2d %-25.25s %3d/%3d/%3d compounds identified/isolated/total, %d false positives\n', i,obj.samples{i}, sum(obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)),sum(obj.contains(:,i)&isfinite(obj.meantime)), sum(obj.contains(:,i)),sum(~obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)));
+        hit=any(obj.normic(:,:,i)>args.thresh,2);
+        fprintf('%2d %-25.25s %3d/%3d/%3d compounds identified/isolated/total, %d false positives\n', i,obj.samples{i}, sum(obj.contains(:,i) & hit),sum(obj.contains(:,i)&isfinite(obj.meantime)), sum(obj.contains(:,i)),sum(~obj.contains(:,i) & hit));
       end
     end
     
