@@ -139,8 +139,6 @@ classdef MassSpec < handle
           mz(i-first+1)=sum((obj.peaks{i}(sel,1).*obj.peaks{i}(sel,2)))/ic(i-first+1);
         end
       end
-      sel=ic>0;
-      ic=ic(sel);mz=mz(sel);time=time(sel);
     end
     
     function res=findcompound(obj, mztarget, varargin)
@@ -173,8 +171,8 @@ classdef MassSpec < handle
 
       
       % Find peaks
-      if ~isempty(ic) && length(ic)>1
       maxtime=[]; maxic=[]; maxmz=[]; pfwhh=[];
+      if ~isempty(ic) && length(ic)>1 && any(ic>0)
         [p,pfwhh]=mspeaks(time,ic,'denoising',false,'OVERSEGMENTATIONFILTER',args.timetol,'heightfilter',args.heightfilter,'showplot',args.showplot,'style','fwhhtriangle');
         if ~isempty(p)
           for i=1:size(p,1)
