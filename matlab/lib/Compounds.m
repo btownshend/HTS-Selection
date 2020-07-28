@@ -416,7 +416,7 @@ classdef Compounds < handle
           if k>1 && isfinite(obj.meantime(i))
             continue;
           end
-          etimes=[];ic=[];srcadduct=[]; srcfile=[];
+          etimes=[];ic=[];srcadduct=[]; srcfile=[]; fwhh=[];
           for j=1:length(obj.files)
             m=obj.multihits{i,k,j};
             if ~isempty(m)
@@ -426,13 +426,16 @@ classdef Compounds < handle
                 ic=[ic,m.ic(mzsel)];
                 srcadduct=[srcadduct,repmat(k,1,length(m.time(mzsel)))];
                 srcfile=[srcfile,repmat(j,1,length(m.time(mzsel)))];
+                fwhh=[fwhh;m.pfwhh(mzsel,:)];
               end
             end
           end
           cont=obj.contains(i,srcfile);
 
           if length(etimes(cont))>1
-            esort=sort(etimes(cont));
+            [esort,ord]=sort(etimes(cont));
+            ewind=fwhh(cont,:);
+            ewind=ewind(ord,:);
             if args.debug || strcmp(args.plot,obj.names{i})
               fprintf('%s esort=[%s]\n',obj.names{i}, sprintf('%.0f ',esort));
             end
@@ -452,6 +455,7 @@ classdef Compounds < handle
                   best=[m,n];
                   bestscore=ntrue-nfalse/falseweight;
                   besttime=mean(esort([m,n]));
+                  bestwindow=[min(ewind(m:n,1)),max(ewind(m:n,2))];
                   %fprintf('bestcore=%.1f\n',bestscore);
                 end
               end
@@ -464,6 +468,7 @@ classdef Compounds < handle
             end
           elseif length(etimes)==1
             besttime=etimes;
+            bestwindow=fwhh;
             ntrue=length(etimes(cont));
             nfalse=length(etimes(~cont));
           else
@@ -487,7 +492,7 @@ classdef Compounds < handle
           else
             % Construct consensus view
             obj.meantime(i)=besttime;
-            obj.timewindow(i,1:2)=esort(best);
+            obj.timewindow(i,1:2)=bestwindow;
             for kk=1:length(obj.ADDUCTS)
               for j=1:length(obj.files)
                 m=obj.multihits{i,kk,j};
@@ -516,6 +521,8 @@ classdef Compounds < handle
             ax=axis;
             plot((besttime-args.timetol)*[1,1],ax(3:4),':g');
             plot((besttime+args.timetol)*[1,1],ax(3:4),':g');
+            plot(bestwindow(1)*[1,1],ax(3:4),':m');
+            plot(bestwindow(2)*[1,1],ax(3:4),':m');
             xlabel('Elution time');
             ylabel('Ion count');
             title(obj.names{i});
@@ -1041,7 +1048,7 @@ classdef Compounds < handle
       
       meanic=nanmean(obj.ic(ind,k,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,k,obj.contains(ind,:)));
-      fprintf('%s[%s] (%d): m/z=%8.4f t=%7.2f sens=%.0f\n',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.tsens(ind,k));
+      fprintf('%s[%s] (%d): m/z=%8.4f t=%.0f [%.0f-%.0f] sens=%.0f\n',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.timewindow(ind,:),obj.tsens(ind,k));
       isomers=setdiff(find(abs(obj.mass-obj.mass(ind))<obj.MZFUZZ*2),ind);
       % TODO: Fix to handle same m/z (with adducts) instead of same mass
       if length(isomers)>0
@@ -1082,7 +1089,7 @@ classdef Compounds < handle
         % False positives
         fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.0f,%.0f], NormIC >= %.3f:\n',...
                 obj.mztarget(ind,k)+obj.MZFUZZ*[-1,1],...
-                obj.meantime(ind)+obj.TIMEFUZZ*[-1,1],...
+                obj.timewindow(ind,:),...
                 args.falsethresh);
         for j=1:length(obj.files)
             fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j), obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
