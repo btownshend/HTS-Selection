@@ -120,9 +120,10 @@ ref=7;
 s7compounds.checktime(ref,'timetol',s7compounds.TIMEFUZZ/2);
 s7compounds.checksensitivity(ref);
 
-writetable(report,[resultsdir,'report.csv']);
+ds=datestr(now,'YYYYmmDDHHMM');
+writetable(report,[resultsdir,sprintf('report-%s.csv',ds)]);
 fprintf('Saving compounds...');
-save([matdir,'s7compounds.mat'],'s7compounds');
+save(sprintf('%s/s7compounds-%s.mat',matdir,ds),'s7compounds');
 fprintf('done\n');
 
 for i=1:length(s7compounds.ADDUCTS)
