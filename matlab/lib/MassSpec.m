@@ -175,7 +175,8 @@ classdef MassSpec < handle
       % Find peaks
       maxtime=[]; maxic=[]; maxmz=[]; pfwhh=[];
       if ~isempty(ic) && length(ic)>1 && any(ic>0)
-        [p,pfwhh]=mspeaks(time,ic,'denoising',false,'OVERSEGMENTATIONFILTER',args.timetol,'heightfilter',args.heightfilter,'showplot',args.showplot,'style','fwhhtriangle');
+        % mspeaks won't find peaks that are only in the last sample (or probably first)
+        [p,pfwhh]=mspeaks([time(1)-1;time;time(end)+1],[0;ic;0],'denoising',false,'OVERSEGMENTATIONFILTER',args.overseg,'heightfilter',args.heightfilter,'showplot',args.showplot,'style','fwhhtriangle');
         if ~isempty(p)
           for i=1:size(p,1)
             sel=time>=pfwhh(i,1) & time<=pfwhh(i,2);
