@@ -75,6 +75,7 @@ data={ % Well, name, filename, mzmap, timemap,contains
           'B7','DMSO','B7.mzXML',mzmap,timemap,{}
           };
 data=cell2struct(data,{'well','name','filename','mzmap','timemap','contains'},2);
+%data=data([3,5,6,7,8,2]);
 for i=1:size(data,1)
   if isempty(data(i).contains)
     % Map from name to what the sample should contain
@@ -96,7 +97,7 @@ for i=1:size(data,1)
   path=[msdir,'/',data(i).filename];
   if i>length(mzdata) || ~strcmp(mzdata{i}.path,path)
       mzdata{i}=MassSpec(path);
-      mzdata{i}.setLoad(2000*1e-15);
+      mzdata{i}.setLoad(100e-9*20e-6);
       % Prune out some data
       mzdata{i}.filter([0,mzdata{i}.time(end)-300],[130,530]);  % NOTE: this is using the localtimes to filter
   end
