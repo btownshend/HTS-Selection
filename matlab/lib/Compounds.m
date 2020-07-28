@@ -13,6 +13,7 @@ classdef Compounds < handle
     mz;      % mz(i,k,j) contains the observed m/z peak on compound i, from file j for adduct k
     time;    % time(i,k,j) contains the elution time on compound i, from file j for adduct k
     meantime;% meantime(i) is the computed mean elution time of compounds i
+    timewindow;  % timewindow(i,2) is the time window for compound i elution
     filetime;% filetime(i,k,j) contains the elution time on compound i, from file j without any time remapping
     ic;      % ic(i,k,j) contains the total ion count for compound i, from file j with adduct k
     normic;  % Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
@@ -405,6 +406,7 @@ classdef Compounds < handle
       obj.time(:)=nan;
       obj.filetime(:)=nan;
       obj.meantime(:)=nan;
+      obj.timewindow(:,:)=nan;
       for k=1:length(obj.ADDUCTS)
         % Try assignment for each adduct; only work on ones that haven't been assigned using a prior adduct
         fprintf('\n\n[%s] ',obj.ADDUCTS(k).name);
@@ -471,11 +473,12 @@ classdef Compounds < handle
           else
             % Construct consensus view
             obj.meantime(i)=besttime;
+            obj.timewindow(i,1:2)=esort(best);
             for kk=1:length(obj.ADDUCTS)
               for j=1:length(obj.files)
                 m=obj.multihits{i,kk,j};
                 if ~isempty(m)
-                  sel=abs(m.time-besttime)<args.timetol;
+                  sel=m.time>=obj.timewindow(i,1) & m.time <= obj.timewindow(i,2);
                   if sum(sel)>0
                     obj.ic(i,kk,j)=sum(m.ic(sel));
                     obj.mz(i,kk,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,kk,j);
@@ -1090,8 +1093,11 @@ classdef Compounds < handle
       set(gca,'YScale','log');
       ax=axis;
       ax(3)=100; ax(4)=max(ax(4),1e5); axis(ax);
-      plot(obj.meantime(ind)+obj.TIMEFUZZ*[1,1],ax(3:4),':b');
-      plot(obj.meantime(ind)-obj.TIMEFUZZ*[1,1],ax(3:4),':b');
+      plot(obj.timewindow(ind,1)*[1,1],ax(3:4),':b');
+      plot(obj.timewindow(ind,2)*[1,1],ax(3:4),':b');
+      if all(isfinite(obj.timewindow(ind,:)))
+        set(gca,'XTick',round(obj.timewindow(ind,:)));
+      end
       ylabel('Ion Count');
       yyaxis right
       plot(t,mz,'ro','MarkerSize',2);
@@ -1102,8 +1108,8 @@ classdef Compounds < handle
       plot(ax(1:2),mzrange(1)*[1,1],':r');
       plot(ax(1:2),mzrange(2)*[1,1],':r');
       ylabel('M/Z');
-      if isfinite(obj.meantime(ind))
-        ax(1:2)=obj.meantime(ind)+obj.TIMEFUZZ*2*[-1,1];
+      if all(isfinite(obj.timewindow(ind,:)))
+        ax(1:2)=[obj.timewindow(ind,1)-obj.TIMEFUZZ/2,obj.timewindow(ind,2)+obj.TIMEFUZZ/2];
       end
       ax(3:4)=obj.mztarget(ind,args.adduct)+obj.MZFUZZ*2*[-1,1];
       axis(ax);
