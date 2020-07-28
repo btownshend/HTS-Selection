@@ -182,10 +182,11 @@ classdef MassSpec < handle
             maxtime(i)=p(i,1);
           end
         else
-          %fprintf('m/z scan gave %d peaks, but none from mspeaks\n', length(ic));
-          maxmz=sum(ic.*mz)/sum(ic);
-          maxtime=sum(ic.*time)/sum(ic);
-          maxic=sum(ic);
+          fprintf('m/z scan for %f gave %d peaks, but none from mspeaks\n', mztarget, sum(ic>0));
+          sel=ic>=args.heightfilter;
+          maxmz=mz(sel)';
+          maxtime=time(sel)';
+          maxic=ic(sel)';
           for i=1:length(time)
             pfwhh(i,1:2)=[1,1]*time(i);
           end
