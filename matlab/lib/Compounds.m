@@ -113,6 +113,7 @@ classdef Compounds < handle
               id(end).ic=sum(idtmp.ic);
               id(end).time=mean(idtmp.time);
               id(end).mz=mean(idtmp.mz);
+              id(end).fwhh=[min(idtmp.fwhh(:,1)),max(idtmp(fwhh(:,2)))];
             end
             if length(isomers)>1 && sum(id(end).ic)>0
               if args.debug

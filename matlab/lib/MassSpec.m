@@ -168,9 +168,9 @@ classdef MassSpec < handle
 
       
       % Find peaks
-      maxtime=[]; maxic=[]; maxmz=[];
       if ~isempty(ic) && length(ic)>1
         [p,pfwhh]=mspeaks(time,ic,'OVERSEGMENTATIONFILTER',args.timetol);
+      maxtime=[]; maxic=[]; maxmz=[]; pfwhh=[];
         if ~isempty(p)
           for i=1:size(p,1)
             sel=time>=pfwhh(i,1) & time<=pfwhh(i,2);
@@ -190,7 +190,11 @@ classdef MassSpec < handle
           maxmz=sum(ic.*mz)/sum(ic);
           maxtime=sum(ic.*time)/sum(ic);
           maxic=sum(ic);
+          for i=1:length(time)
+            pfwhh(i,1:2)=[1,1]*time(i);
+          end
         end
+        pfwhh=pfwhh(keep,:);
       end
       assert(all(isfinite(maxmz)));
       desc=sprintf('m/z=%.4f+=%.3f',mztarget,args.mztol);
@@ -200,14 +204,14 @@ classdef MassSpec < handle
         desc=[desc,sprintf(' T!=[%s]+=%.1f',sprintf('%.1f,',args.ignoreelutetimes),args.timetol)];
       end
 
-      res=struct('mztarget',mztarget,'desc',desc,'findargs',args,'mz',maxmz,'time',maxtime,'ic',maxic);
+      res=struct('mztarget',mztarget,'desc',desc,'findargs',args,'mz',maxmz,'time',maxtime,'ic',maxic,'pfwhh',pfwhh);
       if isempty(maxic)
         if args.debug
           fprintf('No match to %s\n',desc);
         end
       elseif length(maxmz)==1
         if args.debug
-          fprintf('Unique peak for %s:  T=%.0f IC=%.0f\n',desc, maxtime(1),maxic(1));
+          fprintf('Unique peak for %s:  T=%.0f [%.0f-%.0f] IC=%.0f\n',desc, maxtime(1),pfwhh(1,:),maxic(1));
         end
       else
         if args.debug
