@@ -19,8 +19,8 @@ if ~exist('s7compounds','var')
 end
 
 
-msdir=[datadir,'MassSpec/'];
 mzmap=[133,133;521,521];
+msdir=[datadir,'MassSpec/20200724'];
 timemap=[0,0;1,1];
 data={ % Well, name, filename, mzmap, timemap,contains
           'A1','DMSO','A1.mzXML',mzmap,timemap,{},
