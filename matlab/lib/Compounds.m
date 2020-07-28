@@ -519,8 +519,6 @@ classdef Compounds < handle
             hold on;
             semilogy(etimes(cont),ic(cont),'xb');
             ax=axis;
-            plot((besttime-args.timetol)*[1,1],ax(3:4),':g');
-            plot((besttime+args.timetol)*[1,1],ax(3:4),':g');
             plot(bestwindow(1)*[1,1],ax(3:4),':m');
             plot(bestwindow(2)*[1,1],ax(3:4),':m');
             xlabel('Elution time');
