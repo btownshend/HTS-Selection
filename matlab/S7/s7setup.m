@@ -114,8 +114,8 @@ s7compounds.summary();
 
 report=s7compounds.report();
 
-ref=1;
 s7compounds.checkmzoffset();
+ref=7;
 s7compounds.checktime(ref,'timetol',s7compounds.TIMEFUZZ/2);
 s7compounds.checksensitivity(ref);
 
