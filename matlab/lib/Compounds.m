@@ -1021,7 +1021,7 @@ classdef Compounds < handle
     end
     
     function getinfo(obj,name,varargin)
-      defaults=struct('mzdata',[],'adduct',[]);
+      defaults=struct('mzdata',[],'adduct',[],'falsethresh',0.1,'minic',400);
       args=processargs(defaults,varargin);
 
       if ischar(name)
@@ -1067,7 +1067,7 @@ classdef Compounds < handle
         m=obj.multihits{ind,k,j};
         if ~isempty(m)
           for p=1:length(m.mz)
-            if isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1
+            if  (isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1) && m.ic(p)>=args.minic
               fprintf(' [mz=%8.4f (d=%3.0f), t=%4.0f, ic=%8.0f]', m.mz(p), (m.mz(p)-obj.mztarget(ind,k))*1e4,m.time(p), m.ic(p));
             end
           end
@@ -1080,14 +1080,13 @@ classdef Compounds < handle
       end
       if isfinite(meanic) && isfinite(obj.meantime(ind))
         % False positives
-        thresh=minic/2;
         fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.0f,%.0f], NormIC >= %.3f:\n',...
                 obj.mztarget(ind,k)+obj.MZFUZZ*[-1,1],...
                 obj.meantime(ind)+obj.TIMEFUZZ*[-1,1],...
-                thresh);
+                args.falsethresh);
         for j=1:length(obj.files)
-          if ~obj.contains(ind,j) && obj.normic(ind,k,j)>=thresh
             fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f t=%4.0f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j), obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
+          if ~obj.contains(ind,j) && obj.normic(ind,k,j)>=args.falsethresh && obj.time(ind,k,j)>=obj.timewindow(ind,1) && obj.time(ind,k,j) <= obj.timewindow(ind,2)
             if ~isempty(args.mzdata)
               nexttile;
               obj.plotscan(ind,args.mzdata{j},'adduct',args.adduct);
