@@ -107,7 +107,7 @@ classdef Compounds < handle
             isomers=find(abs(obj.meantime-obj.meantime(i))<args.timetol & any(abs(obj.mztarget(i,k)-obj.mztarget)<args.mztol,2));
             mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
             timetarget=interp1(args.map.time(:,1),args.map.time(:,2),obj.meantime(i),'linear','extrap');
-            idtmp=ms.findcompound(mztargetMS,'elutetime',timetarget,'timetol',args.timetol,'mztol',args.mztol,'debug',args.debug);
+            idtmp=ms.findcompound(mztargetMS,'elutetime',timetarget,'timetol',args.timetol,'mztol',args.mztol,'debug',args.debug,'peakratio',0);
             id(end).findargs=idtmp.findargs;
             if ~isempty(idtmp.ic)
               id(end).ic=sum(idtmp.ic);
@@ -580,7 +580,7 @@ classdef Compounds < handle
         end
        for k=1:length(obj.ADDUCTS)
         mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
-        id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug);
+        id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'peakratio',0);
         % Map M/Z, time back to global values
         id.filemz=id.mz;
         id.filetime=id.time;
