@@ -858,19 +858,18 @@ classdef Compounds < handle
 
       h1=[];h2=[];
       for k=1:length(obj.ADDUCTS)
-        sens=[]; lbl={};
+        sens=[];
         for i=1:length(obj.files)
           sel=all(obj.contains(:,[i,ref]),2);
           sens(i)=nanmedian(obj.ic(sel,k,i)./obj.ic(sel,k,ref));
-          [~,lbl{i}]=fileparts(obj.files{i});
         end
         ti=['File Sensitivity - ',obj.ADDUCTS(k).name];
         setfig(ti);clf;
         bar(sens);
         h1(k)=gca;
         set(gca,'YScale','log');
-        set(gca,'XTick',1:length(lbl));
-        set(gca,'XTickLabel',lbl);
+        set(gca,'XTick',1:length(obj.samples));
+        set(gca,'XTickLabel',obj.samples);
         set(gca,'XTickLabelRotation',90);
         ylabel('Sensitivity');
         title(ti);
@@ -1190,8 +1189,7 @@ classdef Compounds < handle
       mztarget=mztarget(:,args.adduct);
       for i=1:args.nlist
         [ii,ij]=ind2sub(size(obj.contains),ord(i));
-        [~,fname]=fileparts(obj.files{ij});
-        fprintf('%12.12s:%-7.7s IC=%8.0f(%8.3f)', fname, obj.names{ii}, ic(ii,args.adduct,ij),normic(ord(i)));
+        fprintf('%12.12s:%-7.7s IC=%8.0f(%8.3f)', obj.samples{ij}, obj.names{ii}, ic(ii,args.adduct,ij),normic(ord(i)));
         alias=find(obj.contains(:,ij) & abs(mztarget-mztarget(ii))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
         if ~isempty(alias)
           fprintf(' Indistinguishable from ');
