@@ -92,9 +92,12 @@ classdef Compounds < handle
     
     function allid=checkComposition(obj,ms,varargin)  % TODO - test
     % Check composition in mass spec file using current set of compounds
-      defaults=struct('debug',false,'map',[],'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ);  
+      defaults=struct('debug',false,'map',[],'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'remap',false);  
       args=processargs(defaults,varargin);
-      if isempty(args.map)
+      if args.remap
+        args.map=obj.computeMap(ms);
+      elseif isempty(args.map)
+        fprintf('Warning: Using default map');
         args.map=struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]);
       end
       allid=[];
