@@ -17,6 +17,65 @@ classdef MassSpec < handle
     mzres=0.01;
   end
   
+  methods(Static)
+    function c=comparepeaks(objs,varargin)
+    % Compare peak lists
+      defaults=struct('mztol',0.01,'timerange',[],'minic',5000,'mz',[],'nlist',20,'ref',1,'maxtiles',12);
+      args=processargs(defaults,varargin);
+      
+      c=[];
+      for i=1:length(objs)
+        fprintf('Locating peaks in %s\n', objs{i}.name);
+        pks{i}=objs{i}.allpeaks('mztol',args.mztol,'timerange',args.timerange,'minic',args.minic,'mz',args.mz);
+        c(end+1:end+size(pks{i},1),[1,i+1])=pks{i};
+      end
+
+      % Sort peak list by descending IC
+      [~,ord]=sort(sum(c(:,2:end),2),'desc');
+      c=c(ord,:);
+      
+      % Merge peaks which differ by <mztol
+      fprintf('Merging all peaks from %d objs...',length(objs));
+      for i=1:length(c)
+        if isfinite(c(i,1))
+          close=find(abs(c(i,1)-c(:,1))<args.mztol);
+          c(i,2:end)=sum(c(close,2:end),1);
+          c(close(close~=i),1)=nan;
+        end
+      end
+      fprintf('done\n');
+      % Remove merged peaks
+      c=c(isfinite(c(:,1)),:);
+      
+      ntiles=0;
+      for i=1:length(objs)
+        if i==args.ref
+          continue;
+        end
+        if mod(ntiles,args.maxtiles)==0
+          setfig(sprintf('comparepeaks:%d',i));clf;
+          tiledlayout('flow');
+        end
+        ntiles=ntiles+1;
+        nexttile;
+        ratio=c(:,args.ref+1)./c(:,i+1);
+        ratio(isinf(ratio))=nan;
+        ti=sprintf('Ratio Med:%.2f Mean:%.2f CV=%.2f\n', nanmedian(ratio),nanmean(ratio),nanstd(ratio)./nanmean(ratio));
+        loglog(c(:,args.ref+1),c(:,i+1),'.');
+        hold on;
+        rng=[args.minic,max(max(c(:,2:end)))];
+        plot(rng,rng,':r');
+        xlabel(objs{args.ref}.name,'Interpreter','none');
+        ylabel(objs{i}.name,'Interpreter','none');
+        title(ti,'interpreter','none');
+        fprintf('%s: %s\n', objs{i}.name, ti);
+      end
+      for i=1:args.nlist
+        fprintf('%8.4f %s\n',c(i,1),sprintf('%4.2f ',c(i,2:end)/c(i,args.ref+1)));
+      end
+    end
+  end
+  
   methods
     function obj=MassSpec(path,varargin)
       defaults=struct('debug',false);
@@ -142,6 +201,70 @@ classdef MassSpec < handle
       end
     end
     
+    function pks=allpeaks(obj,varargin)
+    % Get peaks list summed across all elution times and merged with mztol
+      defaults=struct('mztol',0.01,'timerange',[],'minic',1000,'mz',[]);
+      args=processargs(defaults,varargin);
+      % Build a table of elution vs IC for this M/Z
+      if isempty(args.timerange)
+        first=1;
+        last=length(obj.peaks);
+      else
+        first=find(obj.time>=args.timerange(1),1);
+        last=find(obj.time<=args.timerange(2),1,'last');
+      end
+      % Merge all peaks
+      fprintf('Concatenating peaks across %d elutions\n', last-first+1);
+      pks=[];
+      if isempty(args.mz)
+        for i=first:last
+          p=obj.peaks{i};
+          pks=[pks;p(p(:,2)>args.minic/10,:)];
+        end
+      else
+        for i=first:last
+          p=obj.peaks{i};
+          sel=min(abs(p(:,1)-args.mz(:)'),[],2)<=args.mztol;
+          pks=[pks;p(sel & p(:,2)>args.minic/10,:)];
+        end
+      end
+      fprintf('Have a total of %d peaks\n', size(pks,1));
+
+      if ~isempty(args.mz)
+        % Set them to specified mz
+        for i=1:size(pks,1)
+          [~,ind]=min(abs(args.mz-pks(i,1)));
+          pks(i,1)=args.mz(ind);
+        end
+      end
+
+      % Sort peak list by descending IC
+      [~,ord]=sort(pks(:,2),'desc');
+      pks=pks(ord,:);
+      % Merge peaks which differ by <mztol
+      fprintf('Merging...');
+      todo=1:length(pks);
+      mpks=[];
+      i=1;
+      while ~isempty(todo)
+        if mod(i,1000)==0
+          fprintf('%.0f%%...',(1-length(todo)/size(pks,1))*100);
+        end
+        close=abs(pks(todo(1),1)-pks(todo,1))<args.mztol;
+        mpks(end+1,:)=[pks(todo(1),1),sum(pks(todo(close),2))];
+        todo=todo(~close);
+        i=i+1;
+      end
+      fprintf('done\n');
+      % Remove merged peaks
+      pks=mpks;
+      fprintf('Have %d merged peaks\n', size(pks,1));
+
+      % Keep only ones with >= minic
+      pks=pks(pks(:,2)>=args.minic,:);
+      fprintf('Have %d merged peaks with IC >= %.0f\n', size(pks,1),args.minic);
+    end
+      
     function res=findcompound(obj, mztarget, varargin)
     % Find compound directly (not using clusters)
     % Returns struct containing possible peaks (integrated over peak in both time and m/z) at different elutions times
