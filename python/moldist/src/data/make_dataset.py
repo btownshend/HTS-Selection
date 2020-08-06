@@ -1,7 +1,7 @@
 import os
 
 from rdkit.Chem import AllChem
-
+import pubchempy as pc
 
 def load():
     # Read in the CDIV molecules
@@ -28,3 +28,11 @@ def load():
         mol.SetProp("NAME", name)
 
     return tested
+
+def dumpInchi(molecules):
+    for mol in molecules[:5]:
+        inchi=AllChem.MolToInchi(mol)
+        smiles=AllChem.MolToSmiles(mol)
+        print(f"{mol.GetProp('NAME')}\n{inchi}\n{smiles}\n\n")
+        c=pc.get_compounds(inchi,'inchi')
+        print(c)
