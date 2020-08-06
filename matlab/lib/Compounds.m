@@ -101,7 +101,7 @@ classdef Compounds < handle
       for k=1:length(obj.ADDUCTS)
         id=[];
         for i=1:length(obj.names)
-          id=[id,struct('name',obj.names(i),'adduct',obj.ADDUCTS(k).name,'mztarget',obj.mztarget(i,k),'desc','','findargs','','mz',nan,'time',nan,'ic',nan,'relic',nan)];
+          id=[id,struct('name',obj.names(i),'adduct',obj.ADDUCTS(k).name,'mztarget',obj.mztarget(i,k),'desc','','findargs','','mz',nan,'time',nan,'ic',nan,'relic',nan,'filemz',nan,'filetime',nan)];
           if isfinite(obj.meantime(i))
             % Only look for compounds with a known elution time
             isomers=find(abs(obj.meantime-obj.meantime(i))<args.timetol & any(abs(obj.mztarget(i,k)-obj.mztarget)<args.mztol,2));
@@ -111,9 +111,13 @@ classdef Compounds < handle
             id(end).findargs=idtmp.findargs;
             if ~isempty(idtmp.ic)
               id(end).ic=sum(idtmp.ic);
-              id(end).time=mean(idtmp.time);
-              id(end).mz=mean(idtmp.mz);
-              id(end).fwhh=[min(idtmp.fwhh(:,1)),max(idtmp(fwhh(:,2)))];
+              id(end).filetime=mean(idtmp.time);
+              id(end).filemz=mean(idtmp.mz);
+              id(end).mz=interp1(args.map.mz(:,2),args.map.mz(:,1),id(end).filemz,'linear','extrap');
+              id(end).time=interp1(args.map.time(:,2),args.map.time(:,1),id(end).filetime,'linear','extrap');
+              if isfield(idtmp,'fwhh')
+                id(end).fwhh=interp1(args.map.time(:,2),args.map.time(:,1),[min(idtmp.fwhh(:,1)),max(idtmp(fwhh(:,2)))]);
+              end
             end
             if length(isomers)>1 && sum(id(end).ic)>0
               if args.debug

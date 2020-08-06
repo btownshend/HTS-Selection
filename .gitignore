@@ -25,3 +25,5 @@ matlab/S7/run-20200727-1000.txt
 matlab/S7/s7compounds.mat
 *.mat
 matlab/S7/s7compounds3Add2.txt
+matlab/scripts/20200804/matches.csv
+data/matfiles/compounds.mat
