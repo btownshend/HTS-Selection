@@ -345,38 +345,48 @@ classdef Compounds < handle
       end
     end
     
-    function map=computeMap(obj,ms)
+    function map=computeMap(obj,ms,varargin)
     % Compute time mapping for given ms file
+      defaults=struct('initmap',[]);
+      args=processargs(defaults,varargin);
+
       filetime=str2num(ms.mzxml.mzXML.msRun.endTime(3:end-1));
       objtime=3300;   % Baseline time
-      fprintf('Normalizing file end time of %.1f to baseline of %.1f\n', filetime, objtime);
-      map=struct('mz',[0,0;1,1], 'time',[0,0;objtime,filetime]);
+      if isempty(args.initmap)
+        fprintf('Normalizing file end time of %.1f to baseline of %.1f\n', filetime, objtime);
+        map=struct('mz',[0,0;1,1], 'time',[0,0;objtime,filetime]);
+      else
+        map=args.initmap;
+      end
       ti=['computeMap-',ms.name];
       setfig(ti);clf;
       niter=3;
       for iter=1:niter
-        allid=obj.checkComposition(ms,'map',map,'timetol',500/iter,'mztol',obj.MZFUZZ*4/iter);
-        t=[];mz=[];
+        allid=obj.checkComposition(ms,'map',map,'timetol',500/iter,'mztol',.02/iter);
+        t=[];mz=[];  % Build lists of [reference,file]
         for i=1:length(allid(:))
           if isfinite(allid(i).time)
+            % First coords are in mapped values, second in uncorrected values
             t(end+1,1:2)=[allid(i).findargs.elutetime,allid(i).time];
             mz(end+1,1:2)=[allid(i).mztarget,allid(i).mz];
           end
         end
-        % Undo mapping to get reference times,mz
+        % Undo mapping of reference t(:,1),mz(:,1)
         t(:,1)=interp1(map.time(:,2),map.time(:,1),t(:,1),'linear','extrap');
         mz(:,1)=interp1(map.mz(:,2),map.mz(:,1),mz(:,1),'linear','extrap');
         
         subplot(niter,2,iter*2-1);
         plot(t(:,1),t(:,2),'.');
         xlabel('Reference Time');  
-        ylabel([ms.name,' Time'],'Interpreter','none');
+        ylabel([ms.name,' Time - Ref'],'Interpreter','none');
         tfit=robustfit(t(:,1),t(:,2),'cauchy',.1);
+        %[tfit(2),tfit(1)]=houghregress(t(:,1),t(:,2)-t(:,1));
         hold on;
-        rng=[min(t(:)),max(t(:))];
+        rng=[min(t(:,1)),max(t(:,1))];
         plot(rng,rng*tfit(2)+tfit(1),'r-');
         plot(rng,rng*tfit(2)+tfit(1)+obj.TIMEFUZZ,'r:');
         plot(rng,rng*tfit(2)+tfit(1)-obj.TIMEFUZZ,'r:');
+        %tfit(2)=tfit(2)+1;
         title(sprintf('Iteration %d',iter));
         
         subplot(niter,2,iter*2);
@@ -384,12 +394,14 @@ classdef Compounds < handle
         xlabel('Reference m/z');  
         ylabel([ms.name,' - ref m/z'],'Interpreter','none');
         title(sprintf('Iteration %d',iter));
-        mzfit=robustfit(mz(:,1),mz(:,2));
+        %[mzfit(2),mzfit(1)]=houghregress(mz(:,1),mz(:,2)-mz(:,1));
+        mzfit=robustfit(mz(:,1),mz(:,2)-mz(:,1));
         hold on;
-        rng=[min(mz(:)),max(mz(:))];
-        plot(rng,rng*mzfit(2)+mzfit(1)-rng,'r-');
-        plot(rng,rng*mzfit(2)+mzfit(1)-rng+obj.MZFUZZ,'r:');
-        plot(rng,rng*mzfit(2)+mzfit(1)-rng-obj.MZFUZZ,'r:');
+        rng=[min(mz(:,1)),max(mz(:,1))];
+        plot(rng,rng*mzfit(2)+mzfit(1),'r-');
+        plot(rng,rng*mzfit(2)+mzfit(1)+obj.MZFUZZ,'r:');
+        plot(rng,rng*mzfit(2)+mzfit(1)-obj.MZFUZZ,'r:');
+        mzfit(2)=mzfit(2)+1;
         
         % Update mapping
         map.time(:,2)=map.time(:,1)*tfit(2)+tfit(1);
