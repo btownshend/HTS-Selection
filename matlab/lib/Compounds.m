@@ -1234,15 +1234,22 @@ classdef Compounds < handle
     function export2mzmine(obj,filename,varargin)
     % Export to mzmine2 via CSV
     % Each row has fields:  ID, m/z, retention time, identity, formula
-      defaults=struct('adducts',[],'notimes',false);
+      defaults=struct('adducts',[],'notimes',false,'ind',[]);
       args=processargs(defaults,varargin);
     
+      if isempty(args.ind)
+        ind=true(size(obj.mass));
+      end
+      if islogical(args.ind)
+        args.ind=find(args.ind);
+      end
       if isempty(args.adducts)
         args.adducts=1:length(obj.ADDUCTS);
       end
       fd=fopen(filename,'w');
       fprintf(fd,'ID, m/z, retention time, identity, formula\n');
-      for i=1:length(obj.mass)
+      for ii=1:length(args.ind)
+        i=args.ind(ii);
         for j=1:length(args.adducts)
           t=obj.meantime(i);
           if isnan(t) || args.notimes
