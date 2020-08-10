@@ -27,3 +27,11 @@ matlab/S7/s7compounds.mat
 matlab/S7/s7compounds3Add2.txt
 matlab/scripts/20200804/matches.csv
 data/matfiles/compounds.mat
+python/pytorch/.idea/$CACHE_FILE$
+python/pytorch/.idea/dbnavigator.xml
+python/pytorch/.idea/inspectionProfiles/profiles_settings.xml
+python/pytorch/.idea/inspectionProfiles/Project_Default.xml
+python/pytorch/.idea/misc.xml
+python/pytorch/.idea/modules.xml
+python/pytorch/.idea/pytorch.iml
+python/pytorch/.idea/vcs.xml
