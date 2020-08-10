@@ -15,6 +15,7 @@ dotenv.load_dotenv(dotenv_path, verbose=True)
 # %%
 # Load data
 molecules = make_dataset.load()
+make_dataset.dumpInchi(molecules)
 
 # %%
 # Build the features using fragments from the structures
