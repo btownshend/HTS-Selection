@@ -434,7 +434,7 @@ classdef MassSpec < handle
       allpks=allpks(ord,:);
       % Buld EIC
       eicranges=zeros(0,2);   % [mzlow, mzhigh]
-      obj.eic=[];
+      obj.eic=FeatureList('chromatogram');
       for i=1:size(allpks,1)
         if allpks(i,2)>=args.minintensity
           mzrange=[allpks(i,1)-args.mztol,allpks(i,1)+args.mztol];
@@ -452,16 +452,13 @@ classdef MassSpec < handle
                     allpks(i,1:2), mzrange, length(sel),length(gscans),args.groupthresh, ok);
           end
           if (ok)
-            % New EIC
+            % New EIC feature
             eicranges(end+1,:)=mzrange;
             p=nan(length(obj.time),3);
             ap=allpks(sel,:);
             for j=1:length(obj.time)
               ind=ap(:,3)==j;
               if any(ind)
-                if sum(ind)>1
-                  keyboard;
-                end
                 p(j,:)=[mean(ap(ind,1)),sum(ap(ind,2)),j];
               else
                 p(j,:)=[nan,0,j];
@@ -469,7 +466,8 @@ classdef MassSpec < handle
             end
             p(:,3)=obj.time(p(:,3)); % Convert to time (but not earlier since we use for gscans)
             area=sum(p(:,2));
-            obj.eic=[obj.eic,struct('mz',ap(1,1),'time',ap(1,3),'intensity',ap(1,2),'mzrange',eicranges(end,:),'area',area,'peaks',p)];
+            feature=Feature(p,mzrange);
+            obj.eic.append(feature);
           end
           % Blank out the consumed ones (whether above group threshold or not)
           allpks(sel,2)=0;
@@ -479,8 +477,7 @@ classdef MassSpec < handle
         fprintf('Found %d distinct EICS\n', size(eicranges,1));
       end
       % Sort by mz
-      [~,ord]=sort([obj.eic.mz]);
-      obj.eic=obj.eic(ord);
+      obj.eic.sortbymz();
     end
 
       
@@ -523,11 +520,6 @@ classdef MassSpec < handle
         fprintf('Warning - no deconvolved chromatograms\n');
       end
       
-      %sel=find(arrayfun(@(z) z.mzrange(1)-args.mztol<=mz && z.mzrange(2)+args.mztol>=mz,obj.eic));
-      sel=find(abs(mz-[obj.eic.mz])<args.mztol);
-      if isempty(sel)
-        fprintf('No EIC within %.4f of %.4f\n', args.mztol, mz);
-      end
       ti=sprintf('Chromatogram %.4f - %.4f',mz-args.mztol,mz+args.mztol);
       setfig(ti);clf;
       leg={};
@@ -538,8 +530,14 @@ classdef MassSpec < handle
       leg{end+1}='Base peaks';
       hold on;
       
-      for i=1:length(sel)
-        e=obj.eic(sel(i));
+      %sel=find(arrayfun(@(z) z.mzrange(1)-args.mztol<=mz && z.mzrange(2)+args.mztol>=mz,obj.eic));
+      features=obj.eic.getbymz(mz,'mztol',args.mztol);
+      if isempty(features)
+        fprintf('No EIC within %.4f of %.4f\n', args.mztol, mz);
+      end
+
+      for i=1:length(features)
+        e=features(i);
         h(end+1)=plot(e.peaks(:,3),e.peaks(:,2));
         leg{end+1}=sprintf('M/Z=%.4f',e.mz);
         plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
