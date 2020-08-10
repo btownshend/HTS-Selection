@@ -1231,6 +1231,19 @@ classdef Compounds < handle
         fprintf('\n');
       end
     end
+    
+    function f=getformula(obj,i)
+      f=[];
+      F=obj.sdf{i}.Formula;
+      fn=fieldnames(F);
+      for i=1:length(fn)
+        f=[f,fn{i}];
+        if F.(fn{i})~=1
+          f=[f,num2str(F.(fn{i}))];
+        end
+      end
+    end
+
     function export2mzmine(obj,filename,varargin)
     % Export to mzmine2 via CSV
     % Each row has fields:  ID, m/z, retention time, identity, formula
