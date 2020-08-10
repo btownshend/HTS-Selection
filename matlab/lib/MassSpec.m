@@ -465,7 +465,7 @@ classdef MassSpec < handle
             end
             p(:,3)=obj.time(p(:,3)); % Convert to time (but not earlier since we use for gscans)
             area=sum(p(:,2));
-            feature=Feature(p,mzrange);
+            feature=Feature(p,sprintf('%.4f-%.4f',mzrange));
             fl.append(feature);
           end
           % Blank out the consumed ones (whether above group threshold or not)
@@ -519,13 +519,13 @@ classdef MassSpec < handle
           if size(e.peaks,1) == length(obj.time)
             % EIC
             h(end+1)=plot(e.peaks(:,3),e.peaks(:,2));
-            leg{end+1}=sprintf('M/Z=%.4f',e.mz);
+            leg{end+1}=e.name;
           else
             % Deconvolved EIC
-            pfwhh=e.getfwhh();
+            ext=e.timerange;
             plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
-            h(end+1)=plot([pfwhh(1),e.time,pfwhh(2)],[0.5,1,0.5]*e.intensity,'-','LineWidth',3);
-            leg{end+1}=sprintf('M/Z=%.4f, T=%.4g',e.mz,e.time);
+            h(end+1)=plot([ext(1),e.time,ext(2)],[0.5,1,0.5]*e.intensity,'-','LineWidth',3);
+            leg{end+1}=e.name;
           end
         end
       end

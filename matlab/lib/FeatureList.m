@@ -24,7 +24,6 @@ classdef FeatureList < handle
                  'tailing',num2cell(x.([name,' Peak tailing factor'])),...
                  'asymmetry',num2cell(x.([name,' Peak asymmetry factor'])),...
                  'area',num2cell(x.([name,' Peak area'])));
-        keyboard
         for j=1:length(s)
           f=Feature();
           f.set(s(j));
