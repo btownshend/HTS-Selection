@@ -72,6 +72,7 @@ classdef FeatureList < handle
         end
         for j=1:size(pks,1)
           rawpeaks=p(p(:,3)>=pext(j,1) & p(:,3)<=pext(j,2),:);
+          rawpeaks=rawpeaks(find(rawpeaks(:,2)>0,1):find(rawpeaks(:,2)>0,1,'last'),:);   % Remove end zeros
           area=sum(rawpeaks(:,2));
           mz=nansum(rawpeaks(:,1).*rawpeaks(:,2))/sum(rawpeaks(:,2));
           if ismember(i,args.trace)
