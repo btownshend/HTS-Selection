@@ -10,6 +10,8 @@ classdef MassSpec < handle
     clusters;	% Cluster peaks (across m/z and time)
     clustersettings;
     ident;    % struct array of identified peaks
+    eic;	% Chromatogram
+    eicd;	% Deconvolved Chromatogram
     mzxml;
   end
   
@@ -396,7 +398,158 @@ classdef MassSpec < handle
       title(sprintf('T(%d)=%f',pk.elutions(2),obj.time(pk.elutions(2))));
     end
 
+    function buildchromatograms(obj,varargin)
+    % Build chromatograms using ADAP algorithm (as documented in mzmine2 help)
+    % We define ε to be the mass tolerance parameter m/z.
+    % 1. Take all the data points in a data file, sort them by their intensities, and remove those points (mostly noise) below a certain 
+    %    intensity threshold.
+    % 2. Starting with the most intense data point, the first EIC is created.
+    % 3. For this EIC, establish an immutable m/z range that is the data point's m/z plus or minus ε where ε is specified by the user.
+    % 4. The next data point, which will be the next most intense, is added to an existing EIC if its m/z value falls within its m/z range.
+    % 5. If the next data point does not fall within an EICs m/z range, a new EIC is created. New EICs are only created if the point meets 
+    %    the minimum start intensity requirement set by the user.
+    % 6. An m/z range for a new EIC is created the same way as in step (3) except the boundaries will be adjusted to avoid overlapping with 
+    %    pre-existing EICs. As an example consider an existing EIC with m/z range (100.000,100.020) for ε=0.01. If the new EIC is initialized 
+    %    with a data point having an m/z value of 100.025, then this new EIC will have a m/z range set to be (100.020,100.035) rather than
+    %    (100.015, 100.035).
+    % 7. Repeat steps (4)-(6) until all the data has been processed.
+    % 8. Finally, a post processing step is implemented. Only EICs with a user defined number of continuous points (mingroupsize) above 
+    % a user defined intensity threshold (groupthresh) are kept.
+      defaults=struct('mztol',0.01,'debug',false,'mingroupsize',5,'groupthresh',500,'minintensity',5000,'noise',500,'infill',false);
+      args=processargs(defaults,varargin);
+      % Build list of all peaks with time index as 3rd column
+      allpks=[];
+      for i=1:length(obj.peaks)
+        p=obj.peaks{i};
+        p=p(p(:,2)>=args.noise,:);
+        p(:,3)=i;
+        allpks=vertcat(allpks,p);
+      end
+      if args.debug
+        fprintf('Have a total of %d peaks with IC >= %.0f\n', size(allpks,1), args.noise);
+      end
+      
+      % Sort by level
+      [~,ord]=sort(allpks(:,2),'descend');
+      allpks=allpks(ord,:);
+      % Buld EIC
+      eicranges=zeros(0,2);   % [mzlow, mzhigh]
+      obj.eic=[];
+      for i=1:size(allpks,1)
+        if allpks(i,2)>=args.minintensity
+          mzrange=[allpks(i,1)-args.mztol,allpks(i,1)+args.mztol];
+          % Reduce mass range if it overlaps
+          mzrange(1)=max([eicranges(eicranges(:,2)<allpks(i,1),2);mzrange(1)]);
+          mzrange(2)=min([eicranges(eicranges(:,2)>allpks(i,1),2);mzrange(2)]);
+          % Pull out all other peaks that will match
+          sel=find(allpks(i:end,1)>=mzrange(1) & allpks(i:end,1)<=mzrange(2) & allpks(i:end,2)>0)+i-1;
+          % Check if meets the the group thresholds
+          gscans=allpks(sel(allpks(sel,2)>=args.groupthresh),3);
+          gscans=sort(unique(gscans));
+          ok=any(gscans(args.mingroupsize:end)-gscans(1:end-args.mingroupsize+1)==args.mingroupsize-1);
+          if args.debug
+            fprintf('m/z=%.4f, IC=%.0f new EIC [%.4f,%.4f] with %d scans (%d>%.0f) pass=%d\n', ...
+                    allpks(i,1:2), mzrange, length(sel),length(gscans),args.groupthresh, ok);
+          end
+          if (ok)
+            % New EIC
+            eicranges(end+1,:)=mzrange;
+            p=allpks(sel,:);
+            if args.infill
+              % Add [nan,0,scan] for skipped scans
+              zscans=setdiff(1:length(obj.time),p(:,3));
+              p(end+1:end+length(zscans),3)=zscans;
+              p(p(:,2)==0,1)=nan;
+            end
+            p(:,3)=obj.time(p(:,3)); % Convert to time (but not earlier since we use for gscans)
+            [~,ord]=sort(p(:,3)); % Sort by time
+            sp=p(ord,:);
+            area=sum(p(:,2));
+            obj.eic=[obj.eic,struct('mz',p(1,1),'time',p(1,3),'intensity',p(1,2),'mzrange',eicranges(end,:),'area',area,'peaks',sp)];
+          end
+          % Blank out the consumed ones (whether above group threshold or not)
+          allpks(sel,2)=0;
+        end
+      end
+      if args.debug
+        fprintf('Found %d distinct EICS\n', size(eicranges,1));
+      end
+      % Sort by mz
+      [~,ord]=sort([obj.eic.mz]);
+      obj.eic=obj.eic(ord);
+    end
 
+      
+    function deconvolve(obj,varargin)
+      defaults=struct('debug',false,'heightfilter',5000,'oversegmentationfilter',0,'maxarearatio',33,'maxwidth',120,'trace',0);
+      % Note: when oversegmentationfilter is active, the fwhh includes the merged peak's fwhh even if they are much lower than the main one
+      args=processargs(defaults,varargin);
+      obj.eicd=[];
+      for i=1:length(obj.eic)
+        %fprintf('%d ',i);
+        p=obj.eic(i).peaks;
+        %pba=msbackadj(p(:,3),p(:,2),'est','em','smooth','rloess');
+        %pbasm=mslowess(p(:,3),pba);
+        [pks,pfwhh,pext]=mspeaks(p(:,3),p(:,2),'denoising',true,'heightfilter',args.heightfilter,'oversegmentationfilter',args.oversegmentationfilter,'showplot',ismember(i,args.trace),'style','fwhhtriangle');
+        if size(pks,2)==0
+          continue;
+        end
+        for j=1:size(pks,1)
+          rawpeaks=p(p(:,3)>=pext(j,1) & p(:,3)<=pext(j,2),:);
+          area=sum(rawpeaks(:,2));
+          mz=nansum(rawpeaks(:,1).*rawpeaks(:,2))/sum(rawpeaks(:,2));
+          if ismember(i,args.trace)
+            keyboard;
+          end
+          if area/pks(j,2) < args.maxarearatio & diff(pfwhh(j,:))<=args.maxwidth
+            obj.eicd=[obj.eicd,struct('mz',mz,'time',pks(j,1),'intensity',pks(j,2),'mzrange',obj.eic(i).mzrange,'pfwhh',pfwhh(j,:),'pfext',pext(j,:), 'peaks',rawpeaks,'area',area)];
+          end
+        end
+      end
+    end
+    
+    function ploteic(obj,mz,varargin)
+      defaults=struct('debug',false,'mztol',0.01);
+      args=processargs(defaults,varargin);
+
+      if isempty(obj.eic)
+        error('No EIC -- need to buildchromatograms()');
+      end
+      if isempty(obj.eicd)
+        fprintf('Warning - no deconvolved chromatograms\n');
+      end
+      
+      %sel=find(arrayfun(@(z) z.mzrange(1)-args.mztol<=mz && z.mzrange(2)+args.mztol>=mz,obj.eic));
+      sel=find(abs(mz-[obj.eic.mz])<args.mztol);
+      if isempty(sel)
+        fprintf('No EIC within %.4f of %.4f\n', args.mztol, mz);
+        return;
+      end
+      ti=sprintf('Chromatogram %.4f - %.4f',mz-args.mztol,mz+args.mztol);
+      setfig(ti);clf;
+      leg={};
+      h=[];
+      for i=1:length(sel)
+        e=obj.eic(sel(i));
+        h(end+1)=plot(e.peaks(:,3),e.peaks(:,2));
+        leg{end+1}=sprintf('M/Z=%.4f',e.mz);
+        hold on;
+        plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
+        if ~isempty(obj.eicd)
+          seld=find([obj.eicd.mz]>=e.mzrange(1) & [obj.eicd.mz]<=e.mzrange(2));
+          for j=1:length(seld)
+            ed=obj.eicd(seld(j));
+            h(end+1)=plot([ed.pfwhh(1),ed.time,ed.pfwhh(2)],[0.5,1,0.5]*ed.intensity,'-','LineWidth',3);
+            leg{end+1}=sprintf('M/Z=%.4f, T=%.4g',ed.mz,ed.time);
+          end
+        end
+      end
+      xlabel('Time');
+      ylabel('Intensity');
+      legend(h,leg);
+      title(ti);
+    end
+    
     function plotmz(obj,time)
     % Plot m/z vs ioncount for trace nearest given time
       if isempty(obj.resamp)
@@ -422,7 +575,6 @@ classdef MassSpec < handle
         i=ord(ii);
         fprintf('M/Z=%.4f, IC=%6.0f\n', pks(i,:));
       end
-      
     end
     
     function ic=TIC(obj)
