@@ -1,31 +1,41 @@
 classdef Feature < handle
   properties
+    name;
+    peaks;   % Peak list
+    
+    % Computed properties (or imported)
     mz;
     time;
     intensity;
+    
+    npeaks;
     mzrange;
     timerange;
     fwhh;
     asymmetry;
     tailing;
     area;
-    peaks;
   end % properties
   
   methods
-    function obj=Feature(peaks,mzrange)
+    function obj=Feature(peaks,name)
     % Add a feature based on the given peaks (N,[mz,ic,time])
+      if nargin<1 || isempty(peaks)
+        % Empty constructor
+        return;
+      end
+      if nargin>=2
+        obj.name=name;
+      else
+        obj.name='';
+      end
       [~,maxpeak]=max(peaks(:,2));
       obj.mz=peaks(maxpeak,1);
       obj.time=peaks(maxpeak,3);
       obj.intensity=peaks(maxpeak,2);
       obj.area=sum(peaks(:,2));
       obj.peaks=peaks;
-      if nargin>=2 && ~isempty(mzrange)
-        obj.mzrange=mzrange;
-      else
-        obj.mzrange=[nanmin(peaks(:,1)),nanmax(peaks(:,2))];
-      end
+      obj.mzrange=[nanmin(peaks(:,1)),nanmax(peaks(:,2))];
       obj.timerange=[min(peaks(:,3)),max(peaks(:,3))];
       p50a=peaks(find(peaks(:,2)>=obj.intensity/2,1),3);
       p50b=peaks(find(peaks(:,2)>=obj.intensity/2,1,'last'),3);
