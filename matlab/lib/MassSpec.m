@@ -415,7 +415,7 @@ classdef MassSpec < handle
     % 7. Repeat steps (4)-(6) until all the data has been processed.
     % 8. Finally, a post processing step is implemented. Only EICs with a user defined number of continuous points (mingroupsize) above 
     % a user defined intensity threshold (groupthresh) are kept.
-      defaults=struct('mztol',0.01,'debug',false,'mingroupsize',5,'groupthresh',500,'minintensity',5000,'noise',500,'infill',false);
+      defaults=struct('mztol',0.01,'debug',false,'mingroupsize',5,'groupthresh',500,'minintensity',5000,'noise',500);
       args=processargs(defaults,varargin);
       % Build list of all peaks with time index as 3rd column
       allpks=[];
@@ -454,18 +454,22 @@ classdef MassSpec < handle
           if (ok)
             % New EIC
             eicranges(end+1,:)=mzrange;
-            p=allpks(sel,:);
-            if args.infill
-              % Add [nan,0,scan] for skipped scans
-              zscans=setdiff(1:length(obj.time),p(:,3));
-              p(end+1:end+length(zscans),3)=zscans;
-              p(p(:,2)==0,1)=nan;
+            p=nan(length(obj.time),3);
+            ap=allpks(sel,:);
+            for j=1:length(obj.time)
+              ind=ap(:,3)==j;
+              if any(ind)
+                if sum(ind)>1
+                  keyboard;
+                end
+                p(j,:)=[mean(ap(ind,1)),sum(ap(ind,2)),j];
+              else
+                p(j,:)=[nan,0,j];
+              end
             end
             p(:,3)=obj.time(p(:,3)); % Convert to time (but not earlier since we use for gscans)
-            [~,ord]=sort(p(:,3)); % Sort by time
-            sp=p(ord,:);
             area=sum(p(:,2));
-            obj.eic=[obj.eic,struct('mz',p(1,1),'time',p(1,3),'intensity',p(1,2),'mzrange',eicranges(end,:),'area',area,'peaks',sp)];
+            obj.eic=[obj.eic,struct('mz',ap(1,1),'time',ap(1,3),'intensity',ap(1,2),'mzrange',eicranges(end,:),'area',area,'peaks',p)];
           end
           % Blank out the consumed ones (whether above group threshold or not)
           allpks(sel,2)=0;
