@@ -20,10 +20,18 @@ classdef Feature < handle
       if nargin>=2 && ~isempty(mzrange)
         obj.mzrange=mzrange;
       else
-        obj.mzrange=[nanmin(obj.mz),nanmax(obj.mz)];
+        obj.mzrange=[nanmin(peaks(:,1)),nanmax(peaks(:,2))];
       end
     end
 
+    function t=gettimerange(obj)
+      t=[min(obj.peaks(:,3)),max(obj.peaks(:,3))];
+    end
+    
+    function t=getfwhh(obj)
+      t=obj.peaks([find(obj.peaks(:,2)>=obj.intensity/2,1),find(obj.peaks(:,2)>=obj.intensity/2,1,'last')],3)';
+    end
+    
   end % Methods
 end
 

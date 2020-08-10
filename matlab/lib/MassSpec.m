@@ -10,8 +10,7 @@ classdef MassSpec < handle
     clusters;	% Cluster peaks (across m/z and time)
     clustersettings;
     ident;    % struct array of identified peaks
-    eic;	% Chromatogram
-    eicd;	% Deconvolved Chromatogram
+    featurelists;   % Array of feature lists
     mzxml;
   end
   
@@ -434,7 +433,7 @@ classdef MassSpec < handle
       allpks=allpks(ord,:);
       % Buld EIC
       eicranges=zeros(0,2);   % [mzlow, mzhigh]
-      obj.eic=FeatureList('chromatogram');
+      fl=FeatureList([obj.name,' chromatograms']);
       for i=1:size(allpks,1)
         if allpks(i,2)>=args.minintensity
           mzrange=[allpks(i,1)-args.mztol,allpks(i,1)+args.mztol];
@@ -467,7 +466,7 @@ classdef MassSpec < handle
             p(:,3)=obj.time(p(:,3)); % Convert to time (but not earlier since we use for gscans)
             area=sum(p(:,2));
             feature=Feature(p,mzrange);
-            obj.eic.append(feature);
+            fl.append(feature);
           end
           % Blank out the consumed ones (whether above group threshold or not)
           allpks(sel,2)=0;
@@ -477,46 +476,23 @@ classdef MassSpec < handle
         fprintf('Found %d distinct EICS\n', size(eicranges,1));
       end
       % Sort by mz
-      obj.eic.sortbymz();
+      fl.sortbymz();
+      % Append
+      obj.featurelists=[obj.featurelists,fl];
     end
 
-      
     function deconvolve(obj,varargin)
-      defaults=struct('debug',false,'heightfilter',5000,'oversegmentationfilter',0,'maxarearatio',33,'maxwidth',120,'trace',0);
-      % Note: when oversegmentationfilter is active, the fwhh includes the merged peak's fwhh even if they are much lower than the main one
-      args=processargs(defaults,varargin);
-      obj.eicd=[];
-      for i=1:length(obj.eic)
-        %fprintf('%d ',i);
-        p=obj.eic(i).peaks;
-        %pba=msbackadj(p(:,3),p(:,2),'est','em','smooth','rloess');
-        %pbasm=mslowess(p(:,3),pba);
-        [pks,pfwhh,pext]=mspeaks(p(:,3),p(:,2),'denoising',true,'heightfilter',args.heightfilter,'oversegmentationfilter',args.oversegmentationfilter,'showplot',ismember(i,args.trace),'style','fwhhtriangle');
-        if size(pks,2)==0
-          continue;
-        end
-        for j=1:size(pks,1)
-          rawpeaks=p(p(:,3)>=pext(j,1) & p(:,3)<=pext(j,2),:);
-          area=sum(rawpeaks(:,2));
-          mz=nansum(rawpeaks(:,1).*rawpeaks(:,2))/sum(rawpeaks(:,2));
-          if ismember(i,args.trace)
-            keyboard;
-          end
-          if area/pks(j,2) < args.maxarearatio & diff(pfwhh(j,:))<=args.maxwidth
-            obj.eicd=[obj.eicd,struct('mz',mz,'time',pks(j,1),'intensity',pks(j,2),'mzrange',obj.eic(i).mzrange,'pfwhh',pfwhh(j,:),'pfext',pext(j,:), 'peaks',rawpeaks,'area',area)];
-          end
-        end
-      end
-    end
-    
+      fl=obj.featurelists(end).deconvolve(varargin{:});
+      obj.featurelists=[obj.featurelists,fl];
+    end      
+
     function ploteic(obj,mz,varargin)
       defaults=struct('debug',false,'mztol',0.01);
       args=processargs(defaults,varargin);
 
-      if isempty(obj.eic)
-        error('No EIC -- need to buildchromatograms()');
-      end
-      if isempty(obj.eicd)
+      if isempty(obj.featurelists)
+        error('No features -- need to buildchromatograms()');
+      elseif length(obj.featurelists)<2
         fprintf('Warning - no deconvolved chromatograms\n');
       end
       
@@ -531,22 +507,25 @@ classdef MassSpec < handle
       hold on;
       
       %sel=find(arrayfun(@(z) z.mzrange(1)-args.mztol<=mz && z.mzrange(2)+args.mztol>=mz,obj.eic));
-      features=obj.eic.getbymz(mz,'mztol',args.mztol);
-      if isempty(features)
-        fprintf('No EIC within %.4f of %.4f\n', args.mztol, mz);
-      end
+      for ifl=1:length(obj.featurelists)
+        fl=obj.featurelists(ifl);
+        features=fl.getbymz(mz,'mztol',args.mztol);
+        if isempty(features)
+          fprintf('No features in %s within %.4f of %.4f\n', fl.name, args.mztol, mz);
+        end
 
-      for i=1:length(features)
-        e=features(i);
-        h(end+1)=plot(e.peaks(:,3),e.peaks(:,2));
-        leg{end+1}=sprintf('M/Z=%.4f',e.mz);
-        plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
-        if ~isempty(obj.eicd)
-          seld=find([obj.eicd.mz]>=e.mzrange(1) & [obj.eicd.mz]<=e.mzrange(2));
-          for j=1:length(seld)
-            ed=obj.eicd(seld(j));
-            h(end+1)=plot([ed.pfwhh(1),ed.time,ed.pfwhh(2)],[0.5,1,0.5]*ed.intensity,'-','LineWidth',3);
-            leg{end+1}=sprintf('M/Z=%.4f, T=%.4g',ed.mz,ed.time);
+        for i=1:length(features)
+          e=features(i);
+          if size(e.peaks,1) == length(obj.time)
+            % EIC
+            h(end+1)=plot(e.peaks(:,3),e.peaks(:,2));
+            leg{end+1}=sprintf('M/Z=%.4f',e.mz);
+          else
+            % Deconvolved EIC
+            pfwhh=e.getfwhh();
+            plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
+            h(end+1)=plot([pfwhh(1),e.time,pfwhh(2)],[0.5,1,0.5]*e.intensity,'-','LineWidth',3);
+            leg{end+1}=sprintf('M/Z=%.4f, T=%.4g',e.mz,e.time);
           end
         end
       end
