@@ -533,14 +533,9 @@ classdef MassSpec < handle
       leg={};
       h=[];
       % Plot base traces from raw peaks
-      ic=[];
-      for i=1:length(obj.peaks)
-        p=obj.peaks{i};
-        ind=abs(p(:,1)-mz)<=args.mztol;
-        ic(i)=sum(p(ind,2));
-      end
-      h(end+1)=plot(obj.time,ic);
-      leg{end+1}='Basepeaks';
+      [ic,~,time]=obj.mzscan(mz,'mztol',args.mztol);
+      h(end+1)=plot(time,ic);
+      leg{end+1}='Base peaks';
       hold on;
       
       for i=1:length(sel)
