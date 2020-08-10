@@ -100,7 +100,6 @@ for i=1:length(uname)
   % Also plot straight line
   avg=sum(meanr)/sum(uconc);
   plot(uconc,avg*uconc,':','Color',get(h(i),'Color'));
-  keyboard;
 end
 legend(h,uname);
 xlabel('Concentration');
