@@ -3,6 +3,37 @@ classdef FeatureList < handle
     name;
     features;   % Array of Feature
   end
+
+  methods(Static)
+    function fls=importCSV(filename)
+      fls=[];
+      x=readtable(filename,'PreserveVariableNames',true);
+      % Find peak status row to extract name of this peak list
+      peakstatus=find(cellfun(@(z) ~isempty(strfind(z,'Peak status')),x.Properties.VariableNames));
+      for i=1:length(peakstatus)
+        name=strrep(x.Properties.VariableNames{peakstatus(i)},' Peak status','');
+        fl=FeatureList(name);
+        s=struct('mz',num2cell(x.([name,' Peak m/z'])),...
+                 'name',x.([name,' Peak name']),...
+                 'time',num2cell(x.([name,' Peak RT'])),...
+                 'intensity',num2cell(x.([name,' Peak height'])),...
+                 'npeaks',num2cell(x.([name,' Peak # data points'])),...
+                 'mzrange',num2cell([x.([name,' Peak m/z min']),x.([name,' Peak m/z max'])],2),...
+                 'timerange',num2cell([x.([name,' Peak RT start']),x.([name,' Peak RT end'])],2),...
+                 'fwhh',num2cell(x.([name,' Peak FWHM'])),...
+                 'tailing',num2cell(x.([name,' Peak tailing factor'])),...
+                 'asymmetry',num2cell(x.([name,' Peak asymmetry factor'])),...
+                 'area',num2cell(x.([name,' Peak area'])));
+        keyboard
+        for j=1:length(s)
+          f=Feature();
+          f.set(s(j));
+          fl.features=[fl.features,f];
+        end
+        fls=[fls,fl];
+      end
+    end
+  end
   
   methods
     function obj=FeatureList(name)
@@ -53,10 +84,6 @@ classdef FeatureList < handle
           end
         end
       end
-    end
-    
-    function importCSV(obj,filename)
-      x=readtable(filename);
     end
     
   end % methods

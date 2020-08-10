@@ -49,6 +49,12 @@ classdef Feature < handle
       obj.npeaks=size(peaks,1);
     end
 
+    function set(obj,x)
+    % Set from struct x (from csv import)
+      fn=fieldnames(x);
+      for i=1:length(fn)
+        obj.(fn{i})=x.(fn{i});
+      end
     end
     
   end % Methods
