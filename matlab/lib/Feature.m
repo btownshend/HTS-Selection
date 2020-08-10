@@ -24,11 +24,6 @@ classdef Feature < handle
         % Empty constructor
         return;
       end
-      if nargin>=2
-        obj.name=name;
-      else
-        obj.name='';
-      end
       [~,maxpeak]=max(peaks(:,2));
       obj.mz=peaks(maxpeak,1);
       obj.time=peaks(maxpeak,3);
@@ -47,6 +42,11 @@ classdef Feature < handle
       obj.asymmetry=(p10b-obj.time)/(obj.time-p10a);
       obj.tailing=(p5b-p5a)/(2*(obj.time-p5a));
       obj.npeaks=size(peaks,1);
+      if nargin>=2
+        obj.name=name;
+      else
+        obj.name=sprintf('%.4f @ %.3g',obj.mz,obj.time);
+      end
     end
 
     function set(obj,x)
