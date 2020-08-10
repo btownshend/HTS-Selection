@@ -523,17 +523,26 @@ classdef MassSpec < handle
       sel=find(abs(mz-[obj.eic.mz])<args.mztol);
       if isempty(sel)
         fprintf('No EIC within %.4f of %.4f\n', args.mztol, mz);
-        return;
       end
       ti=sprintf('Chromatogram %.4f - %.4f',mz-args.mztol,mz+args.mztol);
       setfig(ti);clf;
       leg={};
       h=[];
+      % Plot base traces from raw peaks
+      ic=[];
+      for i=1:length(obj.peaks)
+        p=obj.peaks{i};
+        ind=abs(p(:,1)-mz)<=args.mztol;
+        ic(i)=sum(p(ind,2));
+      end
+      h(end+1)=plot(obj.time,ic);
+      leg{end+1}='Basepeaks';
+      hold on;
+      
       for i=1:length(sel)
         e=obj.eic(sel(i));
         h(end+1)=plot(e.peaks(:,3),e.peaks(:,2));
         leg{end+1}=sprintf('M/Z=%.4f',e.mz);
-        hold on;
         plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
         if ~isempty(obj.eicd)
           seld=find([obj.eicd.mz]>=e.mzrange(1) & [obj.eicd.mz]<=e.mzrange(2));
