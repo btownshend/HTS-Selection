@@ -44,8 +44,8 @@ classdef Feature < handle
       p5a=peaks(find(peaks(:,2)>=obj.intensity*.05,1),3);
       p5b=peaks(find(peaks(:,2)>=obj.intensity*.05,1,'last'),3);
       obj.fwhh=p50b-p50a;
-      obj.asymmetry=(obj.time-p10a)/(p10b-obj.time);
-      obj.tailing=(obj.time-p5a)*(p5b-p5a)/(2*(obj.time-p5a)*(p5b-obj.time));
+      obj.asymmetry=(p10b-obj.time)/(obj.time-p10a);
+      obj.tailing=(p5b-p5a)/(2*(obj.time-p5a));
       obj.npeaks=size(peaks,1);
     end
 
