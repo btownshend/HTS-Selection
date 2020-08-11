@@ -57,10 +57,11 @@ classdef FeatureList < handle
       obj.features=obj.features(ord);
     end
     
-    function f=getbymz(obj,mz,varargin)
+    function fl=getbymz(obj,mz,varargin)
       defaults=struct('mztol',0.01);
       args=processargs(defaults,varargin);
-      f=obj.features(abs([obj.features.mz]-mz)<=args.mztol);
+      fl=FeatureList(sprintf('%.4f',mz),'getbymz',args);
+      fl.features=obj.features(abs([obj.features.mz]-mz)<=args.mztol);
     end
     
     function fl=deconvolve(obj,varargin)

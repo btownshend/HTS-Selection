@@ -517,7 +517,8 @@ classdef MassSpec < handle
       %sel=find(arrayfun(@(z) z.mzrange(1)-args.mztol<=mz && z.mzrange(2)+args.mztol>=mz,obj.eic));
       for ifl=1:length(obj.featurelists)
         fl=obj.featurelists(ifl);
-        features=fl.getbymz(mz,'mztol',args.mztol);
+        flmz=fl.getbymz(mz,'mztol',args.mztol);
+        features=flmz.features;
         if isempty(features)
           fprintf('No features in %s within %.4f of %.4f\n', fl.name, args.mztol, mz);
         end
