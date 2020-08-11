@@ -443,15 +443,13 @@ classdef Compounds < handle
           for j=1:length(obj.files)
             m=obj.multihits(i,k,j);
             assert(~isempty(m.mztarget));
-            if ~isempty(m)
-              mzsel=abs(m.filemz-m.mztarget)<=args.mztol & m.ic>=args.minic;
-              if any(mzsel)
-                etimes=[etimes,m.time(mzsel)];
-                ic=[ic,m.ic(mzsel)];
-                srcadduct=[srcadduct,repmat(k,1,length(m.time(mzsel)))];
-                srcfile=[srcfile,repmat(j,1,length(m.time(mzsel)))];
-                fwhh=[fwhh;m.pfwhh(mzsel,:)];
-              end
+            mzsel=abs(m.filemz-m.mztarget)<=args.mztol & m.ic>=args.minic;
+            if any(mzsel)
+              etimes=[etimes,m.time(mzsel)];
+              ic=[ic,m.ic(mzsel)];
+              srcadduct=[srcadduct,repmat(k,1,length(m.time(mzsel)))];
+              srcfile=[srcfile,repmat(j,1,length(m.time(mzsel)))];
+              fwhh=[fwhh;m.pfwhh(mzsel,:)];
             end
           end
           cont=obj.contains(i,srcfile);
@@ -521,15 +519,13 @@ classdef Compounds < handle
               for j=1:length(obj.files)
                 m=obj.multihits(i,kk,j);
                 assert(~isempty(m.mztarget));
-                if ~isempty(m)
-                  sel=m.time>=obj.timewindow(i,1) & m.time <= obj.timewindow(i,2);
-                  if sum(sel)>0
-                    obj.ic(i,kk,j)=sum(m.ic(sel));
-                    obj.mz(i,kk,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,kk,j);
-                    %obj.filemz(kk,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(kk,j);
-                    obj.time(i,kk,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,kk,j);
-                    obj.filetime(i,kk,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,kk,j);
-                  end
+                sel=m.time>=obj.timewindow(i,1) & m.time <= obj.timewindow(i,2);
+                if sum(sel)>0
+                  obj.ic(i,kk,j)=sum(m.ic(sel));
+                  obj.mz(i,kk,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,kk,j);
+                  %obj.filemz(kk,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(kk,j);
+                  obj.time(i,kk,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,kk,j);
+                  obj.filetime(i,kk,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,kk,j);
                 end
               end
             end
@@ -1108,11 +1104,9 @@ classdef Compounds < handle
         fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j)/obj.fsens(j,k));
         m=obj.multihits(ind,k,j);
         assert(~isempty(m.mztarget));
-        if ~isempty(m)
-          for p=1:length(m.mz)
-            if  (isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1) && m.ic(p)>=args.minic
-              fprintf(' [mz=%8.4f (d=%3.0f), t=%5.2f, ic=%8.0f]', m.mz(p), (m.mz(p)-obj.mztarget(ind,k))*1e4,m.time(p), m.ic(p));
-            end
+        for p=1:length(m.mz)
+          if  (isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1) && m.ic(p)>=args.minic
+            fprintf(' [mz=%8.4f (d=%3.0f), t=%5.2f, ic=%8.0f]', m.mz(p), (m.mz(p)-obj.mztarget(ind,k))*1e4,m.time(p), m.ic(p));
           end
         end
         if ~isempty(args.mzdata)
