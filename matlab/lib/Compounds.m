@@ -18,6 +18,7 @@ classdef Compounds < handle
     ic;      % ic(i,k,j) contains the total ion count for compound i, from file j with adduct k
     normic;  % Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
     multihits;% multihits{i,k,j} is the list of all peaks for target i in file j with adduct k
+    features;% features{i,k,j} is the list of all features for target i in file j with adduct k
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
     sdf;      % SDF data
@@ -605,18 +606,22 @@ classdef Compounds < handle
         end
        for k=1:length(obj.ADDUCTS)
         mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
-        id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'peakratio',0);
-        % Map M/Z, time back to global values
-        id.filemz=id.mz;
-        id.filetime=id.time;
-        id.mz=interp1(args.map.mz(:,2),args.map.mz(:,1),id.mz,'linear','extrap');
-        id.time=interp1(args.map.time(:,2),args.map.time(:,1),id.time,'linear','extrap');
+        % Use features
+        if true
+          fl=ms.featurelists(end);
+          f=fl.getbymz(mztargetMS,'mztol',args.mztol);
+          obj.features{i,k,findex}=f;
+          id=struct('mztarget',mztargetMS,'desc',f.name,'filemz',[f.features.mz],'filetime',[f.features.time],'ic',[f.features.area],'pfwhh',vertcat(f.features.mzrange));
+        else
+          id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'peakratio',0);
+          % Map M/Z, time back to global values
+          id.filemz=id.mz;
+          id.filetime=id.time;
+        end
+        id.mz=interp1(args.map.mz(:,2),args.map.mz(:,1),id.filemz,'linear','extrap');
+        id.time=interp1(args.map.time(:,2),args.map.time(:,1),id.filetime,'linear','extrap');
         obj.multihits{i,k,findex}=id;
         maxic(i,k)=max([0,id.ic]);
-        % Also store features
-        if ~isempty(ms.featurelists)
-          obj.features{i,k,findex}=ms.featurelists(end).getbymz(mztargetMS,'mztol',args.mztol);
-        end
        end
       end
       fprintf('done.\n');
@@ -635,7 +640,7 @@ classdef Compounds < handle
           nhits(i)=sum(obj.multihits{i,k,findex}.ic>minic);
         end
         fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
-        nfeatures=cellfun(@(z) length(z),obj.features(:,k,findex));
+        nfeatures=cellfun(@(z) length(z.features),obj.features(:,k,findex));
         contains=obj.contains(:,findex);
         fprintf('       Have features for %d/%d=%.0f%% (with %d unique) expected compounds and %d=%.0f%% unexpected ones\n', ...
                 sum(contains & nfeatures>0), sum(contains), sum(contains&nfeatures>0)/sum(contains)*100,...
