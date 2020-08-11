@@ -556,20 +556,11 @@ classdef Compounds < handle
     % Add the unique peaks for compounds in given SDF from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
     % or scan all elution times if the no prior data (keep only if a unique peak is determined)
-      defaults=struct('debug',false,'group','','contains',{{}},'mztol',[],'timetol',[],'map',[],'sample',[]);
+      defaults=struct('debug',false,'group','','contains',{{}},'mztol',obj.MZFUZZ,'timetol',obj.TIMEFUZZ,...
+                      'map',struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]),'sample',[]);
       % mzmap(i,2) - piecewise linear map for M/Z; mzmap(:,1) is true M/Z, mzmap(:,2) is for values in ms file
       % timemap(i,2) - piecewise linear map for elution times; timemap(:,1) is "standard" elution time
       args=processargs(defaults,varargin);
-
-      if isempty(args.mztol)
-        args.mztol=obj.MZFUZZ;
-      end
-      if isempty(args.timetol)
-        args.timetol=obj.TIMEFUZZ;
-      end
-      if isempty(args.map)
-        args.map=struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]);
-      end
       
       fprintf('Adding data from %s...',ms.name);
       findex=obj.lookupMS(ms);
