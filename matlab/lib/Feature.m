@@ -1,4 +1,4 @@
-classdef Feature < handle
+classdef Feature < matlab.mixin.Copyable
   properties
     name;
     peaks;   % Peak list
