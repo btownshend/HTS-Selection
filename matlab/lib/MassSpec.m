@@ -549,7 +549,7 @@ classdef MassSpec < handle
         obj.resample();
       end
       [~,closest]=min(abs(time-obj.time));
-      ti=sprintf('m/z @ T=%.2f',obj.time(closest));
+      ti=sprintf('m/z @ T=%.2f (%d)',obj.time(closest),closest);
       setfig(ti);clf;
       plot(obj.resamp.mz,obj.resamp.y(:,closest));
       title(ti)
