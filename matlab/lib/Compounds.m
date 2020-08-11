@@ -315,7 +315,7 @@ classdef Compounds < handle
       end
 
       obj.names{end+1}=name;
-      obj.sdf{end+1}=[];
+      %obj.sdf.sdf(end+1)=struct();
       nindex=length(obj.names);
       obj.mass(nindex)=mass;
       obj.tsens(nindex,1:length(obj.ADDUCTS))=nan;
@@ -342,12 +342,13 @@ classdef Compounds < handle
     
     function addCompoundsFromSDF(obj,sdf)
     % Add all the compounds in the given SDF file using a name formed from the PLATE and WELL
+      assert(isempty(obj.names));   % Otherwise, can't set obj.sdf to correspond
+      obj.sdf=sdf;
       for i=1:length(sdf.sdf)
         s=sdf.sdf(i);
         name=sprintf('%d%s',str2num(s.BATCH_PLATE(5:end)),s.BATCH_WELL);
         obj.addCompound(name,s.MostAbundantMass);  % May be different from monoisotopic mass
         index=strcmp(obj.names,name);
-        obj.sdf{index}=s;
       end
     end
     
@@ -1248,15 +1249,7 @@ classdef Compounds < handle
     end
     
     function f=getformula(obj,i)
-      f=[];
-      F=obj.sdf{i}.Formula;
-      fn=fieldnames(F);
-      for i=1:length(fn)
-        f=[f,fn{i}];
-        if F.(fn{i})~=1
-          f=[f,num2str(F.(fn{i}))];
-        end
-      end
+      f=obj.sdf.getformula(i);
     end
 
     function export2mzmine(obj,filename,varargin)
