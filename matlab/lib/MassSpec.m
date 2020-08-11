@@ -4,7 +4,7 @@ classdef MassSpec < handle
     name;    % Short name for this file
     moles;   % Nominal number of moles (per compound) loaded
     peaks;  % Peaks from mzxml2peaks;  peaks{i}(k,1:2) is [mz,ic] for elution i, at peak k 
-    time;   % Time of elutions
+    time;   % Time of elutions (in minutes)
     mzrange;   % Range [low,high] of m/z to plot/consider
     resamp;   % struct (mz,y,n) of uniformly sampled data
     clusters;	% Cluster peaks (across m/z and time)
@@ -84,6 +84,7 @@ classdef MassSpec < handle
       fprintf('Loading %s...\n', path);
       mzxml=mzxmlread(path);
       [obj.peaks,obj.time]=mzxml2peaks(mzxml);
+      obj.time=obj.time/60;   % Convert to minutes
       obj.mzrange=[min(cellfun(@(z) z(1,1), obj.peaks)),max(cellfun(@(z) z(end,1), obj.peaks))];
       obj.path=path;
       z=strsplit(obj.path,'/');
@@ -131,7 +132,7 @@ classdef MassSpec < handle
     function clusterpeaks(obj,varargin)
     % Cluster all significant peaks and return a table of results
     % Used for de novo analysis (without info on expected components)
-      defaults=struct('mzwindow',0.01,'timewindow',200, 'minic',1e3, 'noise',300,'maxpeaks',2000,'noisefrac',.01);
+      defaults=struct('mzwindow',0.01,'timewindow',200/60, 'minic',1e3, 'noise',300,'maxpeaks',2000,'noisefrac',.01);
       args=processargs(defaults,varargin);
 
       if args.noise>args.minic
@@ -166,7 +167,7 @@ classdef MassSpec < handle
         ic=ic(sel);
         ictotal=sum(ic);
         res=[res,struct('mz',mz,'elution',maxxpos,'elutionrange',[min(tvalid),max(tvalid)],'maxic',maxmax,'ic',ic,'ictotal',ictotal,'thresh',thresh)];
-        % fprintf('Max peak of %7.0f (Q=%.2f) at m/z=%.4f, t=%4.0f [%4.0f,%4.0f]\n', ictotal, maxmax/ictotal, mz, obj.time([maxxpos,min(tvalid),max(tvalid)]));
+        % fprintf('Max peak of %7.0f (Q=%.2f) at m/z=%.4f, t=%.2f [%.2f,%.2f]\n', ictotal, maxmax/ictotal, mz, obj.time([maxxpos,min(tvalid),max(tvalid)]));
       end
       [~,ord]=sort([res.ictotal],'desc');
       res=res(ord);
@@ -272,7 +273,7 @@ classdef MassSpec < handle
     % Only peaks with ion count >= peakratio* maximum peak ion count are returned
     % If sdf provided, only used to construct a name for the compound
     % overseg is minimum separation between peaks; could be less than TIMEFUZZ, since the fuzz also includes misalignment of times
-      defaults=struct('elutetime',[],'mztol',0.01,'timetol',30,'debug',false,'ignoreelutetimes',[],'peakratio',0.05,'overseg',nan,'showplot',false,'heightfilter',100);
+      defaults=struct('elutetime',[],'mztol',0.01,'timetol',30/60,'debug',false,'ignoreelutetimes',[],'peakratio',0.05,'overseg',nan,'showplot',false,'heightfilter',100);
       args=processargs(defaults,varargin);
       
       if isnan(args.overseg)
@@ -342,7 +343,7 @@ classdef MassSpec < handle
         end
       elseif length(maxmz)==1
         if args.debug
-          fprintf('Unique peak for %s:  T=%.0f [%.0f-%.0f] IC=%.0f\n',desc, maxtime(1),pfwhh(1,:),maxic(1));
+          fprintf('Unique peak for %s:  T=%.2f [%.2f-%.2f] IC=%.0f\n',desc, maxtime(1),pfwhh(1,:),maxic(1));
         end
       else
         if args.debug
@@ -358,7 +359,7 @@ classdef MassSpec < handle
         fprintf('%2d %-12.12s M/Z=%8.4f\n',i, id.name,id.mztarget);
         for k=1:length(id.peaks)
           pk=id.peaks(k);
-          fprintf('   %12.12s     %8.4f  T=[%6.1f,%6.1f,%6.1f]  IC=%8.0f\n',  '',pk.mzobs, pk.elutions, pk.ictotal);
+          fprintf('   %12.12s     %8.4f  T=[%6.2f,%6.2f,%6.2f]  IC=%8.0f\n',  '',pk.mzobs, pk.elutions, pk.ictotal);
         end
       end
     end
@@ -386,7 +387,7 @@ classdef MassSpec < handle
       plot(obj.time(pk.elutions(1))*[1,1],ax(3:4),':r');
       plot(obj.time(pk.elutions(2))*[1,1],ax(3:4),':g');
       plot(obj.time(pk.elutions(3))*[1,1],ax(3:4),':r');
-      xlabel('Time');
+      xlabel('Time (min)');
       ylabel('Ion count');
       title(sprintf('M/Z %.4f (err=%.4f) IC=%.0f',id.mztarget,pk.mzobs-id.mztarget,pk.ictotal));
 
@@ -541,7 +542,7 @@ classdef MassSpec < handle
         obj.resample();
       end
       [~,closest]=min(abs(time-obj.time));
-      ti=sprintf('m/z @ T=%f',obj.time(closest));
+      ti=sprintf('m/z @ T=%.2f',obj.time(closest));
       setfig(ti);clf;
       plot(obj.resamp.mz,obj.resamp.y(:,closest));
       title(ti)
@@ -577,7 +578,7 @@ classdef MassSpec < handle
       end
       plot(time,obj.TIC());
       title(ti,'Interpreter','None')
-      xlabel('Retention Time')
+      xlabel('Retention Time (min)')
       ylabel('Relative Intensity')
       hold on;
       ax=axis;

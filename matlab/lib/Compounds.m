@@ -25,7 +25,7 @@ classdef Compounds < handle
   
   properties(Constant)
     MZFUZZ=0.006;
-    TIMEFUZZ=40;   % in seconds
+    TIMEFUZZ=40/60;   % in minutes
     ADDUCTS=struct('name',{'M+H','M+Na','M+K'},'mass',{1.007825035,22.9897677,38.963708});
   end
   
@@ -351,7 +351,7 @@ classdef Compounds < handle
       args=processargs(defaults,varargin);
 
       filetime=str2num(ms.mzxml.mzXML.msRun.endTime(3:end-1));
-      objtime=3300;   % Baseline time
+      objtime=3300/60;   % Baseline time
       if isempty(args.initmap)
         fprintf('Normalizing file end time of %.1f to baseline of %.1f\n', filetime, objtime);
         map=struct('mz',[0,0;1,1], 'time',[0,0;objtime,filetime]);
@@ -362,7 +362,7 @@ classdef Compounds < handle
       setfig(ti);clf;
       niter=3;
       for iter=1:niter
-        allid=obj.checkComposition(ms,'map',map,'timetol',500/iter,'mztol',.02/iter);
+        allid=obj.checkComposition(ms,'map',map,'timetol',500/60/iter,'mztol',.02/iter);
         t=[];mz=[];  % Build lists of [reference,file]
         for i=1:length(allid(:))
           if isfinite(allid(i).time)
@@ -456,7 +456,7 @@ classdef Compounds < handle
             ewind=fwhh(cont,:);
             ewind=ewind(ord,:);
             if args.debug || strcmp(args.plot,obj.names{i})
-              fprintf('%s esort=[%s]\n',obj.names{i}, sprintf('%.0f ',esort));
+              fprintf('%s esort=[%s]\n',obj.names{i}, sprintf('%.2f ',esort));
             end
             best=[1,1];bestscore=-1e10;besttime=nan;
             falseweight=length(unique(srcfile(~cont)))/length(unique(srcfile(cont)));
@@ -483,7 +483,7 @@ classdef Compounds < handle
             nfalse=length(unique(srcfile(~cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
             ntrue=length(unique(srcfile(cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
             if args.debug || strcmp(args.plot,obj.names{i})
-              fprintf('Best has %d true and %d false hits over [%.0f,%.0f], width=%.0f\n',ntrue,nfalse,bestwindow,diff(esort(best)));
+              fprintf('Best has %d true and %d false hits over [%.2f,%.2f], width=%.2f\n',ntrue,nfalse,bestwindow,diff(esort(best)));
             end
           elseif length(etimes)==1
             besttime=etimes;
@@ -498,7 +498,7 @@ classdef Compounds < handle
           end
           nmax=sum(obj.contains(i,:));
           if args.debug || strcmp(args.plot,obj.names{i})
-            fprintf('%d/%d hits with %d false hits at T=%.0f ', ntrue, nmax, nfalse, besttime);
+            fprintf('%d/%d hits with %d false hits at T=%.2f ', ntrue, nmax, nfalse, besttime);
           end
           if ntrue/nmax < args.minhitfrac 
             if args.debug || strcmp(args.plot,obj.names{i})
@@ -798,11 +798,11 @@ classdef Compounds < handle
     
     function map=checktime(obj,ref,varargin)
     % Check all multiple hits of ref against each other
-      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'refrange',[500,2500],'files',1:length(obj.files));
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'refrange',[500,2500]/60,'files',1:length(obj.files));
       args=processargs(defaults,varargin);
 
       args.files=union(args.files,ref);
-      fprintf('checktime(%d,''timetol'',%.0f)\n',ref,args.timetol);
+      fprintf('checktime(%d,''timetol'',%.2f)\n',ref,args.timetol);
       t = nan(size(obj.mz));
       ic = nan(size(obj.mz));
       for i=1:length(obj.names)
@@ -841,7 +841,7 @@ classdef Compounds < handle
             end
             fit=piecewise(tref(tsel),t2(tsel),args.timetol,2);
             pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
-            fprintf('%-20.20s  [%s]\n',obj.samples{i}, sprintf('(%4.0f@%4.0f) ',fit'));
+            fprintf('%-20.20s  [%s]\n',obj.samples{i}, sprintf('(%.2f@%.2f) ',fit'));
             h(end+1)=plot(tref,t2-tref,'o');
             hold on;
             plot(trefs,pred-trefs,'-','Color',get(h(end),'Color'));
@@ -852,7 +852,7 @@ classdef Compounds < handle
         tmed=nanmedian(t(:,:,sel),3);
         fit=piecewise(tref(tsel),tmed(tsel),args.timetol,2);
         [~,dirname]=fileparts(udirs{j});
-        fprintf('%-20.20s  [%s] over %s\n\n', '', sprintf('(%4.0f@%4.0f) ',fit'),dirname);
+        fprintf('%-20.20s  [%s] over %s\n\n', '', sprintf('(%.2f@%.2f) ',fit'),dirname);
         pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
         h(end+1)=plot(trefs,pred-trefs,'k','linewidth',2);
         leg{end+1}='All';
@@ -1069,7 +1069,7 @@ classdef Compounds < handle
       
       meanic=nanmean(obj.ic(ind,k,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,k,obj.contains(ind,:)));
-      fprintf('%s[%s] (%d): m/z=%8.4f t=%.0f [%.0f-%.0f] sens=%.0f\n',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.timewindow(ind,:),obj.tsens(ind,k));
+      fprintf('%s[%s] (%d): m/z=%8.4f t=%.2f [%.2f-%.2f] sens=%.0f\n',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.timewindow(ind,:),obj.tsens(ind,k));
       isomers=[];
       label=true;
       for k1=1:length(obj.ADDUCTS)
@@ -1082,7 +1082,7 @@ classdef Compounds < handle
           for ii=1:length(isomers)
             i=isomers(ii);
             imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
-            fprintf('\t%-6.6s[%-4.4s]: m/z=%8.4f (d=%4.0f) t=%4.0f (d=%4.0f) meanic=%.0f\n',...
+            fprintf('\t%-6.6s[%-4.4s]: m/z=%8.4f (d=%4.0f) t=%.2f (d=%.2f) meanic=%.0f\n',...
                     obj.names{i},obj.ADDUCTS(k1).name, obj.mass(i)+obj.ADDUCTS(k1).mass,...
                     (obj.mass(i)+obj.ADDUCTS(k1).mass-(obj.mass(ind)+obj.ADDUCTS(k).mass))*1e4,...
                     obj.meantime(i),obj.meantime(i)-obj.meantime(ind),imeanic);
@@ -1092,7 +1092,7 @@ classdef Compounds < handle
       if ~isempty(args.mzdata)
         setfig([obj.names{ind},'-',obj.ADDUCTS(args.adduct).name]);
         t=tiledlayout('flow');
-        title(t,sprintf('%s m/z=%.4f t=%.0f',obj.names{ind},obj.mztarget(ind,k),obj.meantime(ind)));
+        title(t,sprintf('%s m/z=%.4f t=%.2f',obj.names{ind},obj.mztarget(ind,k),obj.meantime(ind)));
       end
       
       for j=1:length(obj.files)
@@ -1100,12 +1100,12 @@ classdef Compounds < handle
           % TODO: Could list false positives here
           continue;
         end
-        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%4.0f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j)/obj.fsens(j,k));
+        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j)/obj.fsens(j,k));
         m=obj.multihits{ind,k,j};
         if ~isempty(m)
           for p=1:length(m.mz)
             if  (isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1) && m.ic(p)>=args.minic
-              fprintf(' [mz=%8.4f (d=%3.0f), t=%4.0f, ic=%8.0f]', m.mz(p), (m.mz(p)-obj.mztarget(ind,k))*1e4,m.time(p), m.ic(p));
+              fprintf(' [mz=%8.4f (d=%3.0f), t=%5.2f, ic=%8.0f]', m.mz(p), (m.mz(p)-obj.mztarget(ind,k))*1e4,m.time(p), m.ic(p));
             end
           end
         end
@@ -1117,13 +1117,13 @@ classdef Compounds < handle
       end
       if isfinite(meanic) && isfinite(obj.meantime(ind))
         % False positives
-        fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.0f,%.0f], NormIC >= %.3f:\n',...
+        fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.2f,%.2f], NormIC >= %.3f:\n',...
                 obj.mztarget(ind,k)+obj.MZFUZZ*[-1,1],...
                 obj.timewindow(ind,:),...
                 args.falsethresh);
         for j=1:length(obj.files)
           if ~obj.contains(ind,j) && obj.normic(ind,k,j)>=args.falsethresh && obj.time(ind,k,j)>=obj.timewindow(ind,1) && obj.time(ind,k,j) <= obj.timewindow(ind,2)
-            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%4.0f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j), (obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4, obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
+            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j), (obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4, obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
             if ~isempty(args.mzdata)
               nexttile;
               obj.plotscan(ind,args.mzdata{j},'adduct',args.adduct);
@@ -1195,7 +1195,7 @@ classdef Compounds < handle
               m2=(obj.mass(jj)+obj.ADDUCTS(k2).mass);
               mdiff=m1-m2;
               if abs(mdiff) < 2*obj.MZFUZZ
-                fprintf('Overlap: %6.6s+%-4.4s (%.4f,[%4.0f,%4.0f]) and %6.6s+%-4.4s (%.4f,[%4.0f,%4.0f]) dmz=%.4f\n', obj.names{ii},obj.ADDUCTS(k1).name,m1,obj.timewindow(ii,:),obj.names{jj},obj.ADDUCTS(k2).name,m2,obj.timewindow(jj,:),abs(mdiff));
+                fprintf('Overlap: %6.6s+%-4.4s (%.4f,[%.2f,%.2f]) and %6.6s+%-4.4s (%.4f,[%.2f,%.2f]) dmz=%.4f\n', obj.names{ii},obj.ADDUCTS(k1).name,m1,obj.timewindow(ii,:),obj.names{jj},obj.ADDUCTS(k2).name,m2,obj.timewindow(jj,:),abs(mdiff));
                 nover=nover+1;
               end
             end

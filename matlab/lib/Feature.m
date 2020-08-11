@@ -45,7 +45,7 @@ classdef Feature < handle
       if nargin>=2
         obj.name=name;
       else
-        obj.name=sprintf('%.4f @ %.3g',obj.mz,obj.time);
+        obj.name=sprintf('%.4f @ %.2f',obj.mz,obj.time);
       end
     end
 

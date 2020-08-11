@@ -36,26 +36,26 @@ for i=1:length(allfiles)
     maps(i).mz=[133,133-7e-4;521,521-41e-4];
     maps(i).time=[304 346
                   2015 1700
-                  2591 2380];
+                  2591 2380]/60;
   elseif ~isempty(strfind(allfiles(i).folder,'20200225'))
     maps(i).mz=[133,133+3e-4;521,521+20e-4];
     maps(i).time=[203 202
-                  2894 2880];
+                  2894 2880]/60;
   elseif ~isempty(strfind(allfiles(i).folder,'20200310'))
     maps(i).mz=[133,133-9e-4;521,521-5e-4];
     maps(i).time=[203 211
-                  2894 2891];
+                  2894 2891]/60;
   elseif ~isempty(strfind(allfiles(i).folder,'20190309'))
     maps(i).mz=[133,133-1e-4;521,521+20e-4];
     maps(i).time=[203 179
-                  2894 2883];
+                  2894 2883]/60;
   elseif ~isempty(strfind(allfiles(i).folder,'20190427'))
     maps(i).mz=[133,133-24e-4;521,521-66e-4];
     maps(i).time=[0 0; 1 1 ];
   elseif ~isempty(strfind(allfiles(i).folder,'20190501'))
     maps(i).mz=[133,133+1e-4;521,521+6e-4];
     maps(i).time=[204 185
-                  2894 2884];
+                  2894 2884]/60;
   else
     error('No mapping for folder %s',allfiles(i).folder);
   end
@@ -82,7 +82,7 @@ for i=1:length(allfiles)
         mzdata{i}.setLoad(2500*1e-15);
       end
       % Prune out some data
-      mzdata{i}.filter([200,2900],[130,530]);  % NOTE: this is using the localtimes to filter
+      mzdata{i}.filter([200,2900]/60,[130,530]);  % NOTE: this is using the localtimes to filter
   end
 end
 
