@@ -30,7 +30,7 @@ classdef Feature < handle
       obj.intensity=peaks(maxpeak,2);
       obj.area=sum(peaks(:,2));
       obj.peaks=peaks;
-      obj.mzrange=[nanmin(peaks(:,1)),nanmax(peaks(:,2))];
+      obj.mzrange=[nanmin(peaks(:,1)),nanmax(peaks(:,1))];
       obj.timerange=[min(peaks(:,3)),max(peaks(:,3))];
       p50a=peaks(find(peaks(:,2)>=obj.intensity/2,1),3);
       p50b=peaks(find(peaks(:,2)>=obj.intensity/2,1,'last'),3);
