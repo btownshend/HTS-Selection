@@ -18,9 +18,7 @@ classdef Compounds < handle
     ic;      % ic(i,k,j) contains the total ion count for compound i, from file j with adduct k
     normic;  % Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
     multihits;% multihits{i,k,j} is the list of all peaks for target i in file j with adduct k
-    features;% features{i,k,j} is the list of all features for target i in file j with adduct k
-    rfeatures;% remapped features{i,k,j} is the list of all features for target i in file j with adduct k
-    allfeatures;% allfeatures(j) is the list of all features in file j
+    allfeatures;% allfeatures(j) is the list of all features in file j (copied from ms feature list)
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
     sdf;      % SDF data
@@ -38,8 +36,6 @@ classdef Compounds < handle
       obj.contains=false(0,0);
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
-      obj.features=FeatureList.empty;
-      obj.rfeatures=FeatureList.empty;
       obj.sdf=SDF();
     end
 
@@ -609,19 +605,10 @@ classdef Compounds < handle
         mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
         % Use features
         if true
-          flmz=fl.getbymz(mztargetMS,'mztol',args.mztol);
-          fremap=FeatureList([flmz.name,' remap'],'remap',map);
-          for fi=1:length(flmz.features)
-            f=flmz.features(fi);
-            peaks=interp1(map.mz(:,2),map.mz(:,1),f.peaks(:,1),'linear','extrap');
-            peaks(:,2)=f.peaks(:,2);
-            peaks(:,3)=interp1(map.time(:,2),map.time(:,1),f.peaks(:,3),'linear','extrap');
-            fremap.append(Feature(peaks));
-          end
-          obj.features(i,k,findex)=flmz;
-          obj.rfeatures(i,k,findex)=fremap;
+          [flmz,findices]=fl.getbymz(mztargetMS,'mztol',args.mztol);
+          fremap=flmz.maptoref(map);
           
-          id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'ic',[flmz.features.area],'pfwhh',vertcat(fremap.features.mzrange));
+          id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'ic',[flmz.features.area],'pfwhh',vertcat(fremap.features.mzrange),'features',findices);
         else
           id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'peakratio',0);
           % Map M/Z, time back to global values
@@ -650,7 +637,7 @@ classdef Compounds < handle
           nhits(i)=sum(obj.multihits{i,k,findex}.ic>minic);
         end
         fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
-        nfeatures=arrayfun(@(z) length(z.features),obj.features(:,k,findex));
+        nfeatures=cellfun(@(z) length(z.features),obj.multihits(:,k,findex));
         contains=obj.contains(:,findex);
         fprintf('       Have features for %d/%d=%.0f%% (with %d unique) expected compounds and %d=%.0f%% unexpected ones\n', ...
                 sum(contains & nfeatures>0), sum(contains), sum(contains&nfeatures>0)/sum(contains)*100,...

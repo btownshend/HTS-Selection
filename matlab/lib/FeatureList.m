@@ -50,6 +50,34 @@ classdef FeatureList < handle
       end
     end
     
+    function r=maptoref(obj,map)
+    % Map m/z, time in feature list from 'file' values to 'ref' values 
+    % This interpolates using map.mz(:,1) as ref, map.mz(:,2) as file
+    % Similar for map.time
+      r=FeatureList([obj.name,' toref'],'remap',map);
+      for fi=1:length(obj.features)
+        f=obj.features(fi);
+        peaks=interp1(map.mz(:,2),map.mz(:,1),f.peaks(:,1),'linear','extrap');
+        peaks(:,2)=f.peaks(:,2);
+        peaks(:,3)=interp1(map.time(:,2),map.time(:,1),f.peaks(:,3),'linear','extrap');
+        r.append(Feature(peaks));
+      end
+    end
+
+    function r=maptofile(obj,map)
+    % Map m/z, time in feature list from 'ref' values to 'file' values 
+    % This interpolates using map.mz(:,1) as ref, map.mz(:,2) as file
+    % Similar for map.time
+      r=FeatureList([obj.name,' tofile'],'remap',map);
+      for fi=1:length(obj.features)
+        f=obj.features(fi);
+        peaks=interp1(map.mz(:,1),map.mz(:,2),f.peaks(:,1),'linear','extrap');
+        peaks(:,2)=f.peaks(:,2);
+        peaks(:,3)=interp1(map.time(:,1),map.time(:,2),f.peaks(:,3),'linear','extrap');
+        r.append(Feature(peaks));
+      end
+    end
+
     function append(obj,feature)
       obj.features=[obj.features,feature];
     end
@@ -59,11 +87,12 @@ classdef FeatureList < handle
       obj.features=obj.features(ord);
     end
     
-    function fl=getbymz(obj,mz,varargin)
+    function [fl,sel]=getbymz(obj,mz,varargin)
       defaults=struct('mztol',0.01);
       args=processargs(defaults,varargin);
       fl=FeatureList(sprintf('%.4f',mz),'getbymz',args);
-      fl.features=obj.features(abs([obj.features.mz]-mz)<=args.mztol);
+      sel=find(abs([obj.features.mz]-mz)<=args.mztol);
+      fl.features=obj.features(sel);
     end
     
     function fl=deconvolve(obj,varargin)

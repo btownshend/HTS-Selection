@@ -98,11 +98,11 @@ for i=1:length(mzdata)
     if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'buildchromatogram'))
       fprintf('Building chromatograms for %s...',mzdata{i}.name);
       mzdata{i}.buildchromatograms();
-      fprintf('done\n');
+      fprintf('%d done\n',length(mzdata{i}.featurelists(end).features));
     end
     fprintf('Deconvolving chromatograms for %s...',mzdata{i}.name);
     mzdata{i}.deconvolve();
-    fprintf('done\n');
+    fprintf('%d done\n',length(mzdata{i}.featurelists(end).features));
   end
   
   if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)  || strncmp(mzdata{i}.name,'old-CDIV',8)
