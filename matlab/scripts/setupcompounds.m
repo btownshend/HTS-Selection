@@ -94,6 +94,17 @@ if ~exist('compounds','var')
 end
 
 for i=1:length(mzdata)
+  if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'deconvolve'))
+    if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'buildchromatogram'))
+      fprintf('Building chromatograms for %s...',mzdata{i}.name);
+      mzdata{i}.buildchromatograms();
+      fprintf('done\n');
+    end
+    fprintf('Deconvolving chromatograms for %s...',mzdata{i}.name);
+    mzdata{i}.deconvolve();
+    fprintf('done\n');
+  end
+  
   if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)  || strncmp(mzdata{i}.name,'old-CDIV',8)
     compounds.addMS(mzdata{i},'group','Full','map',maps(i));
   elseif strncmp(mzdata{i}.name,'86',2)
