@@ -17,7 +17,7 @@ classdef Compounds < handle
     filetime;% filetime(i,k,j) contains the elution time on compound i, from file j without any time remapping
     ic;      % ic(i,k,j) contains the total ion count for compound i, from file j with adduct k
     normic;  % Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
-    multihits;% multihits{i,k,j} is the list of all peaks for target i in file j with adduct k
+    multihits;% multihits(i,k,j) is the list of all peaks for target i in file j with adduct k
     allfeatures;% allfeatures(j) is the list of all features in file j (copied from ms feature list)
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
@@ -32,7 +32,7 @@ classdef Compounds < handle
   
   methods
     function obj=Compounds()
-      obj.multihits={};
+      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'filemz',{},'filetime',{},'ic',{},'pfwhh',{},'features',{});
       obj.contains=false(0,0);
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
@@ -324,7 +324,7 @@ classdef Compounds < handle
         obj.ic(nindex,:,:)=nan;
         obj.normic(nindex,:,:)=nan;
         obj.contains(nindex,:)=false;
-        obj.multihits{nindex,:,:}=[];
+        %obj.multihits(nindex,:,:)=struct.empty;
       else
         obj.mz=nan(nindex,length(obj.ADDUCTS), 0);
         obj.time=nan(nindex,length(obj.ADDUCTS), 0);
@@ -333,7 +333,7 @@ classdef Compounds < handle
         obj.ic=nan(nindex,length(obj.ADDUCTS), 0);
         obj.normic=nan(nindex,length(obj.ADDUCTS), 0);
         obj.contains=false(nindex,0);
-        obj.multihits=cell(nindex,length(obj.ADDUCTS),0);
+        %obj.multihits=struct.empty(nindex,length(obj.ADDUCTS),0);
       end
     end
     
@@ -441,7 +441,8 @@ classdef Compounds < handle
           end
           etimes=[];ic=[];srcadduct=[]; srcfile=[]; fwhh=[];
           for j=1:length(obj.files)
-            m=obj.multihits{i,k,j};
+            m=obj.multihits(i,k,j);
+            assert(~isempty(m.mztarget));
             if ~isempty(m)
               mzsel=abs(m.filemz-m.mztarget)<=args.mztol & m.ic>=args.minic;
               if any(mzsel)
@@ -518,7 +519,8 @@ classdef Compounds < handle
             obj.timewindow(i,1:2)=bestwindow;
             for kk=1:length(obj.ADDUCTS)
               for j=1:length(obj.files)
-                m=obj.multihits{i,kk,j};
+                m=obj.multihits(i,kk,j);
+                assert(~isempty(m.mztarget));
                 if ~isempty(m)
                   sel=m.time>=obj.timewindow(i,1) & m.time <= obj.timewindow(i,2);
                   if sum(sel)>0
@@ -604,20 +606,11 @@ classdef Compounds < handle
        for k=1:length(obj.ADDUCTS)
         mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
         % Use features
-        if true
-          [flmz,findices]=fl.getbymz(mztargetMS,'mztol',args.mztol);
-          fremap=flmz.maptoref(map);
+        [flmz,findices]=fl.getbymz(mztargetMS,'mztol',args.mztol);
+        fremap=flmz.maptoref(map);
           
-          id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'ic',[flmz.features.area],'pfwhh',vertcat(fremap.features.mzrange),'features',findices);
-        else
-          id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'peakratio',0);
-          % Map M/Z, time back to global values
-          id.filemz=id.mz;
-          id.filetime=id.time;
-          id.mz=interp1(args.map.mz(:,2),args.map.mz(:,1),id.filemz,'linear','extrap');
-          id.time=interp1(args.map.time(:,2),args.map.time(:,1),id.filetime,'linear','extrap');
-        end
-        obj.multihits{i,k,findex}=id;
+        id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'ic',[flmz.features.area],'pfwhh',vertcat(fremap.features.mzrange),'features',findices);
+        obj.multihits(i,k,findex)=id;
         maxic(i,k)=max([0,id.ic]);
        end
       end
@@ -634,10 +627,10 @@ classdef Compounds < handle
         fprintf('%5s: Expected have IC=[%s], unexpected have IC=[%s] (%s) @%.0f: %.1f%%,%.1f%% \n', obj.ADDUCTS(k).name, sprintf('%.0f ',prctile(ice(:),p)), sprintf('%.0f ',prctile(icu(:),p)), sprintf('%d%% ',p),minic,100*mean(ice(:)>minic),100*mean(icu(:)>minic));
         nhits=nan(length(obj.mass),1);
         for i=1:length(obj.mass)
-          nhits(i)=sum(obj.multihits{i,k,findex}.ic>minic);
+          nhits(i)=sum(obj.multihits(i,k,findex).ic>minic);
         end
         fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
-        nfeatures=cellfun(@(z) length(z.features),obj.multihits(:,k,findex));
+        nfeatures=arrayfun(@(z) length(z.features),obj.multihits(:,k,findex));
         contains=obj.contains(:,findex);
         fprintf('       Have features for %d/%d=%.0f%% (with %d unique) expected compounds and %d=%.0f%% unexpected ones\n', ...
                 sum(contains & nfeatures>0), sum(contains), sum(contains&nfeatures>0)/sum(contains)*100,...
@@ -1113,7 +1106,8 @@ classdef Compounds < handle
           continue;
         end
         fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j)/obj.fsens(j,k));
-        m=obj.multihits{ind,k,j};
+        m=obj.multihits(ind,k,j);
+        assert(~isempty(m.mztarget));
         if ~isempty(m)
           for p=1:length(m.mz)
             if  (isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1) && m.ic(p)>=args.minic
