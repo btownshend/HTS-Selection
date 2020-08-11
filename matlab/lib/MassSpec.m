@@ -434,7 +434,7 @@ classdef MassSpec < handle
       allpks=allpks(ord,:);
       % Buld EIC
       eicranges=zeros(0,2);   % [mzlow, mzhigh]
-      fl=FeatureList([obj.name,' chromatograms']);
+      fl=FeatureList([obj.name,' chromatograms'],'buildchromatogram',args);
       for i=1:size(allpks,1)
         if allpks(i,2)>=args.minintensity
           mzrange=[allpks(i,1)-args.mztol,allpks(i,1)+args.mztol];

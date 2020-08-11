@@ -1,6 +1,8 @@
 classdef FeatureList < handle
   properties
     name;
+    src;
+    params;
     features;   % Array of Feature
   end
 
@@ -12,7 +14,7 @@ classdef FeatureList < handle
       peakstatus=find(cellfun(@(z) ~isempty(strfind(z,'Peak status')),x.Properties.VariableNames));
       for i=1:length(peakstatus)
         name=strrep(x.Properties.VariableNames{peakstatus(i)},' Peak status','');
-        fl=FeatureList(name);
+        fl=FeatureList(name,'import');
         s=struct('mz',num2cell(x.([name,' Peak m/z'])),...
                  'name',x.([name,' Peak name']),...
                  'time',num2cell(x.([name,' Peak RT'])),...
@@ -35,9 +37,15 @@ classdef FeatureList < handle
   end
   
   methods
-    function obj=FeatureList(name)
+    function obj=FeatureList(name,src,params)
       obj.name=name;
       obj.features=[];
+      if nargin>=2
+        obj.src=src;
+      end
+      if nargin>=3
+        obj.params=params;
+      end
     end
     
     function append(obj,feature)
@@ -59,7 +67,7 @@ classdef FeatureList < handle
       defaults=struct('debug',false,'heightfilter',1000,'oversegmentationfilter',60/60,'maxarearatio',33,'maxwidth',120/60,'trace',0);
       % Note: when oversegmentationfilter is active, the fwhh includes the merged peak's fwhh even if they are much lower than the main one
       args=processargs(defaults,varargin);
-      fl=FeatureList([obj.name,' deconvoluted']);
+      fl=FeatureList([obj.name,' deconvoluted'],'deconvolve',args);
       for i=1:length(obj.features)
         %fprintf('%d ',i);
         p=obj.features(i).peaks;
