@@ -19,7 +19,7 @@ classdef Compounds < handle
     normic;  % Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
     multihits;% multihits{i,k,j} is the list of all peaks for target i in file j with adduct k
     features;% features{i,k,j} is the list of all features for target i in file j with adduct k
-    featurelists;% featurelists(j) is the list of all features in file j
+    allfeatures;% allfeatures(j) is the list of all features in file j
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
     sdf;      % SDF data
@@ -595,9 +595,7 @@ classdef Compounds < handle
         obj.contains(:,findex)=ismember(obj.names,args.contains);
       end
       fl=ms.featurelists(end);
-      if isempty(obj.featurelists)
-        assert(findex==1);
-        obj.featurelists=fl;
+      obj.allfeatures(findex)=fl;
       end
       
       % Attempt to locate each one uniquely
@@ -611,8 +609,8 @@ classdef Compounds < handle
         % Use features
         if true
           f=fl.getbymz(mztargetMS,'mztol',args.mztol);
-          obj.features{i,k,findex}=f;
           id=struct('mztarget',mztargetMS,'desc',f.name,'filemz',[f.features.mz],'filetime',[f.features.time],'ic',[f.features.area],'pfwhh',vertcat(f.features.mzrange));
+          obj.features(i,k,findex)=f;
         else
           id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'peakratio',0);
           % Map M/Z, time back to global values
@@ -641,7 +639,7 @@ classdef Compounds < handle
           nhits(i)=sum(obj.multihits{i,k,findex}.ic>minic);
         end
         fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
-        nfeatures=cellfun(@(z) length(z.features),obj.features(:,k,findex));
+        nfeatures=arrayfun(@(z) length(z.features),obj.features(:,k,findex));
         contains=obj.contains(:,findex);
         fprintf('       Have features for %d/%d=%.0f%% (with %d unique) expected compounds and %d=%.0f%% unexpected ones\n', ...
                 sum(contains & nfeatures>0), sum(contains), sum(contains&nfeatures>0)/sum(contains)*100,...
