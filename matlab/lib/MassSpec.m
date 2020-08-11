@@ -487,6 +487,13 @@ classdef MassSpec < handle
       obj.featurelists=[obj.featurelists,fl];
     end      
 
+    function listfeatures(obj)
+      for i=1:length(obj.featurelists)
+        f=obj.featurelists(i);
+        fprintf('%d name:%-40s  src:%-17s features:%d\n', i, f.name, f.src, length(f.features));
+      end
+    end
+    
     function ploteic(obj,mz,varargin)
       defaults=struct('debug',false,'mztol',0.01);
       args=processargs(defaults,varargin);
