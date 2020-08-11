@@ -10,7 +10,7 @@ classdef Compounds < handle
     group;   % group{j} - name of group this file belongs to
     contains;% contains(i,j) is true if we expected to find compound i in file j
              % For compounds uniquely located in a particular run:
-    mz;      % mz(i,k,j) contains the observed m/z peak on compound i, from file j for adduct k
+    mz;     % mz(i,k,j) contains the observed m/z peak on compound i, from file j for adduct k
     time;    % time(i,k,j) contains the elution time on compound i, from file j for adduct k
     meantime;% meantime(i) is the computed mean elution time of compounds i
     timewindow;  % timewindow(i,2) is the time window for compound i elution
@@ -36,6 +36,10 @@ classdef Compounds < handle
       obj.multihits={};
       obj.contains=false(0,0);
       obj.samples={};
+      obj.allfeatures=FeatureList.empty;
+      obj.remapfeatures=FeatureList.empty;
+      obj.features=FeatureList.empty;
+      obj.sdf=SDF();
     end
 
     function ind=find(obj,name)
