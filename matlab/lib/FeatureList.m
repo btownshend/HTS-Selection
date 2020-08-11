@@ -56,7 +56,7 @@ classdef FeatureList < handle
     end
     
     function fl=deconvolve(obj,varargin)
-      defaults=struct('debug',false,'heightfilter',5000,'oversegmentationfilter',60/60,'maxarearatio',33,'maxwidth',120/60,'trace',0);
+      defaults=struct('debug',false,'heightfilter',1000,'oversegmentationfilter',60/60,'maxarearatio',33,'maxwidth',120/60,'trace',0);
       % Note: when oversegmentationfilter is active, the fwhh includes the merged peak's fwhh even if they are much lower than the main one
       args=processargs(defaults,varargin);
       fl=FeatureList([obj.name,' deconvoluted']);
