@@ -72,13 +72,12 @@ classdef FeatureList < handle
         for j=1:size(pks,1)
           rawpeaks=p(p(:,3)>=pext(j,1) & p(:,3)<=pext(j,2),:);
           rawpeaks=rawpeaks(find(rawpeaks(:,2)>0,1):find(rawpeaks(:,2)>0,1,'last'),:);   % Remove end zeros
-          area=sum(rawpeaks(:,2));
           mz=nansum(rawpeaks(:,1).*rawpeaks(:,2))/sum(rawpeaks(:,2));
           if ismember(i,args.trace)
             keyboard;
           end
-          if area/pks(j,2) < args.maxarearatio & diff(pfwhh(j,:))<=args.maxwidth
-            f=Feature(rawpeaks);
+          f=Feature(rawpeaks);
+          if f.area/f.intensity < args.maxarearatio & f.fwhh<=args.maxwidth
             fl.append(f);
             %obj.featuresd=[obj.featuresd,struct('mz',mz,'time',pks(j,1),'intensity',pks(j,2),'mzrange',obj.features(i).mzrange,'pfwhh',pfwhh(j,:),'pfext',pext(j,:), 'peaks',rawpeaks,'area',area)];
           end
