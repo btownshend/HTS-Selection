@@ -7,8 +7,6 @@ classdef MassSpec < handle
     time;   % Time of elutions (in minutes)
     mzrange;   % Range [low,high] of m/z to plot/consider
     resamp;   % struct (mz,y,n) of uniformly sampled data
-    clusters;	% Cluster peaks (across m/z and time)
-    clustersettings;
     ident;    % struct array of identified peaks
     featurelists;   % Array of feature lists
     mzxml;
@@ -129,53 +127,6 @@ classdef MassSpec < handle
       end
     end
 
-    function clusterpeaks(obj,varargin)
-    % Cluster all significant peaks and return a table of results
-    % Used for de novo analysis (without info on expected components)
-      defaults=struct('mzwindow',0.01,'timewindow',200/60, 'minic',1e3, 'noise',300,'maxpeaks',2000,'noisefrac',.01);
-      args=processargs(defaults,varargin);
-
-      if args.noise>args.minic
-        args.noise=args.minic;
-      end
-      
-      peaks=obj.peaks;   % Copy peaks so we can clear it
-      res=[];
-      for pnum=1:args.maxpeaks
-        maxp=zeros(length(peaks),2);
-        for i=1:length(peaks)
-          peak=peaks{i};
-          [maxp(i,1),maxp(i,2)]=max(peak(:,2));
-        end
-        [maxmax,maxxpos]=max(maxp(:,1));
-        if isempty(maxmax) || maxmax<args.minic
-          break;
-        end
-        mz=peaks{maxxpos}(maxp(maxxpos,2),1);
-        trange=find(abs(obj.time-obj.time(maxxpos))<=args.timewindow);
-        ic=zeros(size(trange));
-        for i=1:length(trange)
-          mzrange=find(abs(peaks{trange(i)}(:,1)-mz)<args.mzwindow);
-          if ~isempty(mzrange)
-            ic(i)=sum(peaks{trange(i)}(mzrange,2));
-            peaks{trange(i)}(mzrange,2)=0;
-          end
-        end
-        thresh=max([args.noise,args.noisefrac*maxmax]);
-        sel=min(find(ic>thresh)):max(find(ic>thresh));
-        tvalid=trange(sel);
-        ic=ic(sel);
-        ictotal=sum(ic);
-        res=[res,struct('mz',mz,'elution',maxxpos,'elutionrange',[min(tvalid),max(tvalid)],'maxic',maxmax,'ic',ic,'ictotal',ictotal,'thresh',thresh)];
-        % fprintf('Max peak of %7.0f (Q=%.2f) at m/z=%.4f, t=%.2f [%.2f,%.2f]\n', ictotal, maxmax/ictotal, mz, obj.time([maxxpos,min(tvalid),max(tvalid)]));
-      end
-      [~,ord]=sort([res.ictotal],'desc');
-      res=res(ord);
-      obj.clusters=res;
-      obj.clustersettings=args;
-      fprintf('Found a total of %d/%d peaks with IC>=%.0f>=%.0f\n', length(res),args.maxpeaks, min([res.maxic]), args.minic);
-    end
-    
     function [ic,mz,time]=mzscan(obj, mztarget, varargin)
     % Get ion counts for given mztarget across elution times
     % Also return weighted mean m/z for each elution time
@@ -268,7 +219,7 @@ classdef MassSpec < handle
     end
       
     function res=findcompound(obj, mztarget, varargin)
-    % Find compound directly (not using clusters)
+    % Find compound directly (not using chromatograms)
     % Returns struct containing possible peaks (integrated over peak in both time and m/z) at different elutions times
     % Only peaks with ion count >= peakratio* maximum peak ion count are returned
     % If sdf provided, only used to construct a name for the compound
