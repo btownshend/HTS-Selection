@@ -28,6 +28,7 @@ diag2data=dir([msdir,'20200225/*.mzXML']);
 
 allfiles=[rowdata;coldata;platedata;fulldata;indivdata;diag2data;diagdata];
 
+%allfiles=allfiles(1:20);   % For testing
 
 % Setup m/z, time remappings
 maps=repmat(struct('mz',[],'time',[]),length(allfiles),1);
@@ -67,12 +68,20 @@ if ~exist('mzdata','var')
   mzdata={};
 end
 
-if length(mzdata)>length(allfiles)
-  fprintf('Removing last %d entries from mzdata\n', length(mzdata)-length(allfiles));
-  mzdata=mzdata(1:length(allfiles));
+if ~exist('compounds','var')
+  compounds=Compounds();
+  compounds.addCompoundsFromSDF(sdf);
+  %  compounds.addCompoundsFromSDF(sdf.filter(sdf.find(1,[],2)));
 end
 
 for i=1:length(allfiles)
+  % Can skip if already done (but always redo last file since it may have been incomplete)
+  if i<length(compounds.files)
+    fprintf('Skipping mzdata{%d} ... already done\n', i);
+    continue;
+  end
+
+  % Load mzdata if needed
   path=[allfiles(i).folder,'/',allfiles(i).name];
   if i>length(mzdata) || ~strcmp(mzdata{i}.path,path)
       mzdata{i}=MassSpec(path);
@@ -84,16 +93,8 @@ for i=1:length(allfiles)
       % Prune out some data
       mzdata{i}.filter([200,2900]/60,[130,530]);  % NOTE: this is using the localtimes to filter
   end
-end
 
-
-if ~exist('compounds','var')
-  compounds=Compounds();
-  compounds.addCompoundsFromSDF(sdf);
-  %  compounds.addCompoundsFromSDF(sdf.filter(sdf.find(1,[],2)));
-end
-
-for i=1:length(mzdata)
+  % Build chromatograms if needed
   if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'deconvolve'))
     if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'buildchromatogram'))
       fprintf('Building chromatograms for %s...',mzdata{i}.name);
