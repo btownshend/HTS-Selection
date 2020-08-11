@@ -19,6 +19,7 @@ classdef Compounds < handle
     normic;  % Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
     multihits;% multihits{i,k,j} is the list of all peaks for target i in file j with adduct k
     features;% features{i,k,j} is the list of all features for target i in file j with adduct k
+    featurelists;% featurelists(j) is the list of all features in file j
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
     sdf;      % SDF data
@@ -588,7 +589,12 @@ classdef Compounds < handle
         end
         obj.contains(:,findex)=ismember(obj.names,args.contains);
       end
-
+      fl=ms.featurelists(end);
+      if isempty(obj.featurelists)
+        assert(findex==1);
+        obj.featurelists=fl;
+      end
+      
       % Attempt to locate each one uniquely
       maxic=[];   % Maximum IC per target
       for i=1:length(obj.mass)
@@ -599,7 +605,6 @@ classdef Compounds < handle
         mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
         % Use features
         if true
-          fl=ms.featurelists(end);
           f=fl.getbymz(mztargetMS,'mztol',args.mztol);
           obj.features{i,k,findex}=f;
           id=struct('mztarget',mztargetMS,'desc',f.name,'filemz',[f.features.mz],'filetime',[f.features.time],'ic',[f.features.area],'pfwhh',vertcat(f.features.mzrange));
