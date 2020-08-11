@@ -19,6 +19,7 @@ classdef Compounds < handle
     normic;  % Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
     multihits;% multihits{i,k,j} is the list of all peaks for target i in file j with adduct k
     features;% features{i,k,j} is the list of all features for target i in file j with adduct k
+    rfeatures;% remapped features{i,k,j} is the list of all features for target i in file j with adduct k
     allfeatures;% allfeatures(j) is the list of all features in file j
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
@@ -37,8 +38,8 @@ classdef Compounds < handle
       obj.contains=false(0,0);
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
-      obj.remapfeatures=FeatureList.empty;
       obj.features=FeatureList.empty;
+      obj.rfeatures=FeatureList.empty;
       obj.sdf=SDF();
     end
 
@@ -596,7 +597,7 @@ classdef Compounds < handle
       end
       fl=ms.featurelists(end);
       obj.allfeatures(findex)=fl;
-      end
+      map=obj.maps{findex};
       
       % Attempt to locate each one uniquely
       maxic=[];   % Maximum IC per target
@@ -608,17 +609,27 @@ classdef Compounds < handle
         mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
         % Use features
         if true
-          f=fl.getbymz(mztargetMS,'mztol',args.mztol);
-          id=struct('mztarget',mztargetMS,'desc',f.name,'filemz',[f.features.mz],'filetime',[f.features.time],'ic',[f.features.area],'pfwhh',vertcat(f.features.mzrange));
-          obj.features(i,k,findex)=f;
+          flmz=fl.getbymz(mztargetMS,'mztol',args.mztol);
+          fremap=FeatureList([flmz.name,' remap'],'remap',map);
+          for fi=1:length(flmz.features)
+            f=flmz.features(fi);
+            peaks=interp1(map.mz(:,2),map.mz(:,1),f.peaks(:,1),'linear','extrap');
+            peaks(:,2)=f.peaks(:,2);
+            peaks(:,3)=interp1(map.time(:,2),map.time(:,1),f.peaks(:,3),'linear','extrap');
+            fremap.append(Feature(peaks));
+          end
+          obj.features(i,k,findex)=flmz;
+          obj.rfeatures(i,k,findex)=fremap;
+          
+          id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'ic',[flmz.features.area],'pfwhh',vertcat(fremap.features.mzrange));
         else
           id=ms.findcompound(mztargetMS,'mztol',args.mztol,'timetol',args.timetol,'debug',args.debug,'peakratio',0);
           % Map M/Z, time back to global values
           id.filemz=id.mz;
           id.filetime=id.time;
+          id.mz=interp1(args.map.mz(:,2),args.map.mz(:,1),id.filemz,'linear','extrap');
+          id.time=interp1(args.map.time(:,2),args.map.time(:,1),id.filetime,'linear','extrap');
         end
-        id.mz=interp1(args.map.mz(:,2),args.map.mz(:,1),id.filemz,'linear','extrap');
-        id.time=interp1(args.map.time(:,2),args.map.time(:,1),id.filetime,'linear','extrap');
         obj.multihits{i,k,findex}=id;
         maxic(i,k)=max([0,id.ic]);
        end
