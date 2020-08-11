@@ -38,8 +38,10 @@ classdef FeatureList < handle
   
   methods
     function obj=FeatureList(name,src,params)
-      obj.name=name;
       obj.features=[];
+      if nargin>0
+        obj.name=name;
+      end
       if nargin>=2
         obj.src=src;
       end
