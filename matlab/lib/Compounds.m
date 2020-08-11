@@ -19,6 +19,7 @@ classdef Compounds < handle
     normic;  % Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
     multihits;% multihits(i,k,j) is the list of all peaks for target i in file j with adduct k
     allfeatures;% allfeatures(j) is the list of all features in file j (copied from ms feature list)
+    featureindex;  % featureindex(i,k,j) is the index of feature finally chosen
     tsens;    % tsens(i) is the relative sensitivity to target i
     fsens;    % fsens(j) is the relative sensitivity for file j
     sdf;      % SDF data
@@ -432,6 +433,7 @@ classdef Compounds < handle
       obj.filetime(:)=nan;
       obj.meantime(:)=nan;
       obj.timewindow(:,:)=nan;
+      obj.featureindex(:)=nan;
       for k=1:length(obj.ADDUCTS)
         % Try assignment for each adduct; only work on ones that haven't been assigned using a prior adduct
         fprintf('[%s]\n',obj.ADDUCTS(k).name);
@@ -526,6 +528,9 @@ classdef Compounds < handle
                   %obj.filemz(kk,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(kk,j);
                   obj.time(i,kk,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,kk,j);
                   obj.filetime(i,kk,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,kk,j);
+                  fsel=find(sel);
+                  [~,mind]=max(m.ic(fsel));
+                  obj.featureindex(i,kk,j)=m.features(fsel(mind));
                 end
               end
             end
