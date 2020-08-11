@@ -10,7 +10,7 @@ classdef SDF < handle
     
     methods
       function obj=SDF()
-        ;
+        obj.sdf=struct.empty;
       end
 
       function n=getname(obj,i,withnum)
