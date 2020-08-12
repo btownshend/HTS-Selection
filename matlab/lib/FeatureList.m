@@ -97,7 +97,7 @@ classdef FeatureList < handle
     
     function ploteic(obj,mz,varargin)
     % Add EIC using this feature list to plot, augment legend
-      defaults=struct('mztol',0.01,'prefix','');
+      defaults=struct('mztol',0.01,'prefix','','timerange',[-inf,inf]);
       args=processargs(defaults,varargin);
 
       flmz=obj.getbymz(mz,'mztol',args.mztol);
@@ -109,18 +109,26 @@ classdef FeatureList < handle
 
       lh=legend();
       leg=get(lh,'String');
+      hold on;
       for i=1:length(features)
         e=features(i);
         % EIC
-        h=plot(e.peaks(:,3),e.peaks(:,2));
-        hold on;
+        psel=e.peaks(:,3)>=args.timerange(1) & e.peaks(:,3)<=args.timerange(2);
+        if any(psel)
+          h=plot(e.peaks(psel,3),e.peaks(psel,2));
+        else
+          h=[];
+        end
 
         % Individual peaks
         ext=e.timerange;
-        if diff(ext)<30
-          set(h,'HandleVisibility','off');   % No legend entry for above
+        if diff(ext)<30 & (ext(1)<args.timerange(2) || ext(2)>args.timerange(1))
           %plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
-          plot([ext(1),e.time,ext(2)],[0.5,1,0.5]*e.intensity,'-','LineWidth',3,'Color',get(h,'Color'));
+          h2=plot([ext(1),e.time,ext(2)],[0.5,1,0.5]*e.intensity,'-','LineWidth',3);
+          if ~isempty(h)
+            set(h,'HandleVisibility','off');   % No legend entry for above
+            set(h2,'Color',get(h,'Color'));
+          end
         end
         leg{end+1}=sprintf('%s.%d %s',args.prefix,find(e==obj.features),e.name);
       end

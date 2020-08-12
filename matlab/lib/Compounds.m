@@ -1056,7 +1056,7 @@ classdef Compounds < handle
     
     function ploteics(obj,name,varargin)
     % Plot EIC's for given compound using provided ms cell array aligned with obj.samples
-      defaults=struct('mzdata',[],'adduct',1,'falsethresh',0.1,'minic',400,'zoom',true,'mztol',.01);
+      defaults=struct('mzdata',[],'adduct',1,'falsethresh',0.1,'minic',400,'zoom',true,'mztol',.01,'timerange',[-inf,inf]);
       args=processargs(defaults,varargin);
 
       if ischar(name)
@@ -1065,6 +1065,10 @@ classdef Compounds < handle
         ind=name;
       end
 
+      if args.zoom & isfinite(obj.meantime(ind))
+        args.timerange=obj.meantime(ind)+[-5,5];
+      end
+        
       sel=isfinite(squeeze(obj.ic(ind,args.adduct,:)));   % Files that have hits
       contains=obj.contains(ind,:)';
 
@@ -1090,9 +1094,9 @@ classdef Compounds < handle
         hold on;
 
         if isempty(args.mzdata) || isempty(args.mzdata{i})
-          obj.allfeatures(i).ploteic(obj.multihits(ind,args.adduct,i).mztarget,'mztol',args.mztol);
+          obj.allfeatures(i).ploteic(obj.multihits(ind,args.adduct,i).mztarget,'mztol',args.mztol,'timerange',args.timerange);
         else
-          args.mzdata{i}.ploteic(obj.multihits(ind,args.adduct,i).mztarget,'newfig',false,'mztol',args.mztol);
+          args.mzdata{i}.ploteic(obj.multihits(ind,args.adduct,i).mztarget,'newfig',false,'mztol',args.mztol,'timerange',args.timerange);
         end
         h(end+1)=gca;
         xlabel('');ylabel('');

@@ -130,16 +130,12 @@ classdef MassSpec < handle
     function [ic,mz,time]=mzscan(obj, mztarget, varargin)
     % Get ion counts for given mztarget across elution times
     % Also return weighted mean m/z for each elution time
-      defaults=struct('mztol',0.01,'timerange',[]);
+      defaults=struct('mztol',0.01,'timerange',[-inf,inf]);
       args=processargs(defaults,varargin);
       % Build a table of elution vs IC for this M/Z
-      if isempty(args.timerange)
-        first=1;
-        last=length(obj.peaks);
-      else
-        first=find(obj.time>=args.timerange(1),1);
-        last=find(obj.time<=args.timerange(2),1,'last');
-      end
+      first=find(obj.time>=args.timerange(1),1);
+      last=find(obj.time<=args.timerange(2),1,'last');
+
       ic=zeros(last-first+1,1);
       mz=nan(last-first+1,1);
       time=obj.time;time=time(first:last);
@@ -446,7 +442,7 @@ classdef MassSpec < handle
     end
     
     function ploteic(obj,mz,varargin)
-      defaults=struct('debug',false,'mztol',0.01,'newfig',true);
+      defaults=struct('debug',false,'mztol',0.01,'newfig',true,'timerange',[-inf,inf]);
       args=processargs(defaults,varargin);
 
       if isempty(obj.featurelists)
@@ -461,7 +457,7 @@ classdef MassSpec < handle
       end
 
       % Plot base traces from raw peaks
-      [ic,~,time]=obj.mzscan(mz,'mztol',args.mztol);
+      [ic,~,time]=obj.mzscan(mz,'mztol',args.mztol,'timerange',args.timerange);
       plot(time,ic);
       legend('Base peaks','Location','best');
       hold on;
@@ -469,7 +465,7 @@ classdef MassSpec < handle
       %sel=find(arrayfun(@(z) z.mzrange(1)-args.mztol<=mz && z.mzrange(2)+args.mztol>=mz,obj.eic));
       for ifl=1:length(obj.featurelists)
         fl=obj.featurelists(ifl);
-        fl.ploteic(mz,'mztol',args.mztol,'prefix',sprintf('%d',ifl));
+        fl.ploteic(mz,'mztol',args.mztol,'prefix',sprintf('%d',ifl),'timerange',args.timerange);
       end
       xlabel('Time');
       ylabel('Intensity');
