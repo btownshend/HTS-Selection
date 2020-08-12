@@ -83,7 +83,7 @@ for i=1:length(allfiles)
 
   % Load mzdata if needed
   path=[allfiles(i).folder,'/',allfiles(i).name];
-  if i>length(mzdata) || ~strcmp(mzdata{i}.path,path)
+  if i>length(mzdata) || isempty(mzdata{i}) || ~strcmp(mzdata{i}.path,path)
       mzdata{i}=MassSpec(path);
       if ~isempty(strfind(allfiles(i).folder,'200124'))
         mzdata{i}.setLoad(2000*1e-15);
