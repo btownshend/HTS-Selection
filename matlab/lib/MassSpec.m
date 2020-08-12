@@ -446,7 +446,7 @@ classdef MassSpec < handle
     end
     
     function ploteic(obj,mz,varargin)
-      defaults=struct('debug',false,'mztol',0.01);
+      defaults=struct('debug',false,'mztol',0.01,'newfig',true);
       args=processargs(defaults,varargin);
 
       if isempty(obj.featurelists)
@@ -455,10 +455,11 @@ classdef MassSpec < handle
         fprintf('Warning - no deconvolved chromatograms\n');
       end
       
-      ti=sprintf('Chromatogram %.4f - %.4f',mz-args.mztol,mz+args.mztol);
-      setfig(ti);clf;
-      leg={};
-      h=[];
+      ti=sprintf('%s %.4f - %.4f',obj.name, mz-args.mztol,mz+args.mztol);
+      if args.newfig
+        setfig(ti);clf;
+      end
+
       % Plot base traces from raw peaks
       [ic,~,time]=obj.mzscan(mz,'mztol',args.mztol);
       plot(time,ic);
