@@ -208,19 +208,18 @@ for i=1:length(allfiles)
 end
 
 compounds.assignTimes();
-compounds.summary();
-
-report=compounds.report();
-
 compounds.checkmzoffset();
 ref=find(strcmp(compounds.files,'/Users/bst/Dropbox/SynBio/HTS-Selection/data/MassSpec/20190427 Row, Column/Full.mzXML'));
 compounds.checktime(ref,'timetol',compounds.TIMEFUZZ/2);
 compounds.checksensitivity(ref);
 
+compounds.summary();
+
+report=compounds.report();
 writetable(report,[resultsdir,'report.csv']);
-fprintf('Saving compounds...');
-save([matdir,'compounds.mat'],'compounds');
-fprintf('done\n');
+%fprintf('Saving compounds...');
+%save([matdir,'compounds.mat'],'compounds');
+%fprintf('done\n');
 
 if false
   fprintf('Saving mzdata...');
