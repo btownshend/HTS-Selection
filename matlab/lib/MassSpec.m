@@ -450,7 +450,7 @@ classdef MassSpec < handle
       args=processargs(defaults,varargin);
 
       if isempty(obj.featurelists)
-        fprintf('Warning - no chomatogrames; need to buildchromatograms()\n');
+        fprintf('Warning - no chomatograms; need to buildchromatograms()\n');
       elseif length(obj.featurelists)<2
         fprintf('Warning - no deconvolved chromatograms\n');
       end
@@ -461,36 +461,17 @@ classdef MassSpec < handle
       h=[];
       % Plot base traces from raw peaks
       [ic,~,time]=obj.mzscan(mz,'mztol',args.mztol);
-      h(end+1)=plot(time,ic);
-      leg{end+1}='Base peaks';
+      plot(time,ic);
+      legend('Base peaks','Location','best');
       hold on;
       
       %sel=find(arrayfun(@(z) z.mzrange(1)-args.mztol<=mz && z.mzrange(2)+args.mztol>=mz,obj.eic));
       for ifl=1:length(obj.featurelists)
         fl=obj.featurelists(ifl);
-        flmz=fl.getbymz(mz,'mztol',args.mztol);
-        features=flmz.features;
-        if isempty(features)
-          fprintf('No features in %s within %.4f of %.4f\n', fl.name, args.mztol, mz);
-        end
-
-        for i=1:length(features)
-          e=features(i);
-          if size(e.peaks,1) == length(obj.time)
-            % EIC
-            h(end+1)=plot(e.peaks(:,3),e.peaks(:,2));
-          else
-            % Deconvolved EIC
-            ext=e.timerange;
-            plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
-            h(end+1)=plot([ext(1),e.time,ext(2)],[0.5,1,0.5]*e.intensity,'-','LineWidth',3);
-          end
-          leg{end+1}=sprintf('%d.%d %s',ifl,find(e==fl.features),e.name);
-        end
+        fl.ploteic(mz,'mztol',args.mztol,'prefix',sprintf('%d',ifl));
       end
       xlabel('Time');
       ylabel('Intensity');
-      legend(h,leg,'Location','best');
       title(ti);
     end
     

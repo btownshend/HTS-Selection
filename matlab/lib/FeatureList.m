@@ -95,6 +95,38 @@ classdef FeatureList < handle
       fl.features=obj.features(sel);
     end
     
+    function ploteic(obj,mz,varargin)
+    % Add EIC using this feature list to plot, augment legend
+      defaults=struct('mztol',0.01,'prefix','');
+      args=processargs(defaults,varargin);
+
+      flmz=obj.getbymz(mz,'mztol',args.mztol);
+      features=flmz.features;
+      if isempty(features)
+        fprintf('No features in %s within %.4f of %.4f\n', obj.name, args.mztol, mz);
+        return;
+      end
+
+      lh=legend();
+      leg=get(lh,'String');
+      for i=1:length(features)
+        e=features(i);
+        % EIC
+        h=plot(e.peaks(:,3),e.peaks(:,2));
+        hold on;
+
+        % Individual peaks
+        ext=e.timerange;
+        if diff(ext)<30
+          set(h,'HandleVisibility','off');   % No legend entry for above
+          %plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
+          plot([ext(1),e.time,ext(2)],[0.5,1,0.5]*e.intensity,'-','LineWidth',3,'Color',get(h,'Color'));
+        end
+        leg{end+1}=sprintf('%s.%d %s',args.prefix,find(e==obj.features),e.name);
+      end
+      legend(leg,'Location','best');
+    end
+    
     function fl=deconvolve(obj,varargin)
       defaults=struct('debug',false,'heightfilter',1000,'oversegmentationfilter',60/60,'maxarearatio',33,'maxwidth',120/60,'trace',0);
       args=processargs(defaults,varargin);
