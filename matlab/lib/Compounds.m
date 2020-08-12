@@ -1054,6 +1054,68 @@ classdef Compounds < handle
       title(sprintf('Compound Map [%s] (%d distinguishable/%d identified)',obj.ADDUCTS(args.adduct).name,ngood,sum(isfinite(obj.meantime))));
     end
     
+    function ploteics(obj,name,varargin)
+    % Plot EIC's for given compound using provided ms cell array aligned with obj.samples
+      defaults=struct('mzdata',[],'adduct',1,'falsethresh',0.1,'minic',400,'zoom',true,'mztol',.01);
+      args=processargs(defaults,varargin);
+
+      if ischar(name)
+        ind = obj.find(name);
+      else
+        ind=name;
+      end
+
+      sel=isfinite(squeeze(obj.ic(ind,args.adduct,:)));   % Files that have hits
+      contains=obj.contains(ind,:)';
+
+      tp=sel&contains;
+      fp=sel&~contains;
+      fn=~sel&contains;
+      fprintf('Have %d true hits, %d false positives, %d false negatives\n', sum(tp), sum(fp), sum(fn));
+      tolist=[find(tp);find(fn);find(fp)];
+      ti=sprintf('EICs for %s[%s] T=%.2f',obj.names{ind},obj.ADDUCTS(args.adduct).name,obj.meantime(ind));
+      setfig(ti);clf;
+      t=tiledlayout('flow');
+      t.TileSpacing = 'compact';
+      t.Padding = 'compact';
+      maxic=max(obj.ic(ind,args.adduct,tolist));
+
+      h=[];
+      for ii=1:length(tolist)
+        i=tolist(ii);
+        nexttile;
+        
+        filetime=interp1(obj.maps{i}.time(:,1),obj.maps{i}.time(:,2),obj.meantime(ind),'linear','extrap');
+        plot(filetime,0,'*','HandleVisibility','off');
+        hold on;
+
+        if isempty(args.mzdata) || isempty(args.mzdata{i})
+          obj.allfeatures(i).ploteic(obj.multihits(ind,args.adduct,i).mztarget,'mztol',args.mztol);
+        else
+          args.mzdata{i}.ploteic(obj.multihits(ind,args.adduct,i).mztarget,'newfig',false,'mztol',args.mztol);
+        end
+        h(end+1)=gca;
+        xlabel('');ylabel('');
+        if ~contains(i) & sel(i)
+          title([obj.samples{i},' (False Positive)']);
+        elseif contains(i) & ~sel(i)
+          title([obj.samples{i},' (False Negative)']);
+        else
+          title(obj.samples{i});
+        end
+      end
+      linkaxes(h);
+      xlabel(t,'Time');
+      ylabel(t,'Intensity');
+      title(t,ti);
+      if args.zoom & isfinite(obj.meantime(ind))
+        % Zoom to RT of interest
+        ax=axis;
+        ax([1,2])=[-2,2]+obj.meantime(ind);
+        axis(ax);
+      end
+    end
+    
     function getinfo(obj,name,varargin)
       defaults=struct('mzdata',[],'adduct',[],'falsethresh',0.1,'minic',400);
       args=processargs(defaults,varargin);
