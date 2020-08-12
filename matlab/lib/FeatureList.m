@@ -128,7 +128,7 @@ classdef FeatureList < handle
     end
     
     function fl=deconvolve(obj,varargin)
-      defaults=struct('debug',false,'heightfilter',1000,'oversegmentationfilter',60/60,'maxarearatio',33,'maxwidth',120/60,'trace',0);
+      defaults=struct('debug',false,'heightfilter',1000,'oversegmentationfilter',0.3,'maxarearatio',33,'maxwidth',120/60,'trace',0,'minwidth',0.2);
       args=processargs(defaults,varargin);
       fl=FeatureList([obj.name,' deconvoluted'],'deconvolve',args);
       for i=1:length(obj.features)
@@ -136,7 +136,7 @@ classdef FeatureList < handle
         p=obj.features(i).peaks;
         %pba=msbackadj(p(:,3),p(:,2),'est','em','smooth','rloess');
         %pbasm=mslowess(p(:,3),pba);
-        [pks,pfwhh,pext]=mspeaks(p(:,3),p(:,2),'denoising',true,'heightfilter',args.heightfilter,'oversegmentationfilter',args.oversegmentationfilter,'showplot',ismember(i,args.trace),'style','fwhhtriangle');
+        [pks,pfwhh,pext]=mspeaks(p(:,3),p(:,2),'denoising',true,'heightfilter',args.heightfilter,'oversegmentationfilter',args.oversegmentationfilter,'showplot',ismember(i,args.trace),'style','fwhhtriangle','fwhhfilter',args.minwidth);
         if size(pks,2)==0
           continue;
         end
