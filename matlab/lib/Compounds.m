@@ -16,7 +16,7 @@ classdef Compounds < handle
     timewindow;  % timewindow(i,2) is the time window for compound i elution
     filetime;% filetime(i,k,j) contains the elution time on compound i, from file j without any time remapping
     ic;      % ic(i,k,j) contains the total ion count for compound i, from file j with adduct k
-    normic;  % Normalized ion count (by file and by target) = ic(i,j)/tsens(i)/fsens(j)
+    normic;  % normic(i,k,j) normalized ion count = ic(i,j,k)/tsens(i)/fsens(k)
     multihits;% multihits(i,k,j) is the list of all peaks for target i in file j with adduct k
     allfeatures;% allfeatures(j) is the list of all features in file j (copied from ms feature list)
     featureindex;  % featureindex(i,k,j) is the index of feature finally chosen
@@ -921,7 +921,7 @@ classdef Compounds < handle
         for i=1:size(obj.normic,1)
           obj.normic(i,k,:)=obj.ic(i,k,:)/tsens(i);
         end
-        for i=1:size(obj.normic,2)
+        for i=1:size(obj.normic,3)
           obj.normic(:,k,i)=obj.normic(:,k,i)/sens(i);
         end
         obj.tsens(:,k)=tsens;
@@ -1172,7 +1172,7 @@ classdef Compounds < handle
           % TODO: Could list false positives here
           continue;
         end
-        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j)/obj.fsens(j,k));
+        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j));
         m=obj.multihits(ind,k,j);
         assert(~isempty(m.mztarget));
         for p=1:length(m.mz)
