@@ -33,7 +33,7 @@ classdef Compounds < handle
   
   methods
     function obj=Compounds()
-      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'Xfilemz',{},'Xfiletime',{},'Xpfwhh',{},'features',{});
+      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'features',{});
       obj.contains=false(0,0);
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
