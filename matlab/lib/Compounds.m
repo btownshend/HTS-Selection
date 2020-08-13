@@ -14,7 +14,6 @@ classdef Compounds < handle
     time;    % time(i,k,j) contains the elution time on compound i, from file j for adduct k
     meantime;% meantime(i) is the computed mean elution time of compounds i
     timewindow;  % timewindow(i,2) is the time window for compound i elution
-    filetime;% filetime(i,k,j) contains the elution time on compound i, from file j without any time remapping
     ic;      % ic(i,k,j) contains the total ion count for compound i, from file j with adduct k
     normic;  % normic(i,k,j) normalized ion count = ic(i,j,k)/tsens(i)/fsens(k)
     multihits;% multihits(i,k,j) is the list of all peaks for target i in file j with adduct k
@@ -60,7 +59,6 @@ classdef Compounds < handle
         findex=length(obj.files);
         obj.mz(:,:,findex)=nan;
         obj.time(:,:,findex)=nan;
-        obj.filetime(:,:,findex)=nan;
         obj.ic(:,:,findex)=nan;
         obj.normic(:,:,findex)=nan;
         obj.contains(:,findex)=false;
@@ -323,7 +321,6 @@ classdef Compounds < handle
         obj.mz(nindex,:,:)=nan;
         obj.time(nindex,:,:)=nan;
         obj.meantime(nindex)=nan;
-        obj.filetime(nindex,:,:)=nan;
         obj.ic(nindex,:,:)=nan;
         obj.normic(nindex,:,:)=nan;
         obj.contains(nindex,:)=false;
@@ -331,7 +328,6 @@ classdef Compounds < handle
         obj.mz=nan(nindex,length(obj.ADDUCTS), 0);
         obj.time=nan(nindex,length(obj.ADDUCTS), 0);
         obj.meantime=nan(nindex,1);
-        obj.filetime=nan(nindex,length(obj.ADDUCTS), 0);
         obj.ic=nan(nindex,length(obj.ADDUCTS), 0);
         obj.normic=nan(nindex,length(obj.ADDUCTS), 0);
         obj.contains=false(nindex,0);
@@ -430,7 +426,6 @@ classdef Compounds < handle
       obj.normic(:)=nan;
       obj.mz(:)=nan;
       obj.time(:)=nan;
-      obj.filetime(:)=nan;
       obj.meantime(:)=nan;
       obj.timewindow(:,:)=nan;
       obj.featureindex(:)=nan;
