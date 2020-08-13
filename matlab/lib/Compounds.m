@@ -956,6 +956,15 @@ classdef Compounds < handle
         xlabel(sprintf('Ion Count %s',obj.ADDUCTS(1).name));
         ylabel(sprintf('Ion Count %s',obj.ADDUCTS(k).name));
       end
+      
+      % Overall discrimination
+      setfig('Discrimination');clf;
+      sel=isfinite(obj.meantime);
+      boxplot(reshape(max(obj.normic(sel,:,:),[],2),1,[]),reshape(obj.contains(sel,:),1,[]))
+      set(gca,'YScale','log');
+      logticks(0,1);
+      ylabel('Normalized Ion Count');
+      set(gca,'XTickLabel',{'Unexpected','Expected'});
     end
     
     function plotcompare(obj,k,f1,f2) % TODO - broken
