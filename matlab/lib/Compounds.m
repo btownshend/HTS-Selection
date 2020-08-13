@@ -520,14 +520,17 @@ classdef Compounds < handle
                 assert(~isempty(m.mztarget));
                 sel=m.time>=obj.timewindow(i,1) & m.time <= obj.timewindow(i,2);
                 if sum(sel)>0
-                  feat=obj.allfeatures(j).features(m.features(sel));
+                  fi=m.features(sel);
+                  if length(fi)>1
+                    % More than one feature in time window; use highest peak
+                    [~,mind]=max([feat.intensity]);
+                    fi=fi(sel);
+                  end
+                  obj.featureindex(i,kk,j)=fi;
+                  feat=obj.allfeatures(j).features(fi);
                   obj.ic(i,kk,j)=sum([feat.area]);
                   obj.mz(i,kk,j)=sum(m.mz(sel).*[feat.area])/obj.ic(i,kk,j);
                   obj.time(i,kk,j)=sum(m.time(sel).*[feat.area])/obj.ic(i,kk,j);
-                  obj.filetime(i,kk,j)=sum([feat.time].*[feat.area])/obj.ic(i,kk,j);
-                  fsel=find(sel);
-                  [~,mind]=max([feat.area]);
-                  obj.featureindex(i,kk,j)=m.features(fsel(mind));
                 end
               end
             end
