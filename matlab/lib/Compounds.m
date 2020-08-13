@@ -19,6 +19,7 @@ classdef Compounds < handle
     normic;  % normic(i,k,j) normalized ion count = ic(i,j,k)/tsens(i)/fsens(k)
     multihits;% multihits(i,k,j) is the list of all peaks for target i in file j with adduct k
     allfeatures;% allfeatures(j) is the list of all features in file j (copied from ms feature list)
+    reffeatures;% reffeatures(j) is the list of all features in file j in reference m/z,time space using map
     featureindex;  % featureindex(i,k,j) is the index of feature finally chosen
     tsens;    % tsens(i,k) is the relative sensitivity to target i with adduct k
     fsens;    % fsens(j) is the relative sensitivity for file j
@@ -37,6 +38,7 @@ classdef Compounds < handle
       obj.contains=false(0,0);
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
+      obj.reffeatures=FeatureList.empty;
       obj.sdf=SDF();
     end
 
@@ -556,6 +558,18 @@ classdef Compounds < handle
         end
         fprintf('Have times for %d compounds\n', sum(isfinite(obj.meantime)));
       end
+    end
+    
+    function remapfeatures(obj)
+    % Create remapped version of file features into reference space
+      fprintf('Remapping %d feature lists...',length(obj.allfeatures));
+      for i=1:length(obj.allfeatures)
+        if length(obj.reffeatures)<i || isempty(obj.reffeatures(i)) || length(obj.reffeatures(i).features)~=length(obj.allfeatures(i).features)
+          fprintf('%d...',i);
+          obj.reffeatures(i)=obj.allfeatures(i).maptoref(obj.maps{i});
+        end
+      end
+      fprintf('done\n');
     end
     
     function addMS(obj,ms,varargin)
