@@ -576,8 +576,7 @@ classdef Compounds < handle
     % Add the unique peaks for compounds in given SDF from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
     % or scan all elution times if the no prior data (keep only if a unique peak is determined)
-      defaults=struct('debug',false,'group','','contains',{{}},'mztol',obj.MZFUZZ,'timetol',obj.TIMEFUZZ,...
-                      'map',struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]),'sample',[]);
+      defaults=struct('group','','contains',{{}},'map',struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]));
       % mzmap(i,2) - piecewise linear map for M/Z; mzmap(:,1) is true M/Z, mzmap(:,2) is for values in ms file
       % timemap(i,2) - piecewise linear map for elution times; timemap(:,1) is "standard" elution time
       args=processargs(defaults,varargin);
@@ -610,47 +609,54 @@ classdef Compounds < handle
       end
       fl=ms.featurelists(end);
       obj.allfeatures(findex)=fl;
-      map=obj.maps{findex};
-      
-      % Attempt to locate each one uniquely
-      maxic=[];   % Maximum IC per target
-      for i=1:length(obj.mass)
-        if mod(i,100)==1
-          fprintf('%d...',i);
-        end
-       for k=1:length(obj.ADDUCTS)
-        mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
-        % Use features
-        [flmz,findices]=fl.getbymz(mztargetMS,'mztol',args.mztol);
-        fremap=flmz.maptoref(map);
-          
-        id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'Xfilemz',[flmz.features.mz],'Xfiletime',[flmz.features.time],'Xpfwhh',vertcat(fremap.features.mzrange),'features',findices);
-        obj.multihits(i,k,findex)=id;
-        maxic(i,k)=max([0,id.ic]);
-       end
-      end
-      fprintf('done.\n');
-      for k=1:length(obj.ADDUCTS)
-        ice=maxic(obj.contains(:,findex),k);
-        icu=maxic(~obj.contains(:,findex),k);
-        if isempty(icu) || nanmedian(icu(:))<200
-          minic=prctile(ice(ice(:)>0),10);
-        else
-          minic=sqrt(median(ice(ice(:)>0))*median(icu(icu(:)>0)));
-        end
-        p=[25,50,75];
-        fprintf('%5s: Expected have IC=[%s], unexpected have IC=[%s] (%s) @%.0f: %.1f%%,%.1f%% \n', obj.ADDUCTS(k).name, sprintf('%.0f ',prctile(ice(:),p)), sprintf('%.0f ',prctile(icu(:),p)), sprintf('%d%% ',p),minic,100*mean(ice(:)>minic),100*mean(icu(:)>minic));
-        nhits=nan(length(obj.mass),1);
+    end
+    
+    function findfeatures(obj,varargin)
+      defaults=struct('mztol',obj.MZFUZZ,'sample',1:length(obj.samples));
+      args=processargs(defaults,varargin);
+
+      obj.remapfeatures();
+      for j=1:length(args.sample)
+        findex=args.sample(j);
+        map=obj.maps{findex};
+        
+        % Attempt to locate each one uniquely
+        maxic=[];   % Maximum IC per target
         for i=1:length(obj.mass)
-          nhits(i)=sum([obj.allfeatures(findex).features(obj.multihits(i,k,findex).features).area]>minic);
+          if mod(i,100)==1
+            fprintf('%d...',i);
+          end
+          for k=1:length(obj.ADDUCTS)
+            % Use features
+            [flmz,findices]=obj.reffeatures(findex).getbymz(obj.mztarget(i,k),'mztol',args.mztol);
+            id=struct('mztarget',obj.mztarget(i,k),'desc',flmz.name,'mz',[flmz.features.mz],'time',[flmz.features.time],'features',findices);
+            obj.multihits(i,k,findex)=id;
+            maxic(i,k)=max([0,flmz.features.area]);
+          end
         end
-        fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
-        nfeatures=arrayfun(@(z) length(z.features),obj.multihits(:,k,findex));
-        contains=obj.contains(:,findex);
-        fprintf('       Have features for %d/%d=%.0f%% (with %d unique) expected compounds and %d=%.0f%% unexpected ones\n', ...
-                sum(contains & nfeatures>0), sum(contains), sum(contains&nfeatures>0)/sum(contains)*100,...
-                sum(contains & nfeatures==1), ...
-                sum(~contains&nfeatures>0),sum(~contains&nfeatures>0)/sum(~contains)*100);
+        fprintf('done.\n');
+        for k=1:length(obj.ADDUCTS)
+          ice=maxic(obj.contains(:,findex),k);
+          icu=maxic(~obj.contains(:,findex),k);
+          if isempty(icu) || nanmedian(icu(:))<200
+            minic=prctile(ice(ice(:)>0),10);
+          else
+            minic=sqrt(median(ice(ice(:)>0))*median(icu(icu(:)>0)));
+          end
+          p=[25,50,75];
+          fprintf('%5s: Expected have IC=[%s], unexpected have IC=[%s] (%s) @%.0f: %.1f%%,%.1f%% \n', obj.ADDUCTS(k).name, sprintf('%.0f ',prctile(ice(:),p)), sprintf('%.0f ',prctile(icu(:),p)), sprintf('%d%% ',p),minic,100*mean(ice(:)>minic),100*mean(icu(:)>minic));
+          nhits=nan(length(obj.mass),1);
+          for i=1:length(obj.mass)
+            nhits(i)=sum([obj.allfeatures(findex).features(obj.multihits(i,k,findex).features).area]>minic);
+          end
+          fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
+          nfeatures=arrayfun(@(z) length(z.features),obj.multihits(:,k,findex));
+          contains=obj.contains(:,findex);
+          fprintf('       Have features for %d/%d=%.0f%% (with %d unique) expected compounds and %d=%.0f%% unexpected ones\n', ...
+                  sum(contains & nfeatures>0), sum(contains), sum(contains&nfeatures>0)/sum(contains)*100,...
+                  sum(contains & nfeatures==1), ...
+                  sum(~contains&nfeatures>0),sum(~contains&nfeatures>0)/sum(~contains)*100);
+        end
       end
     end
     
