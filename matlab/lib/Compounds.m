@@ -33,7 +33,7 @@ classdef Compounds < handle
   
   methods
     function obj=Compounds()
-      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'filemz',{},'filetime',{},'pfwhh',{},'features',{});
+      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'filemz',{},'filetime',{},'Xpfwhh',{},'features',{});
       obj.contains=false(0,0);
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
@@ -451,7 +451,7 @@ classdef Compounds < handle
               intensity=[intensity,feat(mzsel).intensity];
               srcadduct=[srcadduct,repmat(k,1,length(m.time(mzsel)))];
               srcfile=[srcfile,repmat(j,1,length(m.time(mzsel)))];
-              fwhh=[fwhh;m.pfwhh(mzsel,:)];
+              fwhh=[fwhh;vertcat(feat(mzsel).mzrange)];
             end
           end
           cont=obj.contains(i,srcfile);
@@ -610,7 +610,7 @@ classdef Compounds < handle
         [flmz,findices]=fl.getbymz(mztargetMS,'mztol',args.mztol);
         fremap=flmz.maptoref(map);
           
-        id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'pfwhh',vertcat(fremap.features.mzrange),'features',findices);
+        id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'Xpfwhh',vertcat(fremap.features.mzrange),'features',findices);
         obj.multihits(i,k,findex)=id;
         maxic(i,k)=max([0,id.ic]);
        end
