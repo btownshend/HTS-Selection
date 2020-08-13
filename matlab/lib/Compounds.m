@@ -33,7 +33,7 @@ classdef Compounds < handle
   
   methods
     function obj=Compounds()
-      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'filemz',{},'filetime',{},'ic',{},'pfwhh',{},'features',{});
+      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'filemz',{},'filetime',{},'pfwhh',{},'features',{});
       obj.contains=false(0,0);
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
@@ -325,7 +325,6 @@ classdef Compounds < handle
         obj.ic(nindex,:,:)=nan;
         obj.normic(nindex,:,:)=nan;
         obj.contains(nindex,:)=false;
-        %obj.multihits(nindex,:,:)=struct.empty;
       else
         obj.mz=nan(nindex,length(obj.ADDUCTS), 0);
         obj.time=nan(nindex,length(obj.ADDUCTS), 0);
@@ -334,7 +333,6 @@ classdef Compounds < handle
         obj.ic=nan(nindex,length(obj.ADDUCTS), 0);
         obj.normic=nan(nindex,length(obj.ADDUCTS), 0);
         obj.contains=false(nindex,0);
-        %obj.multihits=struct.empty(nindex,length(obj.ADDUCTS),0);
       end
     end
     
@@ -441,14 +439,16 @@ classdef Compounds < handle
           if k>1 && isfinite(obj.meantime(i))
             continue;
           end
-          etimes=[];ic=[];srcadduct=[]; srcfile=[]; fwhh=[];
+          etimes=[];intensity=[];area=[];srcadduct=[]; srcfile=[]; fwhh=[];
           for j=1:length(obj.files)
             m=obj.multihits(i,k,j);
+            feat=obj.allfeatures(j).features(m.features);
             assert(~isempty(m.mztarget));
-            mzsel=abs(m.filemz-m.mztarget)<=args.mztol & m.ic>=args.minic;
+            mzsel=abs(m.filemz-m.mztarget)<=args.mztol & [feat.area]>=args.minic;
             if any(mzsel)
               etimes=[etimes,m.time(mzsel)];
-              ic=[ic,m.ic(mzsel)];
+              area=[area,feat(mzsel).area];
+              intensity=[intensity,feat(mzsel).intensity];
               srcadduct=[srcadduct,repmat(k,1,length(m.time(mzsel)))];
               srcfile=[srcfile,repmat(j,1,length(m.time(mzsel)))];
               fwhh=[fwhh;m.pfwhh(mzsel,:)];
@@ -523,13 +523,13 @@ classdef Compounds < handle
                 assert(~isempty(m.mztarget));
                 sel=m.time>=obj.timewindow(i,1) & m.time <= obj.timewindow(i,2);
                 if sum(sel)>0
-                  obj.ic(i,kk,j)=sum(m.ic(sel));
-                  obj.mz(i,kk,j)=sum(m.mz(sel).*m.ic(sel))/obj.ic(i,kk,j);
-                  %obj.filemz(kk,j)=sum(m.filemz(sel).*m.ic(sel))/obj.ic(kk,j);
-                  obj.time(i,kk,j)=sum(m.time(sel).*m.ic(sel))/obj.ic(i,kk,j);
-                  obj.filetime(i,kk,j)=sum(m.filetime(sel).*m.ic(sel))/obj.ic(i,kk,j);
+                  feat=obj.allfeatures(j).features(m.features(sel));
+                  obj.ic(i,kk,j)=sum([feat.area]);
+                  obj.mz(i,kk,j)=sum(m.mz(sel).*[feat.area])/obj.ic(i,kk,j);
+                  obj.time(i,kk,j)=sum(m.time(sel).*[feat.area])/obj.ic(i,kk,j);
+                  obj.filetime(i,kk,j)=sum(m.filetime(sel).*[feat.area])/obj.ic(i,kk,j);
                   fsel=find(sel);
-                  [~,mind]=max(m.ic(fsel));
+                  [~,mind]=max([feat.area]);
                   obj.featureindex(i,kk,j)=m.features(fsel(mind));
                 end
               end
@@ -541,9 +541,9 @@ classdef Compounds < handle
         
           if strcmp(args.plot,obj.names{i})
             setfig(['assignTimes-',obj.names{i}]);clf;
-            semilogy(etimes(~cont),ic(~cont),'or');
+            semilogy(etimes(~cont),area(~cont),'or');
             hold on;
-            semilogy(etimes(cont),ic(cont),'xb');
+            semilogy(etimes(cont),area(cont),'xb');
             ax=axis;
             plot(bestwindow(1)*[1,1],ax(3:4),':m');
             plot(bestwindow(2)*[1,1],ax(3:4),':m');
@@ -610,7 +610,7 @@ classdef Compounds < handle
         [flmz,findices]=fl.getbymz(mztargetMS,'mztol',args.mztol);
         fremap=flmz.maptoref(map);
           
-        id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'ic',[flmz.features.area],'pfwhh',vertcat(fremap.features.mzrange),'features',findices);
+        id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'pfwhh',vertcat(fremap.features.mzrange),'features',findices);
         obj.multihits(i,k,findex)=id;
         maxic(i,k)=max([0,id.ic]);
        end
@@ -628,7 +628,7 @@ classdef Compounds < handle
         fprintf('%5s: Expected have IC=[%s], unexpected have IC=[%s] (%s) @%.0f: %.1f%%,%.1f%% \n', obj.ADDUCTS(k).name, sprintf('%.0f ',prctile(ice(:),p)), sprintf('%.0f ',prctile(icu(:),p)), sprintf('%d%% ',p),minic,100*mean(ice(:)>minic),100*mean(icu(:)>minic));
         nhits=nan(length(obj.mass),1);
         for i=1:length(obj.mass)
-          nhits(i)=sum(obj.multihits(i,k,findex).ic>minic);
+          nhits(i)=sum([obj.allfeatures(findex).features(obj.multihits(i,k,findex).features).area]>minic);
         end
         fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
         nfeatures=arrayfun(@(z) length(z.features),obj.multihits(:,k,findex));
@@ -1184,8 +1184,9 @@ classdef Compounds < handle
         m=obj.multihits(ind,k,j);
         assert(~isempty(m.mztarget));
         for p=1:length(m.mz)
-          if  (isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1) && m.ic(p)>=args.minic
-            fprintf(' [mz=%8.4f (d=%3.0f), t=%5.2f, ic=%8.0f]', m.mz(p), (m.mz(p)-obj.mztarget(ind,k))*1e4,m.time(p), m.ic(p));
+          feat=obj.allfeatures(j).features(m.features(p));
+          if  (isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1) && feat.area>=args.minic
+            fprintf(' [mz=%8.4f (d=%3.0f), t=%5.2f, ic=%8.0f]', m.mz(p), (m.mz(p)-obj.mztarget(ind,k))*1e4,m.time(p), feat.area);
           end
         end
         if ~isempty(args.mzdata)
