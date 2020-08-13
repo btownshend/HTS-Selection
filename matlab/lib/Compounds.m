@@ -33,7 +33,7 @@ classdef Compounds < handle
   
   methods
     function obj=Compounds()
-      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'filemz',{},'filetime',{},'Xpfwhh',{},'features',{});
+      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'Xfilemz',{},'Xfiletime',{},'Xpfwhh',{},'features',{});
       obj.contains=false(0,0);
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
@@ -444,7 +444,7 @@ classdef Compounds < handle
             m=obj.multihits(i,k,j);
             feat=obj.allfeatures(j).features(m.features);
             assert(~isempty(m.mztarget));
-            mzsel=abs(m.filemz-m.mztarget)<=args.mztol & [feat.area]>=args.minic;
+            mzsel=abs([feat.mz]-m.mztarget)<=args.mztol & [feat.area]>=args.minic;
             if any(mzsel)
               etimes=[etimes,m.time(mzsel)];
               area=[area,feat(mzsel).area];
@@ -527,7 +527,7 @@ classdef Compounds < handle
                   obj.ic(i,kk,j)=sum([feat.area]);
                   obj.mz(i,kk,j)=sum(m.mz(sel).*[feat.area])/obj.ic(i,kk,j);
                   obj.time(i,kk,j)=sum(m.time(sel).*[feat.area])/obj.ic(i,kk,j);
-                  obj.filetime(i,kk,j)=sum(m.filetime(sel).*[feat.area])/obj.ic(i,kk,j);
+                  obj.filetime(i,kk,j)=sum([feat.time].*[feat.area])/obj.ic(i,kk,j);
                   fsel=find(sel);
                   [~,mind]=max([feat.area]);
                   obj.featureindex(i,kk,j)=m.features(fsel(mind));
@@ -610,7 +610,7 @@ classdef Compounds < handle
         [flmz,findices]=fl.getbymz(mztargetMS,'mztol',args.mztol);
         fremap=flmz.maptoref(map);
           
-        id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'filemz',[flmz.features.mz],'filetime',[flmz.features.time],'Xpfwhh',vertcat(fremap.features.mzrange),'features',findices);
+        id=struct('mztarget',mztargetMS,'desc',flmz.name,'mz',[fremap.features.mz],'time',[fremap.features.time],'Xfilemz',[flmz.features.mz],'Xfiletime',[flmz.features.time],'Xpfwhh',vertcat(fremap.features.mzrange),'features',findices);
         obj.multihits(i,k,findex)=id;
         maxic(i,k)=max([0,id.ic]);
        end
