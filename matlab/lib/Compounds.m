@@ -20,7 +20,7 @@ classdef Compounds < handle
     multihits;% multihits(i,k,j) is the list of all peaks for target i in file j with adduct k
     allfeatures;% allfeatures(j) is the list of all features in file j (copied from ms feature list)
     featureindex;  % featureindex(i,k,j) is the index of feature finally chosen
-    tsens;    % tsens(i) is the relative sensitivity to target i
+    tsens;    % tsens(i,k) is the relative sensitivity to target i with adduct k
     fsens;    % fsens(j) is the relative sensitivity for file j
     sdf;      % SDF data
   end
@@ -63,7 +63,7 @@ classdef Compounds < handle
         obj.normic(:,:,findex)=nan;
         obj.contains(:,findex)=false;
         obj.moles(findex)=ms.moles;
-        obj.fsens(findex,1:length(obj.ADDUCTS))=nan;
+        obj.fsens(findex)=nan;
       end
     end
 
@@ -881,26 +881,27 @@ classdef Compounds < handle
       obj.normic=obj.ic;
 
       h1=[];h2=[];
-      for k=1:length(obj.ADDUCTS)
-        sens=[];
-        for i=1:length(obj.files)
-          sel=all(obj.contains(:,[i,ref]),2);
-          if any(sel)
-            sens(i)=nanmedian(obj.ic(sel,k,i)./obj.ic(sel,k,ref));
-          else
-            sens(i)=1;
-          end
+      sens=[];
+      for i=1:length(obj.files)
+        sel=all(obj.contains(:,[i,ref]),2);
+        if any(sel)
+          sens(i)=nanmedian(reshape(obj.ic(sel,:,i)./obj.ic(sel,:,ref),[],1));
+        else
+          sens(i)=1;
         end
-        ti=['File Sensitivity - ',obj.ADDUCTS(k).name];
-        setfig(ti);clf;
-        bar(sens);
-        h1(k)=gca;
-        set(gca,'YScale','log');
-        set(gca,'XTick',1:length(obj.samples));
-        set(gca,'XTickLabel',obj.samples);
-        set(gca,'XTickLabelRotation',90);
-        ylabel('Sensitivity');
-        title(ti);
+      end
+      ti=['File Sensitivity'];
+      setfig(ti);clf;
+      bar(sens);
+      obj.fsens=sens;
+      set(gca,'YScale','log');
+      set(gca,'XTick',1:length(obj.samples));
+      set(gca,'XTickLabel',obj.samples);
+      set(gca,'XTickLabelRotation',90);
+      ylabel('Sensitivity');
+      title(ti);
+
+      for k=1:length(obj.ADDUCTS)
         % Check sensitivity by target
         for i=1:length(obj.names)
           sel=obj.contains(i,:);
@@ -925,9 +926,7 @@ classdef Compounds < handle
           obj.normic(:,k,i)=obj.normic(:,k,i)/sens(i);
         end
         obj.tsens(:,k)=tsens;
-        obj.fsens(:,k)=sens;
       end
-      linkaxes(h1);
       linkaxes(h2);
 
       % Show relative sensitivity of targets
@@ -1172,7 +1171,7 @@ classdef Compounds < handle
           % TODO: Could list false positives here
           continue;
         end
-        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j));
+        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j));
         m=obj.multihits(ind,k,j);
         assert(~isempty(m.mztarget));
         for p=1:length(m.mz)
@@ -1194,7 +1193,7 @@ classdef Compounds < handle
                 args.falsethresh);
         for j=1:length(obj.files)
           if ~obj.contains(ind,j) && obj.normic(ind,k,j)>=args.falsethresh && obj.time(ind,k,j)>=obj.timewindow(ind,1) && obj.time(ind,k,j) <= obj.timewindow(ind,2)
-            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j,k),obj.mz(ind,k,j), (obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4, obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
+            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j),obj.mz(ind,k,j), (obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4, obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
             if ~isempty(args.mzdata)
               nexttile;
               obj.plotscan(ind,args.mzdata{j},'adduct',args.adduct);
