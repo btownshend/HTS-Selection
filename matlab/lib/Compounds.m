@@ -518,19 +518,23 @@ classdef Compounds < handle
               for j=1:length(obj.files)
                 m=obj.multihits(i,kk,j);
                 assert(~isempty(m.mztarget));
-                sel=m.time>=obj.timewindow(i,1) & m.time <= obj.timewindow(i,2);
-                if sum(sel)>0
+                sel=find(m.time>=obj.timewindow(i,1) & m.time <= obj.timewindow(i,2));
+                if ~isempty(sel)
                   fi=m.features(sel);
                   if length(fi)>1
                     % More than one feature in time window; use highest peak
-                    [~,mind]=max([feat.intensity]);
-                    fi=fi(sel);
+                    if args.debug
+                      fprintf('Have %d ambiguous features for %s[%s] in %s\n', length(fi), obj.names{i},obj.ADDUCTS(k).name,obj.samples{j});
+                    end
+                    [~,mind]=max([obj.allfeatures(j).features(fi).intensity]);
+                    fi=fi(mind);
+                    sel=sel(mind);
                   end
                   obj.featureindex(i,kk,j)=fi;
                   feat=obj.allfeatures(j).features(fi);
-                  obj.ic(i,kk,j)=sum([feat.area]);
-                  obj.mz(i,kk,j)=sum(m.mz(sel).*[feat.area])/obj.ic(i,kk,j);
-                  obj.time(i,kk,j)=sum(m.time(sel).*[feat.area])/obj.ic(i,kk,j);
+                  obj.ic(i,kk,j)=feat.intensity;
+                  obj.mz(i,kk,j)=feat.mz;
+                  obj.time(i,kk,j)=feat.time;
                 end
               end
             end
