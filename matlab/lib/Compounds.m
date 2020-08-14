@@ -1212,7 +1212,18 @@ classdef Compounds < handle
           % TODO: Could list false positives here
           continue;
         end
-        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j));
+        fi=obj.featureindex(ind,k,j);
+        if isfinite(fi)
+          f=obj.allfeatures(j).features(fi);
+          if isempty(f.isotope)
+            isotopeorder='   ';
+          else
+            isotopeorder=sprintf('I%d',f.isotope);
+          end
+        else
+          isotopeorder='   ';
+        end
+        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f) %s',obj.samples{j},obj.fsens(j),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j),isotopeorder);
         for p=1:length(obj.multihits(ind,k,j).features)
           feat=obj.reffeatures(j).features(obj.multihits(ind,k,j).features(p));
           %if  (isnan(obj.time(ind,k,j)) || abs(feat.time-obj.time(ind,k,j))<1) && feat.area>=args.minic
