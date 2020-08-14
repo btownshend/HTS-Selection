@@ -418,7 +418,7 @@ classdef Compounds < handle
     % For each compound, 
     %   build list of observations across massspec files (elution time,whether compound is expected)
     %   find elution time with highest correlation of hit vs. expected
-      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.6,'mztol',obj.MZFUZZ,'plot','','minic',1000);
+      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.6,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[]);
       args=processargs(defaults,varargin);
 
       fprintf('assignTimes:\n');
@@ -470,14 +470,19 @@ classdef Compounds < handle
                 nfalse=length(unique(srcfile(~cont & sel)));
                 ntrue=length(unique(srcfile(cont & sel)));
                 
-                %fprintf('m=%d,n=%d,true=%d,false=%d,width=%.0f,rng=[%.0f,%.0f]\n',m,n,ntrue,nfalse,esort(n)-esort(m),esort([m,n]));
-                if ntrue-nfalse/falseweight>bestscore|| (ntrue-nfalse/falseweight==bestscore && esort(n)-esort(m)<esort(best(2))-esort(best(1)))
+                score=ntrue-nfalse/falseweight;
+                if ismember(i,args.trace)
+                  fprintf('m=%d,n=%d,true=%d,false=%d (wt=%.2f),width=%.2f,rng=[%.2f,%.2f] -> %f\n',m,n,ntrue,nfalse,falseweight,esort(n)-esort(m),esort([m,n]),score);
+                end
+                if score>bestscore|| (ntrue-nfalse/falseweight==bestscore && esort(n)-esort(m)<esort(best(2))-esort(best(1)))
                   best=[m,n];
                   bestscore=ntrue-nfalse/falseweight;
                   besttime=mean(esort([m,n]));
                   %bestwindow=[min(ewind(m:n,1)),max(ewind(m:n,2))];
                   bestwindow=esort([m,n]);
-                  %fprintf('bestcore=%.1f\n',bestscore);
+                  if ismember(i,args.trace)
+                    fprintf('bestcore=%.1f\n',bestscore);
+                  end
                 end
               end
             end
