@@ -635,7 +635,7 @@ classdef Compounds < handle
             [flmz,findices]=obj.reffeatures(findex).getbymz(obj.mztarget(i,k),'mztol',args.mztol);
             id=struct('mztarget',obj.mztarget(i,k),'desc',flmz.name,'mz',[flmz.features.mz],'time',[flmz.features.time],'features',findices);
             obj.multihits(i,k,findex)=id;
-            maxic(i,k)=max([0,flmz.features.area]);
+            maxic(i,k)=max([0,flmz.features.intensity]);
           end
         end
         fprintf('done.\n');
@@ -651,7 +651,7 @@ classdef Compounds < handle
           fprintf('%5s: Expected have IC=[%s], unexpected have IC=[%s] (%s) @%.0f: %.1f%%,%.1f%% \n', obj.ADDUCTS(k).name, sprintf('%.0f ',prctile(ice(:),p)), sprintf('%.0f ',prctile(icu(:),p)), sprintf('%d%% ',p),minic,100*mean(ice(:)>minic),100*mean(icu(:)>minic));
           nhits=nan(length(obj.mass),1);
           for i=1:length(obj.mass)
-            nhits(i)=sum([obj.allfeatures(findex).features(obj.multihits(i,k,findex).features).area]>minic);
+            nhits(i)=sum([obj.reffeatures(findex).features(obj.multihits(i,k,findex).features).intensity]>minic);
           end
           fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
           nfeatures=arrayfun(@(z) length(z.features),obj.multihits(:,k,findex));
