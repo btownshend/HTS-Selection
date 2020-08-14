@@ -159,8 +159,17 @@ classdef FeatureList < handle
         end
         minnoise=min(p(p(:,2)>0,2));   % Minimum level acquired
         for j=1:size(pks,1)
-          rawpeaks=p(p(:,3)>=pext(j,1) & p(:,3)<=pext(j,2),:);
+          bounds=find(p(:,3)>=pext(j,1) & p(:,3)<=pext(j,2));
+          rawpeaks=p(bounds,:);
           rawpeaks=rawpeaks(find(rawpeaks(:,2)>0,1):find(rawpeaks(:,2)>0,1,'last'),:);   % Remove end zeros
+          if isempty(rawpeaks)
+            % Denoising near a sharp edge occassionally generates a new peak...
+            fprintf('mspeaks indicated a peak at %f in feature %d.%d, but no peaks in [%f,%f]\n', pks(j,1), i, j, pext(j,:));
+            if ismember(i,args.trace)
+              keyboard;
+            end
+            continue;
+          end
           mz=nansum(rawpeaks(:,1).*rawpeaks(:,2))/sum(rawpeaks(:,2));
           % Calculate SNR of peak
           % Use noise estimate algorithm from ADAP paper (not exactly)
