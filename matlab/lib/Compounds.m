@@ -1355,33 +1355,37 @@ classdef Compounds < handle
           if isnan(obj.meantime(j))
             continue;
           end
-          if i==205 && j==537
-            keyboard;
-          end
           toverlap=abs(obj.meantime(i)-obj.meantime(j)') < args.timetol;
           if toverlap
             mzoverlap=abs(obj.mztarget(i)-obj.mztarget(j)') < args.mztol;
-            if any(mzoverlap)
-              [a1,a2]=ind2sub(size(toverlap),find(toverlap,1));
+            if any(mzoverlap(:))
+              [a2,a1]=ind2sub(size(mzoverlap),find(mzoverlap,1));
               fprintf('%6s[%-4s] %.4f @ %5.2f IC=%6.0f  overlaps %6s[%-4s] %.4f @ %5.2f IC=%6.0f ', ...
                       obj.names{i}, obj.ADDUCTS(a1).name, obj.mztarget(i,a1),obj.meantime(i),obj.tsens(i,a1),...
                       obj.names{j}, obj.ADDUCTS(a2).name, obj.mztarget(j,a1),obj.meantime(j),obj.tsens(j,a2));
-              fprintf('dmz=%.4f, dT=%.2f\n',  abs(obj.mztarget(i,a1)-obj.mztarget(j,a1)),abs(obj.meantime(i)-obj.meantime(j)));
+              fprintf('dmz=%.4f, dT=%.2f\n',  abs(obj.mztarget(i,a1)-obj.mztarget(j,a2)),abs(obj.meantime(i)-obj.meantime(j)));
             end
           end
         end
       end
       
+      nprint=0;
       for k=1:length(obj.samples)
-        f=obj.featureindex(:,:,k);  f=f(isfinite(f(:)));
+        f=obj.featureindex(:,:,k);  f=f(isfinite(f(:)));f=f(f~=0);
         fs=sort(f);
         dupes=fs(find(diff(fs)==0));
         for i=1:length(dupes)
           [t1,a1]=ind2sub(size(obj.featureindex(:,:,k)),find(obj.featureindex(:,:,k)==dupes(i)));
           fprintf('In %s, feature %d is shared by:\n', obj.samples{k}, dupes(i));
+          assert(length(t1)<10);
           for j=1:length(t1)
             fprintf('  %s[%s](%d) mz=%.4f, T=%.2f\n',obj.names{t1(j)}, obj.ADDUCTS(a1(j)).name, t1(j), obj.mztarget(t1(j),a1(j)), obj.meantime(t1(j)));
+            nprint=nprint+1;
           end
+        end
+        if nprint>100
+          fprintf('stopping after 100 items\n');
+          break;
         end
       end
       
