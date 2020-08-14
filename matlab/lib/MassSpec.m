@@ -77,7 +77,7 @@ classdef MassSpec < handle
   
   methods
     function obj=MassSpec(path,varargin)
-      defaults=struct('debug',false);
+      defaults=struct('debug',false,'savexml',false);
       args=processargs(defaults,varargin);
       fprintf('Loading %s...\n', path);
       mzxml=mzxmlread(path);
@@ -87,7 +87,9 @@ classdef MassSpec < handle
       obj.path=path;
       z=strsplit(obj.path,'/');
       obj.name=z{end};
-      obj.mzxml=mzxml;
+      if args.savexml
+        obj.mzxml=mzxml;
+      end
     end
 
     function setLoad(obj,moles)
