@@ -611,6 +611,8 @@ classdef Compounds < handle
       end
       fl=ms.featurelists(end);
       obj.allfeatures(findex)=fl;
+      obj.reffeatures(findex)=FeatureList.empty;
+      fprintf('done\n');
     end
     
     function findfeatures(obj,varargin)
