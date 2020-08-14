@@ -432,7 +432,15 @@ classdef MassSpec < handle
     end
 
     function deconvolve(obj,varargin)
-      fl=obj.featurelists(end).deconvolve(varargin{:});
+      defaults=struct('src',[]);
+      args=processargs(defaults,varargin);
+
+      if isempty(args.src)
+        args.src=find(~strcmp({obj.featurelists.src},'deconvolve'),1,'last');
+      end
+      fprintf('Deconvolve of %s\n', obj.featurelists(args.src).name);
+      assert(isempty(strfind(obj.featurelists(args.src).name,'deconvoluted')));  % No double deconvolutes
+      fl=obj.featurelists(args.src).deconvolve(varargin{:});
       obj.featurelists=[obj.featurelists,fl];
     end      
 
