@@ -148,6 +148,7 @@ classdef FeatureList < handle
       defaults=struct('debug',false,'heightfilter',1000,'oversegmentationfilter',0.2,'maxarearatio',33,'maxwidth',2,'trace',0,'minwidth',4.01/60,'noise',1000,'minsnr',2);
       args=processargs(defaults,varargin);
       fl=FeatureList([obj.name,' deconvoluted'],'deconvolve',args);
+      rejects=struct('accept',0,'snr',0,'area',0,'width',0);
       for i=1:length(obj.features)
         %fprintf('%d ',i);
         p=obj.features(i).peaks;
@@ -186,13 +187,20 @@ classdef FeatureList < handle
           if ismember(i,args.trace) || isnan(noise)
             keyboard;
           end
-          f=Feature(rawpeaks);
-          if f.area/f.intensity < args.maxarearatio & f.fwhh<=args.maxwidth
+          if f.snr < args.minsnr
+            rejects.snr=rejects.snr+1;
+            %          elseif f.area/f.intensity > args.maxarearatio
+            %rejects.area=rejects.area+1;
+          elseif f.fwhh > args.maxwidth
+            rejects.width=rejects.width+1;
+          else
             fl.append(f);
             %obj.featuresd=[obj.featuresd,struct('mz',mz,'time',pks(j,1),'intensity',pks(j,2),'mzrange',obj.features(i).mzrange,'pfwhh',pfwhh(j,:),'pfext',pext(j,:), 'peaks',rawpeaks,'area',area)];
+            rejects.accept=rejects.accept+1;
           end
         end
       end
+      fl.params.rejects=rejects;
     end
     
   end % methods
