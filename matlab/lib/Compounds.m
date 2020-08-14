@@ -530,7 +530,7 @@ classdef Compounds < handle
                     if args.debug
                       fprintf('Have %d ambiguous features for %s[%s] in %s\n', length(fi), obj.names{i},obj.ADDUCTS(k).name,obj.samples{j});
                     end
-                    [~,mind]=max([obj.reffeatures(j).features(fi).intensity]);
+                    [~,mind]=min(abs([obj.reffeatures(j).features(fi).time]-obj.meantime(i)));
                     fi=fi(mind);
                   end
                   obj.featureindex(i,kk,j)=fi;
