@@ -207,6 +207,7 @@ for i=1:length(allfiles)
   end
 end
 
+compounds.findfeatures();
 compounds.assignTimes();
 compounds.checkmzoffset();
 ref=find(strcmp(compounds.files,'/Users/bst/Dropbox/SynBio/HTS-Selection/data/MassSpec/20190427 Row, Column/Full.mzXML'));
