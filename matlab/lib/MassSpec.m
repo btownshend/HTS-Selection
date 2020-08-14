@@ -82,6 +82,18 @@ classdef MassSpec < handle
       fprintf('Loading %s...\n', path);
       mzxml=mzxmlread(path);
       [obj.peaks,obj.time]=mzxml2peaks(mzxml);
+      good=true(size(obj.peaks));
+      for i=1:length(obj.peaks)
+        maxp=max(obj.peaks{i}(:,2));
+        if maxp>1e10
+          fprintf('Bad scan %d:  max peak is %g - deleting\n', i, maxp);
+          good(i)=false;
+        end
+      end
+      if any(~good)
+        obj.peaks=obj.peaks(good);
+        obj.time=obj.time(good);
+      end
       obj.time=obj.time/60;   % Convert to minutes
       obj.mzrange=[min(cellfun(@(z) z(1,1), obj.peaks)),max(cellfun(@(z) z(end,1), obj.peaks))];
       obj.path=path;
