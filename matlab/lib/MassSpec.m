@@ -494,12 +494,17 @@ classdef MassSpec < handle
       title(ti);
     end
     
-    function plotmz(obj,time)
+    function plotmz(obj,time,varargin)
+      defaults=struct('maxlabels',10,'newfig',true);
+      args=processargs(defaults,varargin);
+
     % Plot m/z vs ioncount for trace nearest given time
       [~,closest]=min(abs(time-obj.time));
       pks=obj.peaks{closest};
       ti=sprintf('m/z @ T=%.2f (%d)',obj.time(closest),closest);
-      setfig(ti);clf;
+      if args.newfig
+        setfig(ti);clf;
+      end
       stem(pks(:,1),pks(:,2),'.');
       title(ti)
       xlabel('m/z')
@@ -512,7 +517,7 @@ classdef MassSpec < handle
       end
       % List major peaks
       [~,ord]=sort(pks(:,2),'desc');
-      for ii=1:10
+      for ii=1:args.maxlabels
         i=ord(ii);
         fprintf('M/Z=%.4f, IC=%6.0f\n', pks(i,:));
         h=text(pks(i,1),pks(i,2),sprintf('%.4f',pks(i,1)));
