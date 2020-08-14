@@ -614,7 +614,10 @@ classdef Compounds < handle
       end
       fl=ms.featurelists(end);
       obj.allfeatures(findex)=fl;
-      obj.reffeatures(findex)=FeatureList.empty;
+      if length(obj.reffeatures)>=findex
+        % Clear it
+        obj.reffeatures(findex)=FeatureList.empty;
+      end
       fprintf('done\n');
     end
     
