@@ -15,10 +15,11 @@ classdef Feature < matlab.mixin.Copyable
     asymmetry;
     tailing;
     area;
+    snr;    % Only if noise given when constructed
   end % properties
   
   methods
-    function obj=Feature(peaks,name)
+    function obj=Feature(peaks,name,noise)
     % Add a feature based on the given peaks (N,[mz,ic,time])
       if nargin<1 || isempty(peaks)
         % Empty constructor
@@ -42,10 +43,15 @@ classdef Feature < matlab.mixin.Copyable
       obj.asymmetry=(p10b-obj.time)/(obj.time-p10a);
       obj.tailing=(p5b-p5a)/(2*(obj.time-p5a));
       obj.npeaks=size(peaks,1);
-      if nargin>=2
+      if nargin>=2 && ~isempty(name)
         obj.name=name;
       else
         obj.name=sprintf('%.4f @ %.2f',obj.mz,obj.time);
+      end
+      if nargin>=3
+        obj.snr=obj.intensity/noise;
+      else
+        obj.snr=nan;
       end
     end
 

@@ -55,12 +55,14 @@ classdef FeatureList < handle
     % This interpolates using map.mz(:,1) as ref, map.mz(:,2) as file
     % Similar for map.time
       r=FeatureList([obj.name,' toref'],'remap',map);
+      r.features=repmat(Feature.empty,size(obj.features));
       for fi=1:length(obj.features)
         f=obj.features(fi);
         peaks=interp1(map.mz(:,2),map.mz(:,1),f.peaks(:,1),'linear','extrap');
         peaks(:,2)=f.peaks(:,2);
         peaks(:,3)=interp1(map.time(:,2),map.time(:,1),f.peaks(:,3),'linear','extrap');
-        r.append(Feature(peaks));
+        f=Feature(peaks,[f.name,' toref'],f.intensity/f.snr);
+        r.features(fi)=f;
       end
     end
 
@@ -69,12 +71,14 @@ classdef FeatureList < handle
     % This interpolates using map.mz(:,1) as ref, map.mz(:,2) as file
     % Similar for map.time
       r=FeatureList([obj.name,' tofile'],'remap',map);
+      r.features=repmat(Feature.empty,size(obj.features),f.snr);
       for fi=1:length(obj.features)
         f=obj.features(fi);
         peaks=interp1(map.mz(:,1),map.mz(:,2),f.peaks(:,1),'linear','extrap');
         peaks(:,2)=f.peaks(:,2);
         peaks(:,3)=interp1(map.time(:,1),map.time(:,2),f.peaks(:,3),'linear','extrap');
-        r.append(Feature(peaks));
+        f=Feature(peaks,[f.name,' tofile'],f.intensity/f.snr);
+        r.features(fi)=f;
       end
     end
 
@@ -148,11 +152,24 @@ classdef FeatureList < handle
         if size(pks,2)==0
           continue;
         end
+        minnoise=min(p(p(:,2)>0,2));   % Minimum level acquired
         for j=1:size(pks,1)
           rawpeaks=p(p(:,3)>=pext(j,1) & p(:,3)<=pext(j,2),:);
           rawpeaks=rawpeaks(find(rawpeaks(:,2)>0,1):find(rawpeaks(:,2)>0,1,'last'),:);   % Remove end zeros
           mz=nansum(rawpeaks(:,1).*rawpeaks(:,2))/sum(rawpeaks(:,2));
-          if ismember(i,args.trace)
+          % Calculate SNR of peak
+          % Use noise estimate algorithm from ADAP paper (not exactly)
+          pw=min(100,bounds(end)-bounds(1)+1);
+          leftnoise=max(minnoise,p(max(1,bounds(1)-pw*8):bounds(1)-1,2));
+          leftnoise=[repmat(minnoise,8*pw-size(leftnoise,1),1);leftnoise];
+          rightnoise=max(minnoise,p(bounds(end)+1:min(end,bounds(end)+8*pw),2));
+          rightnoise=[rightnoise;repmat(minnoise,8*pw-size(rightnoise,1),1)];
+          wind=hanning(2*pw);  wind=wind/sum(wind);
+          leftvar =min(conv( leftnoise.^2,wind,'valid'));
+          rightvar=min(conv(rightnoise.^2,wind,'valid'));
+          noise=sqrt(mean([leftvar;rightvar]));
+          f=Feature(rawpeaks,[],noise);
+          if ismember(i,args.trace) || isnan(noise)
             keyboard;
           end
           f=Feature(rawpeaks);
