@@ -156,6 +156,9 @@ classdef FeatureList < handle
         %pbasm=mslowess(p(:,3),pba);
         [pks,pfwhh,pext]=mspeaks(p(:,3),p(:,2),'denoising',true,'heightfilter',args.heightfilter,'oversegmentationfilter',args.oversegmentationfilter,'NoiseEstimator',args.noise,'showplot',ismember(i,args.trace),'style','exttriangle','fwhhfilter',args.minwidth);
         if size(pks,2)==0
+          if ismember(i,args.trace)
+            keyboard;
+          end
           continue;
         end
         minnoise=min(p(p(:,2)>0,2));   % Minimum level acquired
