@@ -153,7 +153,7 @@ classdef FeatureList < handle
         p=obj.features(i).peaks;
         %pba=msbackadj(p(:,3),p(:,2),'est','em','smooth','rloess');
         %pbasm=mslowess(p(:,3),pba);
-        [pks,pfwhh,pext]=mspeaks(p(:,3),p(:,2),'denoising',true,'heightfilter',args.heightfilter,'oversegmentationfilter',args.oversegmentationfilter,'showplot',ismember(i,args.trace),'style','fwhhtriangle','fwhhfilter',args.minwidth);
+        [pks,pfwhh,pext]=mspeaks(p(:,3),p(:,2),'denoising',true,'heightfilter',args.heightfilter,'oversegmentationfilter',args.oversegmentationfilter,'NoiseEstimator',args.noise,'showplot',ismember(i,args.trace),'style','exttriangle','fwhhfilter',args.minwidth);
         if size(pks,2)==0
           continue;
         end
