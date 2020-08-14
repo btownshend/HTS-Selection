@@ -120,6 +120,7 @@ classdef FeatureList < handle
         psel=e.peaks(:,3)>=args.timerange(1) & e.peaks(:,3)<=args.timerange(2);
         if any(psel)
           h=plot(e.peaks(psel,3),e.peaks(psel,2));
+          leg{end+1}=sprintf('%s.%d %s',args.prefix,find(e==obj.features),e.name);
         else
           h=[];
         end
