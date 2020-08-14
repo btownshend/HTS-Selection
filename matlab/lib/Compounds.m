@@ -1215,9 +1215,8 @@ classdef Compounds < handle
         fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j));
         for p=1:length(obj.multihits(ind,k,j).features)
           feat=obj.reffeatures(j).features(obj.multihits(ind,k,j).features(p));
-          if  (isnan(obj.time(ind,k,j)) || abs(feat.time-obj.time(ind,k,j))>1) && feat.area>=args.minic
+          %if  (isnan(obj.time(ind,k,j)) || abs(feat.time-obj.time(ind,k,j))<1) && feat.area>=args.minic
             fprintf(' [mz=%8.4f (d=%3.0f), t=%5.2f, ic=%8.0f]', feat.mz, (feat.mz-obj.mztarget(ind,k))*1e4,feat.time, feat.area);
-          end
         end
         if ~isempty(args.mzdata)
           nexttile;
