@@ -476,8 +476,8 @@ classdef Compounds < handle
                 end
                 if score>bestscore|| (ntrue-nfalse/falseweight==bestscore && esort(n)-esort(m)<esort(best(2))-esort(best(1)))
                   best=[m,n];
-                  bestscore=ntrue-nfalse/falseweight;
-                  besttime=mean(esort([m,n]));
+                  bestscore=score;
+                  besttime=median(etimes(sel&cont));
                   %bestwindow=[min(ewind(m:n,1)),max(ewind(m:n,2))];
                   bestwindow=esort([m,n]);
                   if ismember(i,args.trace)
