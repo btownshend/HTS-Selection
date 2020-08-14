@@ -658,36 +658,6 @@ classdef MassSpec < handle
       xlabel('T1 (sec)');
       ylabel('T2 (sec)')
     end
-    
-    function ilist=findisotopes(obj,pknum,varargin)
-      defaults=struct('mztol',0.01,'debug',false);
-      args=processargs(defaults,varargin);
-
-      if nargin<2 || isempty(pknum)
-        ilist=[];
-        for i=1:length(obj.peaks)
-          ilist=[ilist;obj.findisotopes(i,'mztol',args.mztol,'debug',args.debug)];
-        end
-        return;
-      end
-      isodiff=1.003355;   % C13 - C12 mass
-      pks=obj.peaks{pknum};
-      ilist=[];
-      i1=find(pks(:,1)>obj.mzrange(1),1);
-      i2=find(pks(:,1)<=obj.mzrange(2),1,'last');
-      for i=i1:i2
-        for j=i+1:i2
-          if abs(pks(j,1)-pks(i,1)-isodiff)<args.mztol
-            ilist(end+1,:)=[pknum,pks(i,:),pks(j,:)];
-            if args.debug
-              fprintf('Trace %d, Isotope: %.4f +%.4f  %.1f%%\n', pknum, pks(i,1), pks(j,1)-pks(i,1), pks(j,2)/pks(i,2)*100);
-            end
-          elseif pks(j,1)-pks(i,1)-isodiff>args.mztol
-            break;
-          end
-        end
-      end
-    end
-    
+        
   end % methods
 end % classdef

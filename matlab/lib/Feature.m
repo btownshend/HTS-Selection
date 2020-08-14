@@ -16,6 +16,7 @@ classdef Feature < matlab.mixin.Copyable
     tailing;
     area;
     snr;    % Only if noise given when constructed
+    isotope;   % 1 if this is was identified as the base of a C13 isotope pattern, 2 if next;  0 if not part of a pattern 
   end % properties
   
   methods
@@ -53,6 +54,7 @@ classdef Feature < matlab.mixin.Copyable
       else
         obj.snr=nan;
       end
+      obj.isotope=0;
     end
 
     function set(obj,x)
