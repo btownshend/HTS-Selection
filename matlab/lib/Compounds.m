@@ -111,7 +111,7 @@ classdef Compounds < handle
           id=[id,struct('name',obj.names(i),'adduct',obj.ADDUCTS(k).name,'mztarget',obj.mztarget(i,k),'desc','','findargs','','mz',nan,'time',nan,'ic',nan,'relic',nan,'filemz',nan,'filetime',nan)];
           if isfinite(obj.meantime(i))
             % Only look for compounds with a known elution time
-            isomers=find(abs(obj.meantime-obj.meantime(i))<args.timetol & any(abs(obj.mztarget(i,k)-obj.mztarget)<args.mztol,2));
+            aliases=find(abs(obj.meantime-obj.meantime(i))<args.timetol & any(abs(obj.mztarget(i,k)-obj.mztarget)<args.mztol,2));
             mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
             timetarget=interp1(args.map.time(:,1),args.map.time(:,2),obj.meantime(i),'linear','extrap');
             idtmp=ms.findcompound(mztargetMS,'elutetime',timetarget,'timetol',args.timetol,'mztol',args.mztol,'debug',args.debug,'peakratio',0);
@@ -126,9 +126,9 @@ classdef Compounds < handle
                 id(end).fwhh=interp1(args.map.time(:,2),args.map.time(:,1),[min(idtmp.fwhh(:,1)),max(idtmp(fwhh(:,2)))]);
               end
             end
-            if length(isomers)>1 && sum(id(end).ic)>0
+            if length(aliases)>1 && sum(id(end).ic)>0
               if args.debug
-                fprintf('Isomer at compounds %s with ion count = %.0f\n', sprintf('%d,',isomers),sum(id(end).ic));
+                fprintf('Alias at compounds %s with ion count = %.0f\n', sprintf('%d,',aliases),sum(id(end).ic));
               end
               id(end).ic=nan;   % Can't use it
             end
@@ -1182,17 +1182,17 @@ classdef Compounds < handle
       meanic=nanmean(obj.ic(ind,k,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,k,obj.contains(ind,:)));
       fprintf('%s[%s] (%d): m/z=%8.4f t=%.2f [%.2f-%.2f] sens=%.0f\n',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.timewindow(ind,:),obj.tsens(ind,k));
-      isomers=[];
+      aliases=[];
       label=true;
       for k1=1:length(obj.ADDUCTS)
-        isomers=setdiff(find(abs(obj.mass+obj.ADDUCTS(k1).mass-(obj.mass(ind)+obj.ADDUCTS(k).mass))<obj.MZFUZZ*2),ind);
-        if length(isomers)>0
+        aliases=setdiff(find(abs(obj.mass+obj.ADDUCTS(k1).mass-(obj.mass(ind)+obj.ADDUCTS(k).mass))<obj.MZFUZZ*2),ind);
+        if length(aliases)>0
           if label
-            fprintf('Isomers:\n');
+            fprintf('Aliases:\n');
             label=false;
           end
-          for ii=1:length(isomers)
-            i=isomers(ii);
+          for ii=1:length(aliases)
+            i=aliases(ii);
             imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
             fprintf('\t%-6.6s[%-4.4s]: m/z=%8.4f (d=%4.0f) t=%.2f (d=%.2f) meanic=%.0f\n',...
                     obj.names{i},obj.ADDUCTS(k1).name, obj.mass(i)+obj.ADDUCTS(k1).mass,...
