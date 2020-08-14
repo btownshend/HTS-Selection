@@ -127,7 +127,7 @@ classdef FeatureList < handle
 
         % Individual peaks
         ext=e.timerange;
-        if diff(ext)<30 & (ext(1)<args.timerange(2) || ext(2)>args.timerange(1))
+        if diff(ext)<30 & ~(ext(1)>args.timerange(2) || ext(2)<args.timerange(1))
           %plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
           h2=plot([ext(1),e.time,ext(2)],[0.5,1,0.5]*e.intensity,'-','LineWidth',3);
           if ~isempty(h)
