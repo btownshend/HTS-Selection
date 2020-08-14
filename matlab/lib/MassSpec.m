@@ -500,9 +500,11 @@ classdef MassSpec < handle
         obj.resample();
       end
       [~,closest]=min(abs(time-obj.time));
+      pks=obj.peaks{closest};
       ti=sprintf('m/z @ T=%.2f (%d)',obj.time(closest),closest);
       setfig(ti);clf;
-      plot(obj.resamp.mz,obj.resamp.y(:,closest));
+      %plot(obj.resamp.mz,obj.resamp.y(:,closest));
+      stem(pks(:,1),pks(:,2),'.');
       title(ti)
       xlabel('m/z')
       ylabel('Relative Intensity')
@@ -513,11 +515,12 @@ classdef MassSpec < handle
         plot(id.mztarget*[1,1],[0,ax(4)*1.1],':r')
       end
       % List major peaks
-      pks=obj.peaks{closest};
       [~,ord]=sort(pks(:,2),'desc');
       for ii=1:10
         i=ord(ii);
         fprintf('M/Z=%.4f, IC=%6.0f\n', pks(i,:));
+        h=text(pks(i,1),pks(i,2),sprintf('%.4f',pks(i,1)));
+        set(h,'VerticalAlignment','bottom','HorizontalAlignment','left');
       end
     end
     
