@@ -1341,6 +1341,52 @@ classdef Compounds < handle
       end
     end
     
+    function conflated(obj,varargin)
+    % List possibly conflated compounds
+      defaults=struct('adduct',1,'mztol',obj.MZFUZZ,'timetol',obj.TIMEFUZZ);
+      args=processargs(defaults,varargin);
+
+      fprintf('mztol=%.4f, timetol=%.2f\n', args.mztol, args.timetol);
+      for i=1:length(obj.names)
+        if isnan(obj.meantime(i))
+          continue;
+        end
+        for j=i+1:length(obj.names)
+          if isnan(obj.meantime(j))
+            continue;
+          end
+          if i==205 && j==537
+            keyboard;
+          end
+          toverlap=abs(obj.meantime(i)-obj.meantime(j)') < args.timetol;
+          if toverlap
+            mzoverlap=abs(obj.mztarget(i)-obj.mztarget(j)') < args.mztol;
+            if any(mzoverlap)
+              [a1,a2]=ind2sub(size(toverlap),find(toverlap,1));
+              fprintf('%6s[%-4s] %.4f @ %5.2f IC=%6.0f  overlaps %6s[%-4s] %.4f @ %5.2f IC=%6.0f ', ...
+                      obj.names{i}, obj.ADDUCTS(a1).name, obj.mztarget(i,a1),obj.meantime(i),obj.tsens(i,a1),...
+                      obj.names{j}, obj.ADDUCTS(a2).name, obj.mztarget(j,a1),obj.meantime(j),obj.tsens(j,a2));
+              fprintf('dmz=%.4f, dT=%.2f\n',  abs(obj.mztarget(i,a1)-obj.mztarget(j,a1)),abs(obj.meantime(i)-obj.meantime(j)));
+            end
+          end
+        end
+      end
+      
+      for k=1:length(obj.samples)
+        f=obj.featureindex(:,:,k);  f=f(isfinite(f(:)));
+        fs=sort(f);
+        dupes=fs(find(diff(fs)==0));
+        for i=1:length(dupes)
+          [t1,a1]=ind2sub(size(obj.featureindex(:,:,k)),find(obj.featureindex(:,:,k)==dupes(i)));
+          fprintf('In %s, feature %d is shared by:\n', obj.samples{k}, dupes(i));
+          for j=1:length(t1)
+            fprintf('  %s[%s](%d) mz=%.4f, T=%.2f\n',obj.names{t1(j)}, obj.ADDUCTS(a1(j)).name, t1(j), obj.mztarget(t1(j),a1(j)), obj.meantime(t1(j)));
+          end
+        end
+      end
+      
+    end
+    
     function f=getformula(obj,i)
       f=obj.sdf.getformula(i);
     end
