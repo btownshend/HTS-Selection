@@ -1161,7 +1161,7 @@ classdef Compounds < handle
     end
     
     function getinfo(obj,name,varargin)
-      defaults=struct('mzdata',[],'adduct',[],'falsethresh',0.1,'minic',400);
+      defaults=struct('mzdata',[],'adduct',1,'falsethresh',0.1,'minic',400);
       args=processargs(defaults,varargin);
 
       if ischar(name)

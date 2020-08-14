@@ -5,6 +5,8 @@ for i=1:60
   fname=sprintf('%s/%d.mat',mzdir,i);
   mzd=load(fname);
   mzdata{i}=mzd.mzd;
+  mzdata{i}.featurelists=mzdata{i}.featurelists(1);
+  mzdata{i}.mzxml=[];
 end
 fprintf('done\n');
 clear mzd;
