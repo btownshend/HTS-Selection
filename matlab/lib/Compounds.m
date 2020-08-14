@@ -578,7 +578,7 @@ classdef Compounds < handle
     % Add the unique peaks for compounds in given SDF from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
     % or scan all elution times if the no prior data (keep only if a unique peak is determined)
-      defaults=struct('group','','contains',{{}},'map',struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]));
+      defaults=struct('group','','contains',{{}},'map',struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]),'sample',[]);
       % mzmap(i,2) - piecewise linear map for M/Z; mzmap(:,1) is true M/Z, mzmap(:,2) is for values in ms file
       % timemap(i,2) - piecewise linear map for elution times; timemap(:,1) is "standard" elution time
       args=processargs(defaults,varargin);
