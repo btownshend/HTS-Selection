@@ -460,7 +460,7 @@ classdef Compounds < handle
               fprintf('%s esort=[%s]\n',obj.names{i}, sprintf('%.2f ',esort));
             end
             best=[1,1];bestscore=-1e10;besttime=nan;
-            falseweight=length(unique(srcfile(~cont)))/length(unique(srcfile(cont)));
+            falseweight=sum(~obj.contains(i,:))/sum(obj.contains(i,:));
             for m=1:length(esort)
               for n=ceil(m+max(bestscore-2,.001)-1):length(esort)
                 if esort(n)-esort(m) > 2*args.timetol
