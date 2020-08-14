@@ -496,14 +496,10 @@ classdef MassSpec < handle
     
     function plotmz(obj,time)
     % Plot m/z vs ioncount for trace nearest given time
-      if isempty(obj.resamp)
-        obj.resample();
-      end
       [~,closest]=min(abs(time-obj.time));
       pks=obj.peaks{closest};
       ti=sprintf('m/z @ T=%.2f (%d)',obj.time(closest),closest);
       setfig(ti);clf;
-      %plot(obj.resamp.mz,obj.resamp.y(:,closest));
       stem(pks(:,1),pks(:,2),'.');
       title(ti)
       xlabel('m/z')
