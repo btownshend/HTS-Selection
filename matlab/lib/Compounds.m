@@ -437,17 +437,16 @@ classdef Compounds < handle
             continue;
           end
           etimes=[];intensity=[];area=[];srcadduct=[]; srcfile=[]; fwhh=[];
+          mztarget=obj.mztarget(i,k);
           for j=1:length(obj.files)
-            m=obj.multihits(i,k,j);
-            feat=obj.allfeatures(j).features(m.features);
-            assert(~isempty(m.mztarget));
-            mzsel=abs([feat.mz]-m.mztarget)<=args.mztol & [feat.area]>=args.minic;
+            feat=obj.reffeatures(j).features(obj.multihits(i,k,j).features);
+            mzsel=abs([feat.mz]-mztarget)<=args.mztol & [feat.intensity]>=args.minic;
             if any(mzsel)
-              etimes=[etimes,m.time(mzsel)];
+              etimes=[etimes,feat(mzsel).time];
               area=[area,feat(mzsel).area];
               intensity=[intensity,feat(mzsel).intensity];
-              srcadduct=[srcadduct,repmat(k,1,length(m.time(mzsel)))];
-              srcfile=[srcfile,repmat(j,1,length(m.time(mzsel)))];
+              srcadduct=[srcadduct,repmat(k,1,length(feat(mzsel)))];
+              srcfile=[srcfile,repmat(j,1,length(feat(mzsel)))];
               fwhh=[fwhh;vertcat(feat(mzsel).mzrange)];
             end
           end
@@ -516,22 +515,21 @@ classdef Compounds < handle
             obj.timewindow(i,1:2)=bestwindow;
             for kk=1:length(obj.ADDUCTS)
               for j=1:length(obj.files)
-                m=obj.multihits(i,kk,j);
-                assert(~isempty(m.mztarget));
-                sel=find(m.time>=obj.timewindow(i,1) & m.time <= obj.timewindow(i,2));
-                if ~isempty(sel)
-                  fi=m.features(sel);
+                fi=obj.multihits(i,kk,j).features;
+                time=[obj.reffeatures(j).features(fi).time];
+                sel=find(time>=obj.timewindow(i,1) & time <= obj.timewindow(i,2));
+                fi=fi(sel);
+                if ~isempty(fi)
                   if length(fi)>1
                     % More than one feature in time window; use highest peak
                     if args.debug
                       fprintf('Have %d ambiguous features for %s[%s] in %s\n', length(fi), obj.names{i},obj.ADDUCTS(k).name,obj.samples{j});
                     end
-                    [~,mind]=max([obj.allfeatures(j).features(fi).intensity]);
+                    [~,mind]=max([obj.reffeatures(j).features(fi).intensity]);
                     fi=fi(mind);
-                    sel=sel(mind);
                   end
                   obj.featureindex(i,kk,j)=fi;
-                  feat=obj.allfeatures(j).features(fi);
+                  feat=obj.reffeatures(j).features(fi);
                   obj.ic(i,kk,j)=feat.intensity;
                   obj.mz(i,kk,j)=feat.mz;
                   obj.time(i,kk,j)=feat.time;
@@ -1122,13 +1120,15 @@ classdef Compounds < handle
         nexttile;
         
         filetime=interp1(obj.maps{i}.time(:,1),obj.maps{i}.time(:,2),obj.meantime(ind),'linear','extrap');
-        plot(filetime,0,'*','HandleVisibility','off');
+        filetimerange=interp1(obj.maps{i}.time(:,1),obj.maps{i}.time(:,2),args.timerange,'linear','extrap');
+        filemz=interp1(obj.maps{i}.mz(:,1),obj.maps{i}.mz(:,2),obj.mztarget(ind,args.adduct),'linear','extrap');
+        plot(filetime,obj.tsens(ind,args.adduct)*obj.fsens(i),'*','HandleVisibility','off');
         hold on;
 
         if isempty(args.mzdata) || isempty(args.mzdata{i})
-          obj.allfeatures(i).ploteic(obj.multihits(ind,args.adduct,i).mztarget,'mztol',args.mztol,'timerange',args.timerange);
+          obj.allfeatures(i).ploteic(filemz,'mztol',args.mztol,'timerange',filetimerange);
         else
-          args.mzdata{i}.ploteic(obj.multihits(ind,args.adduct,i).mztarget,'newfig',false,'mztol',args.mztol,'timerange',args.timerange);
+          args.mzdata{i}.ploteic(filemz,'newfig',false,'mztol',args.mztol,'timerange',filetimerange);
         end
         h(end+1)=gca;
         xlabel('');ylabel('');
@@ -1205,12 +1205,10 @@ classdef Compounds < handle
           continue;
         end
         fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)',obj.samples{j},obj.fsens(j),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j));
-        m=obj.multihits(ind,k,j);
-        assert(~isempty(m.mztarget));
-        for p=1:length(m.mz)
-          feat=obj.allfeatures(j).features(m.features(p));
-          if  (isnan(obj.time(ind,k,j)) || abs(m.time(p)-obj.time(ind,k,j))>1) && feat.area>=args.minic
-            fprintf(' [mz=%8.4f (d=%3.0f), t=%5.2f, ic=%8.0f]', m.mz(p), (m.mz(p)-obj.mztarget(ind,k))*1e4,m.time(p), feat.area);
+        for p=1:length(obj.multihits(ind,k,j).features)
+          feat=obj.reffeatures(j).features(obj.multihits(ind,k,j).features(p));
+          if  (isnan(obj.time(ind,k,j)) || abs(feat.time-obj.time(ind,k,j))>1) && feat.area>=args.minic
+            fprintf(' [mz=%8.4f (d=%3.0f), t=%5.2f, ic=%8.0f]', feat.mz, (feat.mz-obj.mztarget(ind,k))*1e4,feat.time, feat.area);
           end
         end
         if ~isempty(args.mzdata)
