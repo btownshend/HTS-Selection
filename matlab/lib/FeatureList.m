@@ -130,12 +130,16 @@ classdef FeatureList < handle
         if diff(ext)<30 & ~(ext(1)>args.timerange(2) || ext(2)<args.timerange(1))
           %plot(e.time*[1,1],[0,e.intensity],'Color',get(h(end),'Color'));
           h2=plot([ext(1),e.time,ext(2)],[0.5,1,0.5]*e.intensity,'-','LineWidth',3);
+          if isfinite(e.snr)
+            plot([ext(1),ext(2)],[1,1]*e.intensity/e.snr,':','HandleVisibility','off');
+          end
           if ~isempty(h)
+            leg=leg(1:end-1);
             set(h,'HandleVisibility','off');   % No legend entry for above
             set(h2,'Color',get(h,'Color'));
           end
+          leg{end+1}=sprintf('%s.%d %s',args.prefix,find(e==obj.features),e.name);
         end
-        leg{end+1}=sprintf('%s.%d %s',args.prefix,find(e==obj.features),e.name);
       end
       legend(leg,'Location','best');
     end
