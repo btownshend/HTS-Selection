@@ -57,6 +57,29 @@ classdef Feature < matlab.mixin.Copyable
       obj.isotope=0;
     end
 
+    function s=tostring(obj,varargin)
+      defaults=struct('mztarget',[],'timetarget',[],'intensitytarget',[]);
+      args=processargs(defaults,varargin);
+      
+    % Return string representation of feature
+      s=sprintf('m/z=%.4f',obj.mz);
+      if ~isempty(args.mztarget)&& isfinite(args.mztarget)
+        dmz=obj.mz-args.mztarget;
+        s=sprintf('%s (%3.0f)',s,dmz*10000);
+      end
+      s=sprintf('%s t=%5.2f',s,obj.time);
+      if ~isempty(args.timetarget)&& isfinite(args.timetarget)
+        s=sprintf('%s (%5.2f)',s,obj.time-args.timetarget);
+      end
+      s=sprintf('%s ic=%6.0f',s,obj.intensity);
+      if ~isempty(args.intensitytarget) && isfinite(args.intensitytarget)
+        s=sprintf('%s (%4.2f)',s,obj.intensity/args.intensitytarget);
+      end
+      if ~isempty(obj.isotope) && obj.isotope>0
+        s=sprintf('%s I%d',s,obj.isotope);
+      end
+    end
+    
     function set(obj,x)
     % Set from struct x (from csv import)
       fn=fieldnames(x);
