@@ -77,6 +77,8 @@ classdef Feature < matlab.mixin.Copyable
       end
       if ~isempty(obj.isotope) && obj.isotope>0
         s=sprintf('%s I%d',s,obj.isotope);
+      else
+        s=[s,'   '];
       end
     end
     

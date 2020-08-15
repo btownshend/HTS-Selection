@@ -632,6 +632,7 @@ classdef Compounds < handle
         
         % Attempt to locate each one uniquely
         maxic=[];   % Maximum IC per target
+        fprintf('%s...',obj.sample{findex});
         for i=1:length(obj.mass)
           if mod(i,100)==1
             fprintf('%d...',i);
@@ -1209,13 +1210,12 @@ classdef Compounds < handle
       
       for j=1:length(obj.files)
         if ~obj.contains(ind,j)
-          % TODO: Could list false positives here
           continue;
         end
         fprintf('%-15.15s %5.2f',obj.samples{j},obj.fsens(j));
 
         fi=obj.featureindex(ind,k,j);
-        if isfinite(fi)
+        if isfinite(fi) && fi>0
           fprintf(' [%-4d %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k)));
         end
         others=setdiff(obj.multihits(ind,k,j).features,fi);
