@@ -1115,7 +1115,7 @@ classdef Compounds < handle
       fn=~sel&contains;
       fprintf('Have %d true hits, %d false positives, %d false negatives\n', sum(tp), sum(fp), sum(fn));
       tolist=[find(tp);find(fn);find(fp)];
-      ti=sprintf('EICs for %s[%s] T=%.2f',obj.names{ind},obj.ADDUCTS(args.adduct).name,obj.meantime(ind));
+      ti=sprintf('%s[%s] m/z=%.4f T=%.2f',obj.names{ind},obj.ADDUCTS(args.adduct).name, obj.mztarget(ind,args.adduct), obj.meantime(ind));
       setfig(ti);clf;
       t=tiledlayout('flow');
       t.TileSpacing = 'compact';
@@ -1212,22 +1212,19 @@ classdef Compounds < handle
           % TODO: Could list false positives here
           continue;
         end
+        fprintf('%-15.15s %5.2f',obj.samples{j},obj.fsens(j));
+
         fi=obj.featureindex(ind,k,j);
         if isfinite(fi)
-          f=obj.allfeatures(j).features(fi);
-          if isempty(f.isotope)
-            isotopeorder='   ';
-          else
-            isotopeorder=sprintf('I%d',f.isotope);
-          end
-        else
-          isotopeorder='   ';
+          fprintf(' [%-4d %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k)));
         end
-        fprintf('%-15.15s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f) %s',obj.samples{j},obj.fsens(j),obj.mz(ind,k,j),(obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4,obj.time(ind,k,j),obj.ic(ind,k,j),obj.normic(ind,k,j),isotopeorder);
-        for p=1:length(obj.multihits(ind,k,j).features)
-          feat=obj.reffeatures(j).features(obj.multihits(ind,k,j).features(p));
-          %if  (isnan(obj.time(ind,k,j)) || abs(feat.time-obj.time(ind,k,j))<1) && feat.area>=args.minic
-            fprintf(' [mz=%8.4f (d=%3.0f), t=%5.2f, ic=%8.0f]', feat.mz, (feat.mz-obj.mztarget(ind,k))*1e4,feat.time, feat.area);
+        others=setdiff(obj.multihits(ind,k,j).features,fi);
+        if length(others)>0
+            fprintf('   Others:');
+        end
+        for p=1:length(others)
+          feat=obj.reffeatures(j).features(others(p));
+          fprintf(' [%s]',feat.tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k)));
         end
         if ~isempty(args.mzdata)
           nexttile;
