@@ -104,6 +104,9 @@ for i=1:length(allfiles)
     fprintf('Deconvolving chromatograms for %s...',mzdata{i}.name);
     mzdata{i}.deconvolve();
     fprintf('%d done\n',length(mzdata{i}.featurelists(end).features));
+    fprintf('Finding isotopes for %s...',mzdata{i}.name);
+    mzdata{i}.findisotopes();
+    fprintf('done\n');
   end
   
   if strncmp(mzdata{i}.name,'Full',4) || strncmp(mzdata{i}.name,'CDIV.',5) || strncmp(mzdata{i}.name,'CDIV-',5)  || strncmp(mzdata{i}.name,'old-CDIV',8)
