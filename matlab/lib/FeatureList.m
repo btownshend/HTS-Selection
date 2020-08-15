@@ -61,8 +61,9 @@ classdef FeatureList < handle
         peaks=interp1(map.mz(:,2),map.mz(:,1),f.peaks(:,1),'linear','extrap');
         peaks(:,2)=f.peaks(:,2);
         peaks(:,3)=interp1(map.time(:,2),map.time(:,1),f.peaks(:,3),'linear','extrap');
-        f=Feature(peaks,[f.name,' toref'],f.intensity/f.snr);
-        r.features(fi)=f;
+        fnew=Feature(peaks,[f.name,' toref'],f.intensity/f.snr);
+        fnew.isotope=f.isotope;
+        r.features(fi)=fnew;
       end
     end
 
@@ -77,8 +78,9 @@ classdef FeatureList < handle
         peaks=interp1(map.mz(:,1),map.mz(:,2),f.peaks(:,1),'linear','extrap');
         peaks(:,2)=f.peaks(:,2);
         peaks(:,3)=interp1(map.time(:,1),map.time(:,2),f.peaks(:,3),'linear','extrap');
-        f=Feature(peaks,[f.name,' tofile'],f.intensity/f.snr);
-        r.features(fi)=f;
+        fnew=Feature(peaks,[f.name,' tofile'],f.intensity/f.snr);
+        fnew.isotope=f.isotope;
+        r.features(fi)=fnew;
       end
     end
 
