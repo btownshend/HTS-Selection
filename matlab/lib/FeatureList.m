@@ -207,6 +207,45 @@ classdef FeatureList < handle
       end
       fl.params.rejects=rejects;
     end
+
+    function plotalign(obj,obj2,varargin)
+    % Trim time is number of minutes to trim from ends of timewindow
+      defaults=struct('mztol',.01,'timetol',1,'minintensity',5000,'trimtime',7);  
+      args=processargs(defaults,varargin);
+
+      al=[];
+      twindow1=[min([obj.features.time]),max([obj.features.time])];
+      f1=obj.features([obj.features.intensity]>=args.minintensity & [obj.features.time]>=twindow1(1)+args.trimtime & [obj.features.time]<=twindow1(2)-args.trimtime  );
+
+      twindow2=[min([obj2.features.time]),max([obj2.features.time])];
+      f2=obj2.features([obj2.features.intensity]>=args.minintensity  & [obj.features.time]>=twindow1(1)+args.trimtime & [obj.features.time]<=twindow1(2)-args.trimtime  );
+
+      fprintf('Matching %d and %d features...', length(f1), length(f2));
+      for i=1:length(f1)
+        if mod(i,50)==0
+          fprintf('%d...',i);
+        end
+        f1i=f1(i);
+        sel=find(abs([f2.mz]-f1i.mz)<=args.mztol & abs([f2.time]-f1i.time)<=args.timetol);
+        if length(sel)>0
+          al=[al;[repmat(f1i.mz,length(sel),1),[f2(sel).mz]',repmat(f1i.time,length(sel),1),[f2(sel).time]']];
+        end
+      end
+      fprintf('\n');
+      ti=sprintf('%s vs %s',obj.name,obj2.name);
+      setfig(ti);clf;
+      layout=tiledlayout('flow');
+      nexttile
+      plot(al(:,1),al(:,2)-al(:,1),'o');
+      xlabel([obj.name,' m/z']);
+      ylabel('\Delta m/z');
+      nexttile
+      tquant=(1/60)/2;
+      plot(al(:,3)+(rand(size(al(:,3)))-0.5)*tquant,al(:,4)-al(:,3)+(rand(size(al(:,3)))-0.5)*tquant,'o');
+      xlabel([obj.name,' time']);
+      ylabel('\Delta time');
+      title(layout,ti);
+    end
     
   end % methods
 end % classdef
