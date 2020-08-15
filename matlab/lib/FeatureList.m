@@ -247,5 +247,55 @@ classdef FeatureList < handle
       title(layout,ti);
     end
     
+    function ilist=findisotopes(obj,varargin)
+      defaults=struct('mztol',0.004,'timetol',0.1,'minratio',1e-4,'maxratio',13e-4,'debug',false);
+      args=processargs(defaults,varargin);
+
+      ilist=[];
+      isodiff=1.0030;   % Although C13-C12 should be 1.003355, we see 1.0030 empircally
+      % cratio=.0107/.9893;
+      % ncarbons=[8,30];
+      % ratio1=binopdf(1,ncarbons,cratio);
+      % ratio2=binopdf(2,ncarbons,cratio);
+      % fprintf('For [%s] carbons expect ratios of [%s], [%s]\n', sprintf('%d ',ncarbons), sprintf('%.3f ',ratio1), sprintf('%.3f ',ratio2./ratio1));
+      allmz=[obj.features.mz];
+      for i=1:length(obj.features)
+        fi=obj.features(i);
+        mzsel=find(abs(allmz-fi.mz-isodiff) < args.mztol);
+        for jj=1:length(mzsel)
+          j=mzsel(jj);
+          fj=obj.features(j);
+          if abs(fj.time-fi.time) < args.timetol
+            iratio=fj.intensity/fi.intensity;
+            if iratio>=args.minratio*fi.mz && iratio<=args.maxratio*fi.mz
+              ilist(end+1,:)=[i,j,fi.mz,fj.mz-fi.mz,fj.time-fi.time,iratio];
+            end
+          end
+        end
+      end
+
+      % Add a column to indicate the ordering of a sequence of isotopes
+      order=zeros(length(obj.features),1);
+      order(setdiff(ilist(:,1),ilist(:,2)))=1;   % If it appears as a base, but never as a secondary, then assign it order 1
+      for i=1:10
+        sel=ismember(ilist(:,1),find(order==i));
+        if ~any(sel)
+          break;
+        end
+        order(ilist(sel,2))=i+1;   % assign to secondaries
+      end
+
+      % Set in features
+      tmp=num2cell(order);
+      [obj.features.isotope]=tmp{:};
+      %for i=1:length(obj.features)
+      %        obj.features(i).isotope=order(i);
+      % end
+      ilist(:,end+1)=order(ilist(:,1));
+      ilist(:,end+1)=order(ilist(:,2));
+
+      fprintf('%d/%d (%.0f%%) features appear to be in isotope patterns\n',sum(order>0),length(order),mean(order>0)*100);
+    end
+
   end % methods
 end % classdef
