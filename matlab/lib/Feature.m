@@ -62,25 +62,31 @@ classdef Feature < matlab.mixin.Copyable
     end
 
     function s=tostring(obj,varargin)
-      defaults=struct('mztarget',[],'timetarget',[],'intensitytarget',[]);
+      defaults=struct('mztarget',[],'timetarget',[],'intensitytarget',[],'fixedwidth',false, 'details',true);
       args=processargs(defaults,varargin);
       
     % Return string representation of feature
       s=sprintf('m/z=%.4f',obj.mz);
       if ~isempty(args.mztarget)&& isfinite(args.mztarget)
         dmz=obj.mz-args.mztarget;
-        s=sprintf('%s (%3.0f)',s,dmz*10000);
+        s=sprintf('%s#(%3.0f)',s,dmz*10000);
       end
-      s=sprintf('%s t=%5.2f',s,obj.time);
+      if args.details
+        s=sprintf('%s[%.4f-%.4f]',s,obj.mzrange);
+      end
+      s=sprintf('%s#t=%5.2f',s,obj.time);
       if ~isempty(args.timetarget)&& isfinite(args.timetarget)
-        s=sprintf('%s (%5.2f)',s,obj.time-args.timetarget);
+        s=sprintf('%s#(%5.2f)',s,obj.time-args.timetarget);
       end
-      s=sprintf('%s ic=%6.0f',s,obj.intensity);
+      if args.details
+        s=sprintf('%s[%4.2f-%4.2f]',s,obj.timerange);
+      end
+      s=sprintf('%s#ic=%6.0f',s,obj.intensity);
       if ~isempty(args.intensitytarget) && isfinite(args.intensitytarget)
-        s=sprintf('%s (%4.2f)',s,obj.intensity/args.intensitytarget);
+        s=sprintf('%s#(%4.2f)',s,obj.intensity/args.intensitytarget);
       end
       if ~isempty(obj.isotope) && obj.isotope>0
-        s=sprintf('%s I%d',s,obj.isotope);
+        s=sprintf('%s#I%d',s,obj.isotope);
       else
         s=[s,'   '];
       end
