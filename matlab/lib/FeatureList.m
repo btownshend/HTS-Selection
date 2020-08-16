@@ -94,10 +94,15 @@ classdef FeatureList < handle
     end
     
     function [fl,sel]=getbymz(obj,mz,varargin)
-      defaults=struct('mztol',0.01);
+      defaults=struct('mztol',0.01,'timerange',[]);
       args=processargs(defaults,varargin);
       fl=FeatureList(sprintf('%.4f',mz),'getbymz',args);
       sel=find(abs([obj.features.mz]-mz)<=args.mztol);
+      if ~isempty(args.timerange) & ~isempty(sel)
+        trange=vertcat(obj.features(sel).timerange);
+        % Keep any whose window overlaps the requested window
+        sel=sel(~(trange(:,2)>args.timerange(2) | trange(:,1)<args.timerange(1)));
+      end
       fl.features=obj.features(sel);
     end
     
@@ -106,7 +111,7 @@ classdef FeatureList < handle
       defaults=struct('mztol',0.01,'prefix','','timerange',[-inf,inf]);
       args=processargs(defaults,varargin);
 
-      flmz=obj.getbymz(mz,'mztol',args.mztol);
+      flmz=obj.getbymz(mz,'mztol',args.mztol,'timerange',args.timerange);
       features=flmz.features;
       if isempty(features)
         fprintf('No features in %s within %.4f of %.4f\n', obj.name, args.mztol, mz);
@@ -119,6 +124,7 @@ classdef FeatureList < handle
       for i=1:length(features)
         e=features(i);
         % EIC
+        % Only show part of feature that overlaps our time window
         psel=e.peaks(:,3)>=args.timerange(1) & e.peaks(:,3)<=args.timerange(2);
         if any(psel)
           h=plot(e.peaks(psel,3),e.peaks(psel,2));
@@ -218,7 +224,7 @@ classdef FeatureList < handle
       f1=obj.features([obj.features.intensity]>=args.minintensity & [obj.features.time]>=twindow1(1)+args.trimtime & [obj.features.time]<=twindow1(2)-args.trimtime  );
 
       twindow2=[min([obj2.features.time]),max([obj2.features.time])];
-      f2=obj2.features([obj2.features.intensity]>=args.minintensity  & [obj.features.time]>=twindow1(1)+args.trimtime & [obj.features.time]<=twindow1(2)-args.trimtime  );
+      f2=obj2.features([obj2.features.intensity]>=args.minintensity  & [obj2.features.time]>=twindow2(1)+args.trimtime & [obj2.features.time]<=twindow2(2)-args.trimtime  );
 
       fprintf('Matching %d and %d features...', length(f1), length(f2));
       for i=1:length(f1)
