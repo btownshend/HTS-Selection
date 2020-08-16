@@ -839,7 +839,7 @@ classdef Compounds < handle
               fprintf('Only %d data points for %s ... skipping\n', npts, obj.files{i});
               continue;
             end
-            err=nanmedian(x(:)-y(:));
+            err=nanmedian(y(:)-x(:));
             fit=robustfit(x(:),y(:));
             fprintf('%-20.20s  %5.1f [%5.1f, %5.1f] N=%d\n',obj.samples{i}, err*1e4,1e4*(fit(1)+(fit(2)-1)*rng),npts);
             h(end+1)=plot(x(:),1e4*(y(:)-x(:)),'o');
