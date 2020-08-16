@@ -15,8 +15,11 @@ classdef Feature < matlab.mixin.Copyable
     asymmetry;
     tailing;
     area;
+
+    % Additional optional properties
     snr;    % Only if noise given when constructed
     isotope;   % 1 if this is was identified as the base of a C13 isotope pattern, 2 if next;  0 if not part of a pattern 
+    labels;   % Cell array of labels;  first one is preferred name
   end % properties
   
   methods
@@ -55,6 +58,7 @@ classdef Feature < matlab.mixin.Copyable
         obj.snr=nan;
       end
       obj.isotope=0;
+      obj.labels={};
     end
 
     function s=tostring(obj,varargin)
@@ -80,6 +84,17 @@ classdef Feature < matlab.mixin.Copyable
       else
         s=[s,'   '];
       end
+      if ~isempty(obj.labels)
+        if args.details
+          s=[s,'#',strjoin(obj.labels,',')];
+        else
+          s=[s,'#',obj.labels{1}];
+        end
+      end
+      if ~args.fixedwidth
+        s=strrep(s,' ','');  % Remove blanks;
+      end
+      s=strrep(s,'#',' '); % Forced blanks
     end
     
     function set(obj,x)

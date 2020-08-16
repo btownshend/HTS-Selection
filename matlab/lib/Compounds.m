@@ -139,6 +139,38 @@ classdef Compounds < handle
       end
     end
     
+    function labelFeatures(obj,fl,varargin)
+    % Attempt to label the features in fl
+    % Assume this featurelist is already aligned (mapped) to compound's times and true m/z
+    % Use use FeatureList.maptoref() if not
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ);
+      args=processargs(defaults,varargin);
+
+      for j=1:length(obj.ADDUCTS)
+        nlabel=0;
+        for i=1:length(obj.names)
+          if ~isfinite(obj.meantime(i))
+            % Not isolated
+            continue;
+          end
+          cname=sprintf('%s[%s]',obj.names{i},obj.ADDUCTS(j).name);
+          f=fl.getbymz(obj.mass(i)+obj.ADDUCTS(j).mass,'timerange',obj.meantime(i)+[-1,1]*args.timetol,'mztol',args.mztol);
+          if length(f.features)>1
+            fprintf('Have %d possible matches for %s (m/z=%.4f, t=%.2f)\n', length(f.features), cname,obj.mass(i)+obj.ADDUCTS(j).mass, obj.meantime(i));
+            for fi=1:length(f.features)
+              fprintf('\tm/z=%.4f, t=%.2f, ic=%.0f\n', f.features(fi).mz, f.features(fi).time, f.features(fi).intensity);
+            end
+          elseif length(f.features)==1
+            if ~ismember(cname,f.features(1).labels)
+              f.features(1).labels{end+1}=cname;
+            end
+            nlabel=nlabel+1;
+          end
+        end
+        fprintf('Added %d labels using %s adduct\n',nlabel,obj.ADDUCTS(j).name);
+      end
+    end
+    
     function [matic,id,refid]=plotComposition(obj,ms,varargin)   % TODO - fix
       defaults=struct('debug',false,'thresh',0.02,'ref',[],'adduct',1,'map',[],'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'refmap',[]);  
       args=processargs(defaults,varargin);

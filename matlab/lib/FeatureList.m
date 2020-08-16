@@ -63,6 +63,7 @@ classdef FeatureList < handle
         peaks(:,3)=interp1(map.time(:,2),map.time(:,1),f.peaks(:,3),'linear','extrap');
         fnew=Feature(peaks,[f.name,' toref'],f.intensity/f.snr);
         fnew.isotope=f.isotope;
+        fnew.labels=f.labels;
         r.features(fi)=fnew;
       end
     end
@@ -80,6 +81,7 @@ classdef FeatureList < handle
         peaks(:,3)=interp1(map.time(:,1),map.time(:,2),f.peaks(:,3),'linear','extrap');
         fnew=Feature(peaks,[f.name,' tofile'],f.intensity/f.snr);
         fnew.isotope=f.isotope;
+        fnew.labels=f.labels;
         r.features(fi)=fnew;
       end
     end
