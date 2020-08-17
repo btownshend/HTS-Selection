@@ -16,7 +16,7 @@ classdef Compounds < handle
     timewindow;  % timewindow(i,2) is the time window for compound i elution
     ic;      % ic(i,k,j) contains the total ion count for compound i, from file j with adduct k
     normic;  % normic(i,k,j) normalized ion count = ic(i,j,k)/tsens(i)/fsens(k)
-    multihits;% multihits(i,k,j) is the list of all peaks for target i in file j with adduct k
+    multihits;% multihits(i,k,j) is the list of all peaks for target i in file j with adduct k (index into reffeatures)
     allfeatures;% allfeatures(j) is the list of all features in file j (copied from ms feature list)
     reffeatures;% reffeatures(j) is the list of all features in file j in reference m/z,time space using map
     featureindex;  % featureindex(i,k,j) is the index of feature finally chosen
@@ -33,7 +33,7 @@ classdef Compounds < handle
   
   methods
     function obj=Compounds()
-      obj.multihits=struct('mztarget',{},'desc',{},'mz',{},'time',{},'features',{});
+      obj.multihits={};
       obj.contains=false(0,0);
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
@@ -471,7 +471,7 @@ classdef Compounds < handle
           etimes=[];intensity=[];area=[];srcadduct=[]; srcfile=[]; fwhh=[];
           mztarget=obj.mztarget(i,k);
           for j=1:length(obj.files)
-            feat=obj.reffeatures(j).features(obj.multihits(i,k,j).features);
+            feat=obj.reffeatures(j).features(obj.multihits{i,k,j});
             mzsel=abs([feat.mz]-mztarget)<=args.mztol & [feat.intensity]>=args.minic;
             if any(mzsel)
               etimes=[etimes,feat(mzsel).time];
@@ -552,7 +552,7 @@ classdef Compounds < handle
             obj.timewindow(i,1:2)=bestwindow;
             for kk=1:length(obj.ADDUCTS)
               for j=1:length(obj.files)
-                fi=obj.multihits(i,kk,j).features;
+                fi=obj.multihits{i,kk,j};
                 time=[obj.reffeatures(j).features(fi).time];
                 sel=find(time>=obj.timewindow(i,1) & time <= obj.timewindow(i,2));
                 fi=fi(sel);
@@ -672,8 +672,7 @@ classdef Compounds < handle
           for k=1:length(obj.ADDUCTS)
             % Use features
             [flmz,findices]=obj.reffeatures(findex).getbymz(obj.mztarget(i,k),'mztol',args.mztol);
-            id=struct('mztarget',obj.mztarget(i,k),'desc',flmz.name,'mz',[flmz.features.mz],'time',[flmz.features.time],'features',findices);
-            obj.multihits(i,k,findex)=id;
+            obj.multihits{i,k,findex}=findices;
             maxic(i,k)=max([0,flmz.features.intensity]);
           end
         end
@@ -690,10 +689,10 @@ classdef Compounds < handle
           fprintf('%5s: Expected have IC=[%s], unexpected have IC=[%s] (%s) @%.0f: %.1f%%,%.1f%% \n', obj.ADDUCTS(k).name, sprintf('%.0f ',prctile(ice(:),p)), sprintf('%.0f ',prctile(icu(:),p)), sprintf('%d%% ',p),minic,100*mean(ice(:)>minic),100*mean(icu(:)>minic));
           nhits=nan(length(obj.mass),1);
           for i=1:length(obj.mass)
-            nhits(i)=sum([obj.reffeatures(findex).features(obj.multihits(i,k,findex).features).intensity]>minic);
+            nhits(i)=sum([obj.reffeatures(findex).features(obj.multihits{i,k,findex}).intensity]>minic);
           end
           fprintf('       Have hits for %d/%d (with %d unique) expected compounds and %d unexpected ones with IC>=%.0f\n', sum(obj.contains(:,findex) & nhits>0), sum(obj.contains(:,findex)), sum(obj.contains(:,findex) & nhits==1), sum(~obj.contains(:,findex)&nhits>0),minic);
-          nfeatures=arrayfun(@(z) length(z.features),obj.multihits(:,k,findex));
+          nfeatures=cellfun(@(z) length(z),obj.multihits(:,k,findex));
           contains=obj.contains(:,findex);
           fprintf('       Have features for %d/%d=%.0f%% (with %d unique) expected compounds and %d=%.0f%% unexpected ones\n', ...
                   sum(contains & nfeatures>0), sum(contains), sum(contains&nfeatures>0)/sum(contains)*100,...
@@ -1259,7 +1258,7 @@ classdef Compounds < handle
         if isfinite(fi) && fi>0
           fprintf(' [%-4d %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k),'details',false,'fixedwidth',true));
         end
-        others=setdiff(obj.multihits(ind,k,j).features,fi);
+        others=setdiff(obj.multihits{ind,k,j},fi);
         if length(others)>0
             fprintf('   Others:');
         end
