@@ -715,12 +715,21 @@ classdef Compounds < handle
       end
     end
     
-    function notfound(obj)
+    function notfound(obj,varargin)
+      defaults=struct('minintensity',1000);   % Only show as missing if the expected intensity is more than this
+      args=processargs(defaults,varargin);
     % Show compounds that have been isolated, but not found in files where they should be
       for i=1:length(obj.files)
         fprintf('%2d %-20.20s %3d/%3d/%3d missing: ', i,obj.samples{i}, sum(obj.contains(:,i) & any(isfinite(obj.mz(:,:,i)),2)),sum(obj.contains(:,i)&isfinite(obj.meantime)), sum(obj.contains(:,i)));
-        ind=obj.contains(:,i)&isfinite(obj.meantime)&~any(isfinite(obj.mz(:,:,i)),2);
-        fprintf('%s\n',strjoin(obj.names(ind),','));
+        ind=find(obj.contains(:,i)&isfinite(obj.meantime)&~any(isfinite(obj.mz(:,:,i)),2));
+        for jj=1:length(ind)
+          j=ind(jj);
+          expected=max(obj.tsens(j,:))*obj.fsens(i);
+          if expected>=args.minintensity
+            fprintf('%s(%.0f) ',obj.names{j},expected);
+          end
+        end
+        fprintf('\n');
       end
     end
     
