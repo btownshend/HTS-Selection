@@ -1038,6 +1038,18 @@ classdef Compounds < handle
       set(gca,'XTickLabel',{'Unexpected','Expected'});
     end
     
+    function checknormic(obj)
+    % Check pattern of normalized ion counts over assigned compounds
+      
+      for i=1:length(obj.names)
+        n=obj.normic(i,1,obj.contains(i,:));
+        if all(isfinite(n))
+          fprintf('%3d: %.2f-%.2f %6.2f %s\n', i, min(n), max(n), max(n)/min(n), sprintf('%.2f ',n));
+        end
+      end
+    end
+      
+      
     function plotcompare(obj,k,f1,f2) % TODO - broken
     % Plot comparison of each compound the occurs in both f1 and f2
       [~,fname1]=fileparts(obj.files{f1});
