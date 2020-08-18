@@ -22,6 +22,7 @@ classdef Compounds < handle
     featureindex;  % featureindex(i,k,j) is the index of feature finally chosen
     tsens;    % tsens(i,k) is the relative sensitivity to target i with adduct k
     fsens;    % fsens(j) is the relative sensitivity for file j
+    astats;   % astats(i) - struct showing setup for assigning elution time to compound i
     sdf;      % SDF data
   end
   
@@ -38,6 +39,7 @@ classdef Compounds < handle
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
       obj.reffeatures=FeatureList.empty;
+      obj.astats=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{});
       obj.sdf=SDF();
     end
 
@@ -448,133 +450,178 @@ classdef Compounds < handle
     function assignTimes(obj,varargin)
     % Collect all the MS data and assign elution times to compounds
     % For each compound, 
-    %   build list of observations across massspec files (elution time,whether compound is expected)
-    %   find elution time with highest correlation of hit vs. expected
-      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'minhitfrac',0.6,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[]);
+    %   build list of observations across features (elution time,whether compound is expected) that are not already assigned
+    %   find elution times which have <= given number of false negatives and falsepositives
+    %   if unique, assign to compound;  if multiples display message
+      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[],'maxFN',0,'maxFP',0,'clear',true,'detectionThreshold',2000,'normicrange',[0.4,2.5]);
       args=processargs(defaults,varargin);
 
+      if isempty(obj.astats)
+        arun=1;
+      else
+        arun=max([obj.astats.run])+1;
+      end
+      
       fprintf('assignTimes:\n');
-      obj.ic(:)=nan;
-      obj.normic(:)=nan;
-      obj.mz(:)=nan;
-      obj.time(:)=nan;
-      obj.meantime(:)=nan;
-      obj.timewindow(:,:)=nan;
-      obj.featureindex(:)=nan;
+      if args.clear
+        obj.ic(:)=nan;
+        obj.normic(:)=nan;
+        obj.mz(:)=nan;
+        obj.time(:)=nan;
+        obj.meantime(:)=nan;
+        obj.timewindow(:,:)=nan;
+        obj.featureindex(:)=nan;
+      end
       for k=1:length(obj.ADDUCTS)
         % Try assignment for each adduct; only work on ones that haven't been assigned using a prior adduct
         fprintf('[%s]\n',obj.ADDUCTS(k).name);
         for i=1:length(obj.names)
-          if k>1 && isfinite(obj.meantime(i))
+          if isfinite(obj.featureindex(i))
             continue;
           end
-          etimes=[];intensity=[];area=[];srcadduct=[]; srcfile=[]; fwhh=[];
+          etimes=[];intensity=[];srcfile=[];
           mztarget=obj.mztarget(i,k);
           for j=1:length(obj.files)
-            feat=obj.reffeatures(j).features(obj.multihits{i,k,j});
-            mzsel=abs([feat.mz]-mztarget)<=args.mztol & [feat.intensity]>=args.minic;
+            feat=obj.reffeatures(j).features(setdiff(obj.multihits{i,k,j},reshape(obj.featureindex(:,:,j),1,[])));
+            mzsel=abs([feat.mz]-mztarget)<=args.mztol & [feat.intensity]>=args.minic & [feat.isotope]<=1;
             if any(mzsel)
               etimes=[etimes,feat(mzsel).time];
-              area=[area,feat(mzsel).area];
               intensity=[intensity,feat(mzsel).intensity];
-              srcadduct=[srcadduct,repmat(k,1,length(feat(mzsel)))];
               srcfile=[srcfile,repmat(j,1,length(feat(mzsel)))];
-              fwhh=[fwhh;vertcat(feat(mzsel).mzrange)];
             end
           end
           cont=obj.contains(i,srcfile);
 
-          if length(etimes(cont))>1
+          bestset=[];
+          nbest=0;
+          if length(etimes(cont))>0
             [esort,ord]=sort(etimes(cont));
-            ewind=fwhh(cont,:);
-            ewind=ewind(ord,:);
-            if args.debug || strcmp(args.plot,obj.names{i})
+            if args.debug || strcmp(args.plot,obj.names{i})  || ismember(i,args.trace)
               fprintf('%s esort=[%s]\n',obj.names{i}, sprintf('%.2f ',esort));
             end
-            best=[1,1];bestscore=-1e10;besttime=nan;
-            falseweight=sum(~obj.contains(i,:))/sum(obj.contains(i,:));
             for m=1:length(esort)
-              for n=ceil(m+max(bestscore-2,.001)-1):length(esort)
+              for n=m+1:length(esort)
                 if esort(n)-esort(m) > 2*args.timetol
                   break
                 end
-                sel=etimes>=esort(m) & etimes<=esort(n);
-                nfalse=length(unique(srcfile(~cont & sel)));
-                ntrue=length(unique(srcfile(cont & sel)));
-                
-                score=ntrue-nfalse/falseweight;
-                if ismember(i,args.trace)
-                  fprintf('m=%d,n=%d,true=%d,false=%d (wt=%.2f),width=%.2f,rng=[%.2f,%.2f] -> %f\n',m,n,ntrue,nfalse,falseweight,esort(n)-esort(m),esort([m,n]),score);
+                sel=find(etimes>=esort(m) & etimes<=esort(n));
+                % Keep only one peak per srcfile; the largest one
+                keep=false(size(sel));
+                for is=1:length(sel)
+                  keep(is)=~any(srcfile(sel)==srcfile(sel(is)) & intensity(sel)>intensity(sel(is)));
                 end
-                if score>bestscore|| (ntrue-nfalse/falseweight==bestscore && esort(n)-esort(m)<esort(best(2))-esort(best(1)))
-                  best=[m,n];
-                  bestscore=score;
-                  besttime=median(etimes(sel&cont));
-                  %bestwindow=[min(ewind(m:n,1)),max(ewind(m:n,2))];
-                  bestwindow=esort([m,n]);
+                sel=sel(keep);
+                expected=obj.contains(i,:);
+
+                % Estimate target sensitity given this set
+                tsens=nanmedian(intensity(sel)./obj.fsens(srcfile(sel)));
+                expectedIC=zeros(size(obj.fsens));
+                expectedIC(expected)=tsens*obj.fsens(expected);
+                normic=zeros(size(obj.fsens));
+                normic(srcfile(sel))=intensity(sel)./expectedIC(srcfile(sel));
+                % Categorize each file as
+                %  trueneg - unexpected and not present
+                %  falsepos - unexpected but present
+                %  hitgood - expected and present and in correct normic range
+                %  hitlow - expected and present but low normic
+                %  hithigh - expected and present but high normic
+                %  missweak - expected (weakly) and not present
+                %  missstrong - expected (strongly) and not present
+                present=ismember(1:length(obj.samples),srcfile(sel));
+                trueneg=~present&~expected;
+                falsepos=present&~expected;
+                lowic=normic<args.normicrange(1);
+                highic=normic>args.normicrange(2);
+                hit = present & expected;
+                hitlow=hit & lowic; 
+                hithigh=hit &highic;
+                hitgood=hit & ~hitlow & ~hithigh; 
+                miss=~present & expected;
+                missstrong=miss&~(expectedIC<args.detectionThreshold);   % Include nan expectedIC here
+                missweak=miss&expectedIC<args.detectionThreshold;
+
+                assert(all(trueneg|falsepos|hitgood|hitlow|hithigh|missweak|missstrong));
+                assert(sum(trueneg)+sum(falsepos)+sum(hitgood)+sum(hitlow)+sum(hithigh)+sum(missweak)+sum(missstrong)==length(obj.samples));
+                nFP=sum(falsepos);
+                nFN=sum(missstrong|hitlow|hithigh);
+                if ismember(i,args.trace)
+                  fprintf('m=%d,n=%d, keep=%s, hits=(%d good,%d low, %d high), miss=(%d strong,%d weak), FP=%d,FN=%d, width=%.2f,rng=[%.2f,%.2f]\n',m,n,sprintf('%d ',sel),sum(hitgood),sum(hitlow),sum(hithigh),sum(missstrong),sum(missweak),nFP,nFN,esort(n)-esort(m),esort([m,n]));
+                  if m==3 && n==11
+                    keyboard;
+                  end
+                end
+                if sum(hitgood)<args.minhits || nFP>args.maxFP || nFN > args.maxFN
+                  continue;
+                end
+                if length(sel)>length(bestset)
+                  bestset=sel;
+                  astats=struct('run',arun,'args',args,'adduct',k,'sel',sel,'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN);
+                  nbest=1;
                   if ismember(i,args.trace)
-                    fprintf('bestcore=%.1f\n',bestscore);
+                    fprintf('best set: %s\n', sprintf('%d ',sel));
+                  end
+                elseif length(bestset)==length(sel) && any(~ismember(sel,bestset))
+                  % Different set
+                  if ismember(i,args.trace)
+                    fprintf('disjoint set: %s\n', sprintf('%d ',sel));
+                  end
+                  nbest=nbest+1;
+                else
+                  if ismember(i,args.trace)
+                    fprintf('ignored set: %s\n', sprintf('%d ',sel));
                   end
                 end
               end
             end
-            nfalse=length(unique(srcfile(~cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
-            ntrue=length(unique(srcfile(cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
-            if args.debug || strcmp(args.plot,obj.names{i})
-              fprintf('Best has %d true and %d false hits over [%.2f,%.2f], width=%.2f\n',ntrue,nfalse,bestwindow,diff(esort(best)));
-            end
-          elseif length(etimes)==1
-            besttime=etimes;
-            bestwindow=fwhh;
-            ntrue=length(etimes(cont));
-            nfalse=length(etimes(~cont));
-          else
-            if args.debug || strcmp(args.plot,obj.names{i})
-              fprintf('%s: no hits',obj.names{i});
+          end
+          if isempty(bestset)
+            if args.debug || ismember(i,args.trace)
+              fprintf('No hits for %s with FN<=%d and FP<=%d\n', obj.names{i}, args.maxFN, args.maxFP);
             end
             continue;
+          elseif nbest>1
+            if args.debug  || ismember(i,args.trace)
+              fprintf('Have %d equivalent elution times for %s\n', nbest, obj.names{i});
+            end   
+            continue;
           end
-          nmax=sum(obj.contains(i,:));
-          if args.debug || strcmp(args.plot,obj.names{i})
-            fprintf('%d/%d hits with %d false hits at T=%.2f ', ntrue, nmax, nfalse, besttime);
+
+          bestwindow=[min(etimes(bestset)),max(etimes(bestset))];
+          nFP=length(unique(srcfile(~cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
+          ntrue=length(unique(srcfile(cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
+          nFN=sum(obj.contains(i,:))-ntrue;
+          if args.debug || strcmp(args.plot,obj.names{i})  || ismember(i,args.trace)
+            fprintf('Best has %d true, %d FN and %d FP over [%.2f,%.2f]\n',ntrue,nFN,nFP,bestwindow);
           end
-          if ntrue/nmax < args.minhitfrac 
-            if args.debug || strcmp(args.plot,obj.names{i})
-              fprintf('too few hits (%d hits/%d files < %.2f)',ntrue,nmax,args.minhitfrac);
-            end
-          elseif ntrue<args.minhits
-            if args.debug || strcmp(args.plot,obj.names{i})
-              fprintf('too few hits (%d hits < %d)',ntrue,args.minhits);
-            end
-          else
-            % Construct consensus view
-            obj.meantime(i)=besttime;
-            obj.timewindow(i,1:2)=bestwindow;
-            for kk=1:length(obj.ADDUCTS)
-              for j=1:length(obj.files)
-                fi=obj.multihits{i,kk,j};
-                time=[obj.reffeatures(j).features(fi).time];
-                sel=find(time>=obj.timewindow(i,1) & time <= obj.timewindow(i,2));
-                fi=fi(sel);
-                if ~isempty(fi)
-                  if length(fi)>1
-                    % More than one feature in time window; use highest peak
-                    if args.debug
-                      fprintf('Have %d ambiguous features for %s[%s] in %s\n', length(fi), obj.names{i},obj.ADDUCTS(k).name,obj.samples{j});
-                    end
-                    [~,mind]=min(abs([obj.reffeatures(j).features(fi).time]-obj.meantime(i)));
-                    fi=fi(mind);
+
+          % Construct consensus view
+          obj.meantime(i)=mean(bestwindow);
+          obj.timewindow(i,1:2)=bestwindow;
+          obj.astats(i)=astats;
+          for kk=1:length(obj.ADDUCTS)
+            for j=1:length(obj.files)
+              fi=obj.multihits{i,kk,j};
+              time=[obj.reffeatures(j).features(fi).time];
+              sel=find(time>=obj.timewindow(i,1) & time <= obj.timewindow(i,2));
+              fi=fi(sel);
+              if ~isempty(fi)
+                if length(fi)>1
+                  % More than one feature in time window; use closest to mean time (perhaps should use peak height?)
+                  if args.debug || ismember(i,args.trace)
+                    fprintf('Have %d ambiguous features for %s[%s] in %s\n', length(fi), obj.names{i},obj.ADDUCTS(k).name,obj.samples{j});
                   end
-                  obj.featureindex(i,kk,j)=fi;
-                  feat=obj.reffeatures(j).features(fi);
-                  obj.ic(i,kk,j)=feat.intensity;
-                  obj.mz(i,kk,j)=feat.mz;
-                  obj.time(i,kk,j)=feat.time;
+                  [~,mind]=min(abs([obj.reffeatures(j).features(fi).time]-obj.meantime(i)));
+                  fi=fi(mind);
                 end
+                obj.featureindex(i,kk,j)=fi;
+                feat=obj.reffeatures(j).features(fi);
+                obj.ic(i,kk,j)=feat.intensity;
+                obj.mz(i,kk,j)=feat.mz;
+                obj.time(i,kk,j)=feat.time;
               end
             end
           end
-          if args.debug || strcmp(args.plot,obj.names{i})
+          if args.debug || strcmp(args.plot,obj.names{i})  || ismember(i,args.trace)
             fprintf('\n');
           end
         
