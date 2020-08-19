@@ -482,12 +482,20 @@ classdef Compounds < handle
           etimes=[];intensity=[];srcfile=[];
           mztarget=obj.mztarget(i,k);
           for j=1:length(obj.files)
-            feat=obj.reffeatures(j).features(setdiff(obj.multihits{i,k,j},reshape(obj.featureindex(:,:,j),1,[])));
-            mzsel=abs([feat.mz]-mztarget)<=args.mztol & [feat.intensity]>=args.minic & [feat.isotope]<=1;
-            if any(mzsel)
-              etimes=[etimes,feat(mzsel).time];
-              intensity=[intensity,feat(mzsel).intensity];
-              srcfile=[srcfile,repmat(j,1,length(feat(mzsel)))];
+            mhits=obj.multihits{i,k,j};
+            if ~isempty(mhits)
+              used=obj.featureindex(:,:,j);
+              used=used(isfinite(used(:)));
+              featinds=mhits(~ismember(mhits,used));   % This is faster than using setdiff()
+              if ~isempty(featinds)
+                feat=obj.reffeatures(j).features(featinds);
+                mzsel=abs([feat.mz]-mztarget)<=args.mztol & [feat.intensity]>=args.minic & [feat.isotope]<=1;
+                if any(mzsel)
+                  etimes=[etimes,feat(mzsel).time];
+                  intensity=[intensity,feat(mzsel).intensity];
+                  srcfile=[srcfile,repmat(j,1,length(feat(mzsel)))];
+                end
+              end
             end
           end
           cont=obj.contains(i,srcfile);
@@ -500,7 +508,7 @@ classdef Compounds < handle
               fprintf('%s esort=[%s]\n',obj.names{i}, sprintf('%.2f ',esort));
             end
             for m=1:length(esort)
-              for n=m+1:length(esort)
+              for n=m+args.minhits-1:length(esort)
                 if esort(n)-esort(m) > 2*args.timetol
                   break
                 end
@@ -512,9 +520,13 @@ classdef Compounds < handle
                 end
                 sel=sel(keep);
                 expected=obj.contains(i,:);
-
+                selexpected=sel(expected(srcfile(sel)));
+                if length(selexpected)<args.minhits
+                  continue;
+                end
+                 
                 % Estimate target sensitity given this set
-                tsens=nanmedian(intensity(sel)./obj.fsens(srcfile(sel)));
+                tsens=nanmedian(intensity(selexpected)./obj.fsens(srcfile(selexpected)));
                 expectedIC=zeros(size(obj.fsens));
                 expectedIC(expected)=tsens*obj.fsens(expected);
                 normic=zeros(size(obj.fsens));
