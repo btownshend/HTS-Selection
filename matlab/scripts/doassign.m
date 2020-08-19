@@ -6,4 +6,5 @@ compounds.assignTimes('clear',false,'timetol',0.35,'maxFP',1);
 compounds.assignTimes('clear',false,'timetol',0.35,'maxFN',1);
 compounds.assignTimes('clear',false,'timetol',0.35,'maxFN',1,'maxFP',1);
 compounds.checksensitivity(1);
+compounds.assignTimes('clear',false,'timetol',0.35,'maxFN',2,'maxFP',2);
 
