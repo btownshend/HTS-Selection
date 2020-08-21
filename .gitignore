@@ -36,3 +36,4 @@ python/pytorch/.idea/modules.xml
 python/pytorch/.idea/pytorch.iml
 python/pytorch/.idea/vcs.xml
 data/matfiles/compounds.mat
+python/openms

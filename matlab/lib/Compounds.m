@@ -480,6 +480,7 @@ classdef Compounds < handle
         obj.meantime(:)=nan;
         obj.timewindow(:,:)=nan;
         obj.featureindex(:)=nan;
+        obj.astats=obj.astats([]);
       end
       for k=1:length(obj.ADDUCTS)
         % Try assignment for each adduct; only work on ones that haven't been assigned using a prior adduct
@@ -528,11 +529,11 @@ classdef Compounds < handle
                   keep(is)=~any(srcfile(sel)==srcfile(sel(is)) & intensity(sel)>intensity(sel(is)));
                 end
                 sel=sel(keep);
-                expected=obj.contains(i,:);
-                selexpected=sel(expected(srcfile(sel)));
+                selexpected=sel(cont(sel));
                 if length(selexpected)<args.minhits
                   continue;
                 end
+                expected=obj.contains(i,:);   % Files expected to contain this target
                  
                 % Estimate target sensitity given this set
                 tsens=nanmedian(intensity(selexpected)./obj.fsens(srcfile(selexpected)));
