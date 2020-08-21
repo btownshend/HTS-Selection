@@ -485,7 +485,7 @@ classdef Compounds < handle
         % Try assignment for each adduct; only work on ones that haven't been assigned using a prior adduct
         fprintf('[%s]\n',obj.ADDUCTS(k).name);
         for i=1:length(obj.names)
-          if isfinite(obj.featureindex(i))
+          if isfinite(obj.meantime(i))
             continue;
           end
           etimes=[];intensity=[];srcfile=[];
