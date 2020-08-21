@@ -1311,7 +1311,12 @@ classdef Compounds < handle
       
       meanic=nanmean(obj.ic(ind,k,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,k,obj.contains(ind,:)));
-      fprintf('%s[%s] (%d): m/z=%8.4f t=%.2f [%.2f-%.2f] sens=%.0f\n',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.timewindow(ind,:),obj.tsens(ind,k));
+      fprintf('%s[%s] (%d): m/z=%8.4f t=%.2f [%.2f-%.2f] sens=%.0f',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.timewindow(ind,:),obj.tsens(ind,k));
+      if ~isempty(obj.astats) && ~isempty(obj.astats(ind).run) && obj.astats(ind).adduct==args.adduct
+        s=obj.astats(ind);
+        fprintf(', FP=%d, FN=%d, hits=%dg,%dL,%dH, miss=%ds,%dw',s.FP,s.FN,s.hitgood,s.hitlow,s.hithigh,s.missstrong,s.missweak);
+      end
+      fprintf('\n');
       aliases=[];
       label=true;
       for k1=1:length(obj.ADDUCTS)
