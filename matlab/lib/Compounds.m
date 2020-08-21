@@ -157,12 +157,21 @@ classdef Compounds < handle
           end
           cname=sprintf('%s[%s]',obj.names{i},obj.ADDUCTS(j).name);
           f=fl.getbymz(obj.mass(i)+obj.ADDUCTS(j).mass,'timerange',obj.meantime(i)+[-1,1]*args.timetol,'mztol',args.mztol);
-          if length(f.features)>1
+          if length(f.features)>1 
             fprintf('Have %d possible matches for %s (m/z=%.4f, t=%.2f)\n', length(f.features), cname,obj.mass(i)+obj.ADDUCTS(j).mass, obj.meantime(i));
-            for fi=1:length(f.features)
-              fprintf('\tm/z=%.4f, t=%.2f, ic=%.0f\n', f.features(fi).mz, f.features(fi).time, f.features(fi).intensity);
+            tmin=min([f.features.time]);
+            tmax=max([f.features.time]);
+            if tmax-tmin < args.timetol
+              fprintf('\tAll in time range [%.2f,%.2f] < mztol; assuming largest is this peak\n',tmin,tmax);
+              f.features=f.features([f.features.intensity]==max([f.features.intensity]));
+            else
+              for fi=1:length(f.features)
+                fprintf('\tm/z=%.4f, t=%.2f, ic=%.0f\n', f.features(fi).mz, f.features(fi).time, f.features(fi).intensity);
+              end
             end
-          elseif length(f.features)==1
+          end
+
+          if length(f.features)==1
             if ~ismember(cname,f.features(1).labels)
               f.features(1).labels{end+1}=cname;
             end
