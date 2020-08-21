@@ -1286,7 +1286,7 @@ classdef Compounds < handle
     end
     
     function getinfo(obj,name,varargin)
-      defaults=struct('mzdata',[],'adduct',1,'falsethresh',0.1,'minic',400);
+      defaults=struct('mzdata',[],'adduct',[],'falsethresh',0.1,'minic',400);
       args=processargs(defaults,varargin);
 
       if ischar(name)
@@ -1295,12 +1295,17 @@ classdef Compounds < handle
         ind=name;
       end
       if isempty(args.adduct)
-        % Show all adducts
-        for i=1:length(obj.ADDUCTS)
-          obj.getinfo(name,'adduct',i,'mzdata',args.mzdata);
-          fprintf('\n');
+        % Check which adduct was used to label, if any
+        if ~isempty(obj.astats) && ~isempty(obj.astats(ind).adduct)
+          args.adduct=obj.astats(ind).adduct;
+        else
+          % Show all adducts
+          for i=1:length(obj.ADDUCTS)
+            obj.getinfo(name,'adduct',i,'mzdata',args.mzdata);
+            fprintf('\n');
+          end
+          return;
         end
-        return;
       end
       k=args.adduct;
       
