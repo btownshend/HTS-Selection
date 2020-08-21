@@ -1281,6 +1281,10 @@ classdef Compounds < handle
       end
     end
     
+    function s=featstring(obj,ind,j,k,fi)
+      s=sprintf(' [%-4d %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k),'details',false,'fixedwidth',true));
+    end
+    
     function getinfo(obj,name,varargin)
       defaults=struct('mzdata',[],'adduct',1,'falsethresh',0.1,'minic',400);
       args=processargs(defaults,varargin);
@@ -1336,7 +1340,9 @@ classdef Compounds < handle
 
         fi=obj.featureindex(ind,k,j);
         if isfinite(fi) && fi>0
-          fprintf(' [%-4d %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k),'details',false,'fixedwidth',true));
+          fprintf('%s',obj.featstring(ind,j,k,fi));
+        else
+          fprintf('%s',blanks(54));  % To pad so others align
         end
         others=setdiff(obj.multihits{ind,k,j},fi);
         if length(others)>0
@@ -1344,7 +1350,7 @@ classdef Compounds < handle
         end
         for p=1:length(others)
           feat=obj.reffeatures(j).features(others(p));
-          fprintf(' [%s]',feat.tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'fixedwidth',true,'details',false));
+          fprintf('%s',obj.featstring(ind,j,k,others(p)));
         end
         if ~isempty(args.mzdata)
           nexttile;
