@@ -576,7 +576,7 @@ classdef Compounds < handle
                 end
                 if length(sel)>length(bestset)
                   bestset=sel;
-                  astats=struct('run',arun,'args',args,'adduct',k,'sel',sel,'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN);
+                  astats=struct('run',arun,'args',args,'adduct',k,'sel',srcfile(sel),'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN);
                   nbest=1;
                   if ismember(i,args.trace)
                     fprintf('best set: %s\n', sprintf('%d ',sel));
