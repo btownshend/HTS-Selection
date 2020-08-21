@@ -144,7 +144,7 @@ classdef Compounds < handle
     function labelFeatures(obj,fl,varargin)
     % Attempt to label the features in fl
     % Assume this featurelist is already aligned (mapped) to compound's times and true m/z
-    % Use use FeatureList.maptoref() if not
+    % Use FeatureList.maptoref() if not
       defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ);
       args=processargs(defaults,varargin);
 
@@ -465,7 +465,7 @@ classdef Compounds < handle
       defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[],'maxFN',0,'maxFP',0,'clear',true,'detectionThreshold',2000,'normicrange',[0.4,2.5]);
       args=processargs(defaults,varargin);
 
-      if isempty(obj.astats)
+      if args.clear || isempty(obj.astats)
         arun=1;
       else
         arun=max([obj.astats.run])+1;
@@ -1283,7 +1283,14 @@ classdef Compounds < handle
     end
     
     function s=featstring(obj,ind,j,k,fi)
-      s=sprintf(' [%-4d %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k),'details',false,'fixedwidth',true));
+    % Check if this fi is assigned to a compound
+      [a,b,c]=ind2sub(size(obj.featureindex(:,:,j)),find(obj.featureindex(:,:,j)==fi));
+      if isempty(a)
+        label='';
+      else
+        label=obj.names{a};
+      end
+      s=sprintf(' [%-4d %s %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k),'details',false,'fixedwidth',true),label);
     end
     
     function getinfo(obj,name,varargin)
@@ -1353,7 +1360,7 @@ classdef Compounds < handle
         if isfinite(fi) && fi>0
           fprintf('%s',obj.featstring(ind,j,k,fi));
         else
-          fprintf('%s',blanks(54));  % To pad so others align
+          fprintf(' Expected IC=%6.0f%s',obj.tsens(ind,k)*obj.fsens(j),blanks(40));  % To pad so others align
         end
         others=setdiff(obj.multihits{ind,k,j},fi);
         if length(others)>0
@@ -1371,13 +1378,15 @@ classdef Compounds < handle
       end
       if isfinite(meanic) && isfinite(obj.meantime(ind))
         % False positives
-        fprintf('False positives with  m/z in [%.3f,%.3f], T in [%.2f,%.2f], NormIC >= %.3f:\n',...
-                obj.mztarget(ind,k)+obj.MZFUZZ*[-1,1],...
-                obj.timewindow(ind,:),...
-                args.falsethresh);
+        firstfalse=true;
         for j=1:length(obj.files)
-          if ~obj.contains(ind,j) && obj.normic(ind,k,j)>=args.falsethresh && obj.time(ind,k,j)>=obj.timewindow(ind,1) && obj.time(ind,k,j) <= obj.timewindow(ind,2)
-            fprintf(' %-14.14s: sens=%4.2f, m/z=%8.4f (d=%3.0f) t=%5.2f ic=%8.0f(%8.3f)\n',obj.samples{j},obj.fsens(j),obj.mz(ind,k,j), (obj.mz(ind,k,j)-obj.mztarget(ind,k))*1e4, obj.time(ind,k,j), obj.ic(ind,k,j),obj.normic(ind,k,j));
+          fi=obj.featureindex(ind,k,j);
+          if isfinite(fi) && ~obj.contains(ind,j) && obj.normic(ind,k,j)>=args.falsethresh
+            if firstfalse
+              fprintf('False positives with normIC >= %.3f:\n',args.falsethresh);
+              firstfalse=false;
+            end
+            fprintf(' %-14.14s %5.2f%s\n',obj.samples{j},obj.fsens(j),obj.featstring(ind,j,k,fi));
             if ~isempty(args.mzdata)
               nexttile;
               obj.plotscan(ind,args.mzdata{j},'adduct',args.adduct);
@@ -1572,4 +1581,3 @@ classdef Compounds < handle
     
   end
 end
-  
