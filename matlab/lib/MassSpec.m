@@ -6,9 +6,12 @@ classdef MassSpec < handle
     peaks;  % Peaks from mzxml2peaks;  peaks{i}(k,1:2) is [mz,ic] for elution i, at peak k 
     time;   % Time of elutions (in minutes)
     mzrange;   % Range [low,high] of m/z to plot/consider
-    resamp;   % struct (mz,y,n) of uniformly sampled data
     featurelists;   % Array of feature lists
     mzxml;
+  end
+  
+  properties(Transient)
+    resamp;   % struct (mz,y,n) of uniformly sampled data
   end
   
   properties(Constant)
