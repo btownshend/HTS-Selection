@@ -733,7 +733,7 @@ classdef Compounds < handle
         
         % Attempt to locate each one uniquely
         maxic=[];   % Maximum IC per target
-        fprintf('%s...',obj.sample{findex});
+        fprintf('%s...',obj.samples{findex});
         for i=1:length(obj.mass)
           if mod(i,100)==1
             fprintf('%d...',i);
