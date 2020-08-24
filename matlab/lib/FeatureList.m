@@ -216,7 +216,7 @@ classdef FeatureList < handle
       fl.params.rejects=rejects;
     end
 
-    function plotalign(obj,obj2,varargin)
+    function al=plotalign(obj,obj2,varargin)
     % Trim time is number of minutes to trim from ends of timewindow
       defaults=struct('mztol',.01,'timetol',1,'minintensity',5000,'trimtime',7);  
       args=processargs(defaults,varargin);
