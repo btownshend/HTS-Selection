@@ -9,7 +9,7 @@ function c=s7contains(compounds, vecs, name)
     % Line up vectors with compounds 
     vplate96=vecs.csvdata.srcplate96;
     vwell96=vecs.csvdata.srcwell96;
-    ord=cellfun(@(z) find(strcmp(z.BATCH_PLATE,vplate96) & strcmp(z.BATCH_WELL,vwell96)), compounds.sdf);
+    ord=arrayfun(@(z) find(strcmp(z.BATCH_PLATE,vplate96) & strcmp(z.BATCH_WELL,vwell96)), compounds.sdf.sdf);
     assert(length(vplate96)==length(ord));
     
     n=strsplit(name,'-');
@@ -41,17 +41,17 @@ function c=s7contains(compounds, vecs, name)
       group=floor((col-1)/3)+1;
       plates=arrayfun(@(z) sprintf('CDIQ%04d',z),(group-1)*160+5:40:group*160+5-1,'Unif',false);
       index=(col-1-(group-1)*3)*8+row;
-      c=cellfun(@(z) z.Well384(1)-'A'+1==index & ismember(z.Plate384,plates),compounds.sdf);
+      c=arrayfun(@(z) z.Well384(1)-'A'+1==index & ismember(z.Plate384,plates),compounds.sdf.sdf);
       assert(sum(c)==80);
     elseif strcmp(n{1},'R320')
       index=row;
-      c=cellfun(@(z) z.Well384(1)-'A'+1==row,compounds.sdf);
+      c=arrayfun(@(z) z.Well384(1)-'A'+1==row,compounds.sdf.sdf);
       assert(sum(c)==320);
     elseif strncmp(n{1},'CDIQ',4)
       plate=str2num(n{1}(5:end));
       plate384=sprintf('CDIQ%04d',plate);
       well384=sprintf('%c%02d',row+'A'-1,col);
-      c=cellfun(@(z) strcmp(z.Plate384,plate384) & strcmp(z.Well384,well384),compounds.sdf);
+      c=arrayfun(@(z) strcmp(z.Plate384,plate384) & strcmp(z.Well384,well384),compounds.sdf.sdf);
       assert(sum(c)==1);
     elseif strncmp(n{1},'CDIV',4)
       plate=str2num(n{1}(5:end));
