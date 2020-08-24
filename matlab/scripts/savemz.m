@@ -1,4 +1,9 @@
-mzdir='/Users/bst/TMP/mzdata';
+subdir='S7';
+r=input([subdir,'?'],'s');
+if r~='y'
+  return;
+end
+mzdir=['/Users/bst/TMP/mzdata/',subdir];
 fprintf('Saving mzdata in %s...',mzdir);
 for i=1:length(mzdata)
   fprintf('%d...',i);
