@@ -88,30 +88,41 @@ if ~exist('mzdata','var')
   mzdata={};
 end
 
-if length(mzdata)>size(data,1)
-  fprintf('Removing last %d entries from mzdata\n', length(mzdata)-size(data,1));
-  mzdata=mzdata(1:size(data,1));
-end
-
 for i=1:size(data,1)
   path=[msdir,'/',data(i).filename];
-  if i>length(mzdata) || ~strcmp(mzdata{i}.path,path)
+  if i>length(mzdata) || isempty(mzdata{i}) || ~strcmp(mzdata{i}.path,path)
       mzdata{i}=MassSpec(path);
       mzdata{i}.setLoad(100e-9*20e-6);
       % Prune out some data
-      mzdata{i}.filter([0,mzdata{i}.time(end)-300],[130,530]);  % NOTE: this is using the localtimes to filter
+      mzdata{i}.filter([0,mzdata{i}.time(end)-5],[130,530]);  % NOTE: this is using the localtimes to filter
   end
   mzdata{i}.name=data(i).name;   % Reset name to our list
   if ismember(mzdata{i}.path,s7compounds.files)
     fprintf('Skipping reload of %s\n', mzdata{i}.name);
     continue;
   end
+
+  % Build chromatograms if needed
+  if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'deconvolve'))
+    if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'buildchromatogram'))
+      fprintf('Building chromatograms for %s...',mzdata{i}.name);
+      mzdata{i}.buildchromatograms();
+      fprintf('%d done\n',length(mzdata{i}.featurelists(end).features));
+    end
+    fprintf('Deconvolving chromatograms for %s...',mzdata{i}.name);
+    mzdata{i}.deconvolve();
+    fprintf('%d done\n',length(mzdata{i}.featurelists(end).features));
+    %    fprintf('Finding isotopes for %s...',mzdata{i}.name);
+    %    mzdata{i}.findisotopes();
+    %    fprintf('done\n');
+  end
+
   n=strsplit(data(i).name,'-');
   s7compounds.addMS(mzdata{i},'group',n{1},'map',struct('mz',data(i).mzmap,'time',data(i).timemap),'contains',data(i).contains,'sample',data(i).name);
 end
 
-s7compounds.assignTimes();
-s7compounds.summary();
+s7compounds.findfeatures();
+doassign;
 
 report=s7compounds.report();
 
@@ -119,6 +130,8 @@ s7compounds.checkmzoffset();
 ref=7;
 s7compounds.checktime(ref,'timetol',s7compounds.TIMEFUZZ/2);
 s7compounds.checksensitivity(ref);
+
+s7compounds.summary();
 
 ds=datestr(now,'YYYYmmDDHHMM');
 writetable(report,[resultsdir,sprintf('report-%s.csv',ds)]);
