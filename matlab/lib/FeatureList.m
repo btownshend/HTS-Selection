@@ -34,6 +34,67 @@ classdef FeatureList < handle
         fls=[fls,fl];
       end
     end
+    
+    function fl=commonfeatures(objs,varargin)
+    % Find features that are shared by the lists
+      defaults=struct('mztol',.01,'timetol',1,'minmatch',length(objs),'minintensity',1000,'trimtime',7);  
+      args=processargs(defaults,varargin);
+
+      args.inputobjs=cellfun(@(z) z.name,objs,'Unif',false);
+      fl=FeatureList('','commonfeatures',args);
+      all=[];
+      for i=1:length(objs)
+        f=objs{i}.features;
+        sel=[f.intensity]>=args.minintensity & [f.time]>=args.trimtime & [f.time]<=max([f.time])-args.trimtime;
+        all=[all,struct('mz',num2cell([f(sel).mz]),'time',num2cell([f(sel).time]),'index',i)];
+      end
+      fprintf('Have a total of %d features\n', length(all));
+      [~,ord]=sort([all.mz]);
+      all=all(ord);
+      for i=1:length(all)
+        if all(i).time<0
+          % Already used
+          continue;
+        end
+        for j=i+args.minmatch-1:length(all)
+          if all(j).mz-all(i).mz > 2*args.mztol
+            break;
+          end
+          sel=find(abs([all(i+1:j).time]-all(i).time)<args.timetol);
+          if length(sel)<args.minmatch-1
+            continue;
+          end
+          aa=all([0,sel]+i);
+          if length(unique([aa.index]))>=args.minmatch
+            % Found one
+            mzrange=[min([aa.mz]),max([aa.mz])];
+            timerange=[min([aa.time]),max([aa.time])];
+            fprintf('Hit: %d:%d mz=[%.4f,%.4f] t=[%.2f,%.2f]\n', i,j,mzrange,timerange);
+            mz=mean(mzrange);
+            time=mean(timerange);
+            allsel=abs([all.mz]-mz)<args.mztol & abs([all.time]-time)<args.timetol;
+            aa=all(allsel);
+            if length(unique([aa.index])) < args.minmatch
+              keyboard;
+            end
+            f=Feature();
+            f.mz=mz;
+            f.time=time;
+            % Overload timerange, mzrange with the actual ones by index
+            for i=1:length(objs)
+              ai=aa([aa.index]==i);
+              f.timerange(i)=nanmean([ai.time]);
+              f.mzrange(i)=nanmean([ai.mz]);
+            end
+            fl.features(end+1)=f;
+            [all(allsel).time]=deal(-1);  % Blank them out
+            break;
+          end
+        end
+      end
+      fprintf('Found %d features shared across at least %d/%d input lists\n', length(fl.features), args.minmatch, length(objs));
+    end
+    
   end
   
   methods
