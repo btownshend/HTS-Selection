@@ -366,5 +366,45 @@ classdef FeatureList < handle
       fprintf('%d/%d (%.0f%%) features appear to be in isotope patterns\n',sum(order>0),length(order),mean(order>0)*100);
     end
 
+    function loadlabels(obj, filename, varargin)
+    % Load and apply labels from CSV file
+      defaults=struct('mztol',0.004,'timetol',0.1,'debug',false,'minintensity',5000);
+      args=processargs(defaults,varargin);
+
+      x=readtable(filename);
+      if ~ismember('exact_adduct_mass',x.Properties.VariableNames)
+        x=xrenamevars(x,'mz','exact_adduct_mass');
+      end
+      if ~all(ismember({'id','name','exact_adduct_mass','ion_form'},x.Properties.VariableNames))
+        error('Missing some required variables in %s\n', filename);
+      end
+      if ~ismember('RT',x.Properties.VariableNames)
+        x.RT(:)=0;
+      end
+      for i=1:length(obj.features)
+        f=obj.features(i);
+        if f.intensity<args.minintensity
+          continue;
+        end
+        sel=find(abs(f.mz-x.exact_adduct_mass)<args.mztol & (x.RT==0 | abs(f.time-x.RT)<args.timetol));
+        [a,b,c]=unique(x.id(sel));
+        sel=sel(b);
+        if ~isempty(sel)
+          fprintf('Matched feature %d %.4f@%.2f to:',i,f.mz,f.time);
+          for jj=1:length(sel)
+            j=sel(jj);
+            fprintf(' %s%s %.4f;',x.name{j}, x.ion_form{j}, x.exact_adduct_mass(j));
+            if x.RT(j)~=0
+              fprintf('@%.2f',x.RT(j));
+            end
+          end
+          fprintf('\n');
+          if length(unique(x.name(sel))) ~= length(sel)
+            keyboard;
+          end
+        end
+      end
+    end
+    
   end % methods
 end % classdef
