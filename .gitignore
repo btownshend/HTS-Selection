@@ -37,3 +37,4 @@ python/pytorch/.idea/pytorch.iml
 python/pytorch/.idea/vcs.xml
 data/matfiles/compounds.mat
 python/openms
+results/report-202008241747.csv

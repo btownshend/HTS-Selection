@@ -479,7 +479,7 @@ classdef Compounds < handle
         obj.time(:)=nan;
         obj.meantime(:)=nan;
         obj.timewindow(:,:)=nan;
-        obj.featureindex(:)=nan;
+        obj.featureindex=nan(length(obj.names),length(obj.ADDUCTS),length(obj.samples));
         obj.astats=obj.astats([]);
       end
       for k=1:length(obj.ADDUCTS)
