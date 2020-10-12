@@ -37,7 +37,7 @@ classdef MassSpec < handle
       
       % Merge peaks which differ by <mztol
       fprintf('Merging all peaks from %d objs...',length(objs));
-      for i=1:length(c)
+      for i=1:size(c,1)
         if isfinite(c(i,1))
           close=find(abs(c(i,1)-c(:,1))<args.mztol);
           c(i,2:end)=sum(c(close,2:end),1);
@@ -71,7 +71,7 @@ classdef MassSpec < handle
         title(ti,'interpreter','none');
         fprintf('%s: %s\n', objs{i}.name, ti);
       end
-      for i=1:args.nlist
+      for i=1:min(args.nlist,size(c,1))
         fprintf('%8.4f %s\n',c(i,1),sprintf('%4.2f ',c(i,2:end)/c(i,args.ref+1)));
       end
     end
@@ -338,7 +338,7 @@ classdef MassSpec < handle
       allpks=[];
       for i=1:length(obj.peaks)
         p=obj.peaks{i};
-        p=p(p(:,2)>=args.noise,:);
+        p=p(p(:,2)>=args.noise & p(:,1)>=obj.mzrange(1) & p(:,1)<=obj.mzrange(2),:);
         p(:,3)=i;
         allpks=vertcat(allpks,p);
       end
@@ -424,7 +424,7 @@ classdef MassSpec < handle
       args=processargs(defaults,varargin);
 
       if isempty(obj.featurelists)
-        fprintf('Warning - no chomatograms; need to buildchromatograms()\n');
+        fprintf('Warning - no chromatograms; need to buildchromatograms()\n');
       elseif length(obj.featurelists)<2
         fprintf('Warning - no deconvolved chromatograms\n');
       end
