@@ -220,8 +220,13 @@ classdef FeatureList < handle
       args=processargs(defaults,varargin);
       fl=FeatureList([obj.name,' deconvoluted'],'deconvolve',args);
       rejects=struct('accept',0,'snr',0,'area',0,'width',0);
+      if args.debug
+        fprintf('Deconvolving %d features...',length(obj.features));
+      end
       for i=1:length(obj.features)
-        %fprintf('%d ',i);
+        if args.debug && mod(i,100)==0
+          fprintf('%d...',i);
+        end
         p=obj.features(i).peaks;
         %pba=msbackadj(p(:,3),p(:,2),'est','em','smooth','rloess');
         %pbasm=mslowess(p(:,3),pba);
@@ -273,6 +278,9 @@ classdef FeatureList < handle
             rejects.accept=rejects.accept+1;
           end
         end
+      end
+      if args.debug
+        fprintf('%d\n',length(obj.features));
       end
       fl.params.rejects=rejects;
     end
