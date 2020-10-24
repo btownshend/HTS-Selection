@@ -121,6 +121,35 @@ classdef MassSpec < handle
       end
     end
 
+    function keepmz(obj,mz,varargin)
+    % Keep only the peaks within mztol of an entry in mz
+      defaults=struct('mztol',0.01);
+      args=processargs(defaults,varargin);
+      
+      fprintf('Keeping only peaks within %f of one of %d m/z values...',args.mztol, length(mz));
+      nfinal=0; norig=0;
+      mz=reshape(mz,1,[]);
+      for i=1:length(obj.peaks)
+        if i==1
+          fprintf('%d/%d...',i,length(obj.peaks));
+        elseif mod(i,100)==0
+          fprintf('%d...',i);
+        end
+          
+        
+        p=obj.peaks{i};
+        norig=norig+size(p,1);
+        tic;sel=ismembertol(p(:,1),mz,args.mztol,'DataScale',1);
+        if toc>1
+          keyboard;
+        end
+        nfinal=nfinal+sum(sel);
+        obj.peaks{i}=p(sel,:);
+      end
+      fprintf('done, retained %d/%d peaks (%.1f%%)\n', nfinal, norig,nfinal/norig*100);
+    end
+    
+    
     function resample(obj)
       n=round(diff(obj.mzrange)/obj.mzres+1);
       fprintf('Resampling peaks...');
