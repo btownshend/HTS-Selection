@@ -216,7 +216,7 @@ classdef FeatureList < handle
     end
     
     function fl=deconvolve(obj,varargin)
-      defaults=struct('debug',false,'heightfilter',500,'oversegmentationfilter',0.2,'maxarearatio',33,'maxwidth',2,'trace',0,'minwidth',4.01/60,'noise',500,'minsnr',2);
+      defaults=struct('debug',false,'heightfilter',500,'oversegmentationfilter',0.2,'maxarearatio',33,'maxwidth',2,'trace',0,'minwidth',3.01/60,'noise',500,'minsnr',2);
       args=processargs(defaults,varargin);
       fl=FeatureList([obj.name,' deconvoluted'],'deconvolve',args);
       rejects=struct('accept',0,'snr',0,'area',0,'width',0);
