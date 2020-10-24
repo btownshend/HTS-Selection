@@ -1,0 +1,1260 @@
+s7setup
+{Dot indexing is not supported for variables of this type.
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('s7contains', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7contains.m', 12)" style="font-weight:bold">s7contains</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7contains.m',12,0)">line 12</a>)
+    ord=arrayfun(@(z) find(strcmp(z.BATCH_PLATE,vplate96) & strcmp(z.BATCH_WELL,vwell96)), compounds.sdf.sdf);
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('s7setup', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m', 82)" style="font-weight:bold">s7setup</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m',82,0)">line 82</a>)
+    data(i).contains=s7contains(s7compounds,s7vecs,data(i).name);
+} 
+<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7contains.m',12,1)">12  </a>    ord=arrayfun(@(z) find(strcmp(z.BATCH_PLATE,vplate96) & strcmp(z.BATCH_WELL,vwell96)), compounds.sdf.sdf);
+dbquit
+clear s7compounds
+s7compounds
+{Unrecognized function or variable 's7compounds'.
+} 
+ls
+S7Load.m		cdivmux			doassign.m		run-20200726-2220.txt	run-20201017.txt	s7compounds3Add.mat	s7compounds3Add2.txt	s7contains.m
+alignall.m		d.txt			mzfind.m		run-20200727-1000.txt	s7compounds.mat		s7compounds3Add2.mat	s7compoundsToA3.mat	s7setup.m
+
+s7setup
+Loading ../../data/MassSpec/20200724/A1.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for DMSO...2660 done
+Deconvolving chromatograms for DMSO...Deconvolve of DMSO chromatograms
+11965 done
+Adding data from DMSO...done
+Loading ../../data/MassSpec/20200724/B1.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-D3...3092 done
+Deconvolving chromatograms for V256B-D3...Deconvolve of V256B-D3 chromatograms
+7838 done
+Adding data from V256B-D3...done
+Loading ../../data/MassSpec/20200724/C1.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for PR80-A1...2549 done
+Deconvolving chromatograms for PR80-A1...Deconvolve of PR80-A1 chromatograms
+6299 done
+Adding data from PR80-A1...done
+Loading ../../data/MassSpec/20200724/D1.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for PR80-H11...2568 done
+Deconvolving chromatograms for PR80-H11...Deconvolve of PR80-H11 chromatograms
+6290 done
+Adding data from PR80-H11...done
+Loading ../../data/MassSpec/20200724/E1.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for R320-A...3468 done
+Deconvolving chromatograms for R320-A...Deconvolve of R320-A chromatograms
+8792 done
+Adding data from R320-A...done
+Loading ../../data/MassSpec/20200724/F1.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for R320-P...3428 done
+Deconvolving chromatograms for R320-P...Deconvolve of R320-P chromatograms
+8380 done
+Adding data from R320-P...done
+Loading ../../data/MassSpec/20200724/G1.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V5120...5729 done
+Deconvolving chromatograms for V5120...Deconvolve of V5120 chromatograms
+37992 done
+Adding data from V5120...done
+Loading ../../data/MassSpec/20200724/H1.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for CDIQ0005-Col3...2256 done
+Deconvolving chromatograms for CDIQ0005-Col3...Deconvolve of CDIQ0005-Col3 chromatograms
+5409 done
+Adding data from CDIQ0005-Col3...done
+Loading ../../data/MassSpec/20200724/A2.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for CDIQ0005-Col22...2291 done
+Deconvolving chromatograms for CDIQ0005-Col22...Deconvolve of CDIQ0005-Col22 chromatograms
+5339 done
+Adding data from CDIQ0005-Col22...done
+Loading ../../data/MassSpec/20200724/B2.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for DMSO...2063 done
+Deconvolving chromatograms for DMSO...Deconvolve of DMSO chromatograms
+4926 done
+Adding data from DMSO...done
+Loading ../../data/MassSpec/20200724/C2.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-A1...2709 done
+Deconvolving chromatograms for V256A-A1...Deconvolve of V256A-A1 chromatograms
+6288 done
+Adding data from V256A-A1...done
+Loading ../../data/MassSpec/20200724/D2.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-B1...2837 done
+Deconvolving chromatograms for V256A-B1...Deconvolve of V256A-B1 chromatograms
+mspeaks indicated a peak at 19.807333 in feature 795.59, but no peaks in [19.790667,19.957167]
+6248 done
+Adding data from V256A-B1...done
+Loading ../../data/MassSpec/20200724/E2.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-C1...3032 done
+Deconvolving chromatograms for V256A-C1...Deconvolve of V256A-C1 chromatograms
+6645 done
+Adding data from V256A-C1...done
+Loading ../../data/MassSpec/20200724/F2.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-D1...2831 done
+Deconvolving chromatograms for V256A-D1...Deconvolve of V256A-D1 chromatograms
+6261 done
+Adding data from V256A-D1...done
+Loading ../../data/MassSpec/20200724/G2.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-E1...2897 done
+Deconvolving chromatograms for V256A-E1...Deconvolve of V256A-E1 chromatograms
+6413 done
+Adding data from V256A-E1...done
+Loading ../../data/MassSpec/20200724/H2.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-F1...2745 done
+Deconvolving chromatograms for V256A-F1...Deconvolve of V256A-F1 chromatograms
+5953 done
+Adding data from V256A-F1...done
+Loading ../../data/MassSpec/20200724/A3.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-G1...2961 done
+Deconvolving chromatograms for V256A-G1...Deconvolve of V256A-G1 chromatograms
+mspeaks indicated a peak at 20.406000 in feature 1361.49, but no peaks in [20.389333,20.555833]
+6533 done
+Adding data from V256A-G1...done
+Loading ../../data/MassSpec/20200724/B3.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-H1...2749 done
+Deconvolving chromatograms for V256A-H1...Deconvolve of V256A-H1 chromatograms
+6127 done
+Adding data from V256A-H1...done
+Loading ../../data/MassSpec/20200724/C3.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-A2...2729 done
+Deconvolving chromatograms for V256A-A2...Deconvolve of V256A-A2 chromatograms
+6057 done
+Adding data from V256A-A2...done
+Loading ../../data/MassSpec/20200724/D3.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-B2...2844 done
+Deconvolving chromatograms for V256A-B2...Deconvolve of V256A-B2 chromatograms
+6413 done
+Adding data from V256A-B2...done
+Loading ../../data/MassSpec/20200724/E3.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-C2...3012 done
+Deconvolving chromatograms for V256A-C2...Deconvolve of V256A-C2 chromatograms
+6361 done
+Adding data from V256A-C2...done
+Loading ../../data/MassSpec/20200724/F3.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-D2...2967 done
+Deconvolving chromatograms for V256A-D2...Deconvolve of V256A-D2 chromatograms
+6195 done
+Adding data from V256A-D2...done
+Loading ../../data/MassSpec/20200724/G3.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-E2...2707 done
+Deconvolving chromatograms for V256A-E2...Deconvolve of V256A-E2 chromatograms
+6066 done
+Adding data from V256A-E2...done
+Loading ../../data/MassSpec/20200724/H3.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-F2...2748 done
+Deconvolving chromatograms for V256A-F2...Deconvolve of V256A-F2 chromatograms
+5957 done
+Adding data from V256A-F2...done
+Loading ../../data/MassSpec/20200724/A4.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-G2...2967 done
+Deconvolving chromatograms for V256A-G2...Deconvolve of V256A-G2 chromatograms
+6278 done
+Adding data from V256A-G2...done
+Loading ../../data/MassSpec/20200724/B4.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-H2...2739 done
+Deconvolving chromatograms for V256A-H2...Deconvolve of V256A-H2 chromatograms
+5882 done
+Adding data from V256A-H2...done
+Loading ../../data/MassSpec/20200724/C4.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-A3...2789 done
+Deconvolving chromatograms for V256A-A3...Deconvolve of V256A-A3 chromatograms
+6091 done
+Adding data from V256A-A3...done
+Loading ../../data/MassSpec/20200724/D4.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-B3...2880 done
+Deconvolving chromatograms for V256A-B3...Deconvolve of V256A-B3 chromatograms
+6256 done
+Adding data from V256A-B3...done
+Loading ../../data/MassSpec/20200724/E4.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-C3...2824 done
+Deconvolving chromatograms for V256A-C3...Deconvolve of V256A-C3 chromatograms
+6071 done
+Adding data from V256A-C3...done
+Loading ../../data/MassSpec/20200724/F4.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256A-D3...2816 done
+Deconvolving chromatograms for V256A-D3...Deconvolve of V256A-D3 chromatograms
+6156 done
+Adding data from V256A-D3...done
+Loading ../../data/MassSpec/20200724/G4.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-A1...3100 done
+Deconvolving chromatograms for V256B-A1...Deconvolve of V256B-A1 chromatograms
+6762 done
+Adding data from V256B-A1...done
+Loading ../../data/MassSpec/20200724/H4.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-B1...2977 done
+Deconvolving chromatograms for V256B-B1...Deconvolve of V256B-B1 chromatograms
+6451 done
+Adding data from V256B-B1...done
+Loading ../../data/MassSpec/20200724/A5.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-C1...3061 done
+Deconvolving chromatograms for V256B-C1...Deconvolve of V256B-C1 chromatograms
+6545 done
+Adding data from V256B-C1...done
+Loading ../../data/MassSpec/20200724/B5.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-D1...3050 done
+Deconvolving chromatograms for V256B-D1...Deconvolve of V256B-D1 chromatograms
+6695 done
+Adding data from V256B-D1...done
+Loading ../../data/MassSpec/20200724/C5.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-E1...2979 done
+Deconvolving chromatograms for V256B-E1...Deconvolve of V256B-E1 chromatograms
+6382 done
+Adding data from V256B-E1...done
+Loading ../../data/MassSpec/20200724/D5.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-F1...2884 done
+Deconvolving chromatograms for V256B-F1...Deconvolve of V256B-F1 chromatograms
+6317 done
+Adding data from V256B-F1...done
+Loading ../../data/MassSpec/20200724/E5.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-G1...2944 done
+Deconvolving chromatograms for V256B-G1...Deconvolve of V256B-G1 chromatograms
+6330 done
+Adding data from V256B-G1...done
+Loading ../../data/MassSpec/20200724/F5.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-H1...3013 done
+Deconvolving chromatograms for V256B-H1...Deconvolve of V256B-H1 chromatograms
+6502 done
+Adding data from V256B-H1...done
+Loading ../../data/MassSpec/20200724/G5.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-A2...3049 done
+Deconvolving chromatograms for V256B-A2...Deconvolve of V256B-A2 chromatograms
+6586 done
+Adding data from V256B-A2...done
+Loading ../../data/MassSpec/20200724/H5.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-B2...2976 done
+Deconvolving chromatograms for V256B-B2...Deconvolve of V256B-B2 chromatograms
+6574 done
+Adding data from V256B-B2...done
+Loading ../../data/MassSpec/20200724/A6.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-C2...3322 done
+Deconvolving chromatograms for V256B-C2...Deconvolve of V256B-C2 chromatograms
+7313 done
+Adding data from V256B-C2...done
+Loading ../../data/MassSpec/20200724/B6.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-D2...2885 done
+Deconvolving chromatograms for V256B-D2...Deconvolve of V256B-D2 chromatograms
+6132 done
+Adding data from V256B-D2...done
+Loading ../../data/MassSpec/20200724/C6.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-E2...2929 done
+Deconvolving chromatograms for V256B-E2...Deconvolve of V256B-E2 chromatograms
+6166 done
+Adding data from V256B-E2...done
+Loading ../../data/MassSpec/20200724/D6.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-F2...2892 done
+Deconvolving chromatograms for V256B-F2...Deconvolve of V256B-F2 chromatograms
+6082 done
+Adding data from V256B-F2...done
+Loading ../../data/MassSpec/20200724/E6.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-G2...2941 done
+Deconvolving chromatograms for V256B-G2...Deconvolve of V256B-G2 chromatograms
+6074 done
+Adding data from V256B-G2...done
+Loading ../../data/MassSpec/20200724/F6.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-H2...2853 done
+Deconvolving chromatograms for V256B-H2...Deconvolve of V256B-H2 chromatograms
+5933 done
+Adding data from V256B-H2...done
+Loading ../../data/MassSpec/20200724/G6.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-A3...2990 done
+Deconvolving chromatograms for V256B-A3...Deconvolve of V256B-A3 chromatograms
+6425 done
+Adding data from V256B-A3...done
+Loading ../../data/MassSpec/20200724/H6.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for V256B-B3...3018 done
+Deconvolving chromatograms for V256B-B3...Deconvolve of V256B-B3 chromatograms
+6337 done
+Adding data from V256B-B3...done
+Loading ../../data/MassSpec/20200724/B7.mzXML...
+Starting to parse document...
+Building mzXML substructure...
+Building scan substructure...
+Building index substructure...
+DONE!
+Building chromatograms for DMSO...2135 done
+Deconvolving chromatograms for DMSO...Deconvolve of DMSO chromatograms
+4553 done
+Adding data from DMSO...done
+Remapping 49 feature lists...1...2...3...4...5...6...7...8...9...10...11...12...13...14...15...16...17...18...19...20...21...22...23...24...25...26...27...28...29...30...31...32...33...34...35...36...37...38...39...40...41...42...43...44...45...46...47...48...49...done
+DMSO...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[NaN NaN NaN ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @NaN: NaN%,0.0% 
+       Have hits for 0/0 (with 0 unique) expected compounds and 0 unexpected ones with IC>=NaN
+       Have features for 0/0=NaN% (with 0 unique) expected compounds and 973=19% unexpected ones
+ M+Na: Expected have IC=[NaN NaN NaN ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @NaN: NaN%,0.0% 
+       Have hits for 0/0 (with 0 unique) expected compounds and 0 unexpected ones with IC>=NaN
+       Have features for 0/0=NaN% (with 0 unique) expected compounds and 627=12% unexpected ones
+  M+K: Expected have IC=[NaN NaN NaN ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @NaN: NaN%,0.0% 
+       Have hits for 0/0 (with 0 unique) expected compounds and 0 unexpected ones with IC>=NaN
+       Have features for 0/0=NaN% (with 0 unique) expected compounds and 424=8% unexpected ones
+V256B-D3...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2769 9888 30231 ], unexpected have IC=[0 0 2084 ] (25% 50% 75% ) @2743: 75.4%,21.4% 
+       Have hits for 193/256 (with 151 unique) expected compounds and 1040 unexpected ones with IC>=2743
+       Have features for 214/256=84% (with 130 unique) expected compounds and 1601=33% unexpected ones
+ M+Na: Expected have IC=[0 0 3413 ], unexpected have IC=[0 0 1458 ] (25% 50% 75% ) @1488: 42.2%,24.7% 
+       Have hits for 108/256 (with 75 unique) expected compounds and 1201 unexpected ones with IC>=1488
+       Have features for 120/256=47% (with 79 unique) expected compounds and 1300=27% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1437: 18.0%,18.5% 
+       Have hits for 46/256 (with 36 unique) expected compounds and 900 unexpected ones with IC>=1437
+       Have features for 51/256=20% (with 38 unique) expected compounds and 954=20% unexpected ones
+PR80-A1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2083 13544 52837 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @2241: 73.8%,13.8% 
+       Have hits for 59/80 (with 44 unique) expected compounds and 696 unexpected ones with IC>=2241
+       Have features for 66/80=82% (with 38 unique) expected compounds and 1092=22% unexpected ones
+ M+Na: Expected have IC=[0 0 5658 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1611: 41.2%,14.3% 
+       Have hits for 33/80 (with 27 unique) expected compounds and 722 unexpected ones with IC>=1611
+       Have features for 37/80=46% (with 26 unique) expected compounds and 856=17% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1702: 17.5%,10.6% 
+       Have hits for 14/80 (with 11 unique) expected compounds and 536 unexpected ones with IC>=1702
+       Have features for 16/80=20% (with 12 unique) expected compounds and 621=12% unexpected ones
+PR80-H11...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[10279 27862 57086 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @5047: 81.2%,9.8% 
+       Have hits for 65/80 (with 61 unique) expected compounds and 493 unexpected ones with IC>=5047
+       Have features for 72/80=90% (with 45 unique) expected compounds and 1163=23% unexpected ones
+ M+Na: Expected have IC=[0 1995 12750 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1935: 52.5%,15.2% 
+       Have hits for 42/80 (with 34 unique) expected compounds and 764 unexpected ones with IC>=1935
+       Have features for 47/80=59% (with 34 unique) expected compounds and 996=20% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1670: 18.8%,12.3% 
+       Have hits for 15/80 (with 13 unique) expected compounds and 621 unexpected ones with IC>=1670
+       Have features for 17/80=21% (with 12 unique) expected compounds and 716=14% unexpected ones
+R320-A...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[19510 56298 109966 ], unexpected have IC=[0 0 5806 ] (25% 50% 75% ) @11293: 82.2%,19.0% 
+       Have hits for 263/320 (with 197 unique) expected compounds and 913 unexpected ones with IC>=11293
+       Have features for 292/320=91% (with 93 unique) expected compounds and 2396=50% unexpected ones
+ M+Na: Expected have IC=[0 5409 22471 ], unexpected have IC=[0 0 4479 ] (25% 50% 75% ) @2024: 64.7%,35.7% 
+       Have hits for 207/320 (with 116 unique) expected compounds and 1713 unexpected ones with IC>=2024
+       Have features for 230/320=72% (with 107 unique) expected compounds and 2035=42% unexpected ones
+  M+K: Expected have IC=[0 0 2437 ], unexpected have IC=[0 0 2306 ] (25% 50% 75% ) @1623: 35.6%,30.4% 
+       Have hits for 114/320 (with 78 unique) expected compounds and 1460 unexpected ones with IC>=1623
+       Have features for 127/320=40% (with 83 unique) expected compounds and 1620=34% unexpected ones
+R320-P...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[16738 36695 82949 ], unexpected have IC=[0 0 4924 ] (25% 50% 75% ) @6783: 83.8%,21.6% 
+       Have hits for 268/320 (with 192 unique) expected compounds and 1035 unexpected ones with IC>=6783
+       Have features for 298/320=93% (with 116 unique) expected compounds and 2230=46% unexpected ones
+ M+Na: Expected have IC=[0 3881 13098 ], unexpected have IC=[0 0 4052 ] (25% 50% 75% ) @2049: 67.2%,34.7% 
+       Have hits for 215/320 (with 141 unique) expected compounds and 1666 unexpected ones with IC>=2049
+       Have features for 239/320=75% (with 130 unique) expected compounds and 2042=43% unexpected ones
+  M+K: Expected have IC=[0 0 2632 ], unexpected have IC=[0 0 2463 ] (25% 50% 75% ) @1687: 31.9%,29.9% 
+       Have hits for 102/320 (with 69 unique) expected compounds and 1437 unexpected ones with IC>=1687
+       Have features for 113/320=35% (with 68 unique) expected compounds and 1624=34% unexpected ones
+V5120...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[18301 37918 68854 ], unexpected have IC=[NaN NaN NaN ] (25% 50% 75% ) @8618: 87.9%,NaN% 
+       Have hits for 4501/5120 (with 935 unique) expected compounds and 0 unexpected ones with IC>=8618
+       Have features for 5001/5120=98% (with 228 unique) expected compounds and 0=NaN% unexpected ones
+ M+Na: Expected have IC=[6128 19756 44004 ], unexpected have IC=[NaN NaN NaN ] (25% 50% 75% ) @3745: 81.2%,NaN% 
+       Have hits for 4155/5120 (with 607 unique) expected compounds and 0 unexpected ones with IC>=3745
+       Have features for 4617/5120=90% (with 357 unique) expected compounds and 0=NaN% unexpected ones
+  M+K: Expected have IC=[1977 9388 25012 ], unexpected have IC=[NaN NaN NaN ] (25% 50% 75% ) @2786: 70.7%,NaN% 
+       Have hits for 3621/5120 (with 706 unique) expected compounds and 0 unexpected ones with IC>=2786
+       Have features for 4024/5120=79% (with 484 unique) expected compounds and 0=NaN% unexpected ones
+CDIQ0005-Col3...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2292 16236 37567 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1738: 81.2%,11.8% 
+       Have hits for 13/16 (with 8 unique) expected compounds and 603 unexpected ones with IC>=1738
+       Have features for 15/16=94% (with 10 unique) expected compounds and 805=16% unexpected ones
+ M+Na: Expected have IC=[0 1677 7656 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1666: 50.0%,9.7% 
+       Have hits for 8/16 (with 8 unique) expected compounds and 494 unexpected ones with IC>=1666
+       Have features for 9/16=56% (with 8 unique) expected compounds and 616=12% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @2452: 0.0%,4.5% 
+       Have hits for 0/16 (with 0 unique) expected compounds and 230 unexpected ones with IC>=2452
+       Have features for 1/16=6% (with 1 unique) expected compounds and 402=8% unexpected ones
+CDIQ0005-Col22...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[884 3293 31841 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1778: 68.8%,10.5% 
+       Have hits for 11/16 (with 10 unique) expected compounds and 537 unexpected ones with IC>=1778
+       Have features for 12/16=75% (with 10 unique) expected compounds and 748=15% unexpected ones
+ M+Na: Expected have IC=[0 1570 10063 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1532: 50.0%,8.9% 
+       Have hits for 8/16 (with 7 unique) expected compounds and 455 unexpected ones with IC>=1532
+       Have features for 9/16=56% (with 7 unique) expected compounds and 553=11% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1964: 6.2%,5.9% 
+       Have hits for 1/16 (with 1 unique) expected compounds and 300 unexpected ones with IC>=1964
+       Have features for 2/16=12% (with 2 unique) expected compounds and 413=8% unexpected ones
+DMSO...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[NaN NaN NaN ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @NaN: NaN%,0.0% 
+       Have hits for 0/0 (with 0 unique) expected compounds and 0 unexpected ones with IC>=NaN
+       Have features for 0/0=NaN% (with 0 unique) expected compounds and 698=14% unexpected ones
+ M+Na: Expected have IC=[NaN NaN NaN ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @NaN: NaN%,0.0% 
+       Have hits for 0/0 (with 0 unique) expected compounds and 0 unexpected ones with IC>=NaN
+       Have features for 0/0=NaN% (with 0 unique) expected compounds and 458=9% unexpected ones
+  M+K: Expected have IC=[NaN NaN NaN ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @NaN: NaN%,0.0% 
+       Have hits for 0/0 (with 0 unique) expected compounds and 0 unexpected ones with IC>=NaN
+       Have features for 0/0=NaN% (with 0 unique) expected compounds and 272=5% unexpected ones
+V256A-A1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 5443 24399 ], unexpected have IC=[0 0 1848 ] (25% 50% 75% ) @2231: 64.5%,21.6% 
+       Have hits for 165/256 (with 123 unique) expected compounds and 1052 unexpected ones with IC>=2231
+       Have features for 183/256=71% (with 107 unique) expected compounds and 1514=31% unexpected ones
+ M+Na: Expected have IC=[0 0 3159 ], unexpected have IC=[0 0 1500 ] (25% 50% 75% ) @1614: 36.7%,24.1% 
+       Have hits for 94/256 (with 70 unique) expected compounds and 1174 unexpected ones with IC>=1614
+       Have features for 104/256=41% (with 71 unique) expected compounds and 1328=27% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1688: 15.6%,16.3% 
+       Have hits for 40/256 (with 36 unique) expected compounds and 794 unexpected ones with IC>=1688
+       Have features for 45/256=18% (with 36 unique) expected compounds and 929=19% unexpected ones
+V256A-B1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[618 5955 23182 ], unexpected have IC=[0 0 2176 ] (25% 50% 75% ) @1721: 67.6%,29.5% 
+       Have hits for 173/256 (with 114 unique) expected compounds and 1433 unexpected ones with IC>=1721
+       Have features for 192/256=75% (with 107 unique) expected compounds and 1664=34% unexpected ones
+ M+Na: Expected have IC=[0 0 3953 ], unexpected have IC=[0 0 1534 ] (25% 50% 75% ) @1602: 40.2%,24.6% 
+       Have hits for 103/256 (with 79 unique) expected compounds and 1195 unexpected ones with IC>=1602
+       Have features for 114/256=45% (with 81 unique) expected compounds and 1375=28% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1763: 18.0%,16.2% 
+       Have hits for 46/256 (with 35 unique) expected compounds and 787 unexpected ones with IC>=1763
+       Have features for 52/256=20% (with 40 unique) expected compounds and 979=20% unexpected ones
+V256A-C1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[1783 8807 45860 ], unexpected have IC=[0 0 2439 ] (25% 50% 75% ) @2570: 71.1%,24.2% 
+       Have hits for 182/256 (with 134 unique) expected compounds and 1179 unexpected ones with IC>=2570
+       Have features for 202/256=79% (with 113 unique) expected compounds and 1803=37% unexpected ones
+ M+Na: Expected have IC=[0 1252 5689 ], unexpected have IC=[0 0 1930 ] (25% 50% 75% ) @1492: 47.3%,29.0% 
+       Have hits for 121/256 (with 80 unique) expected compounds and 1411 unexpected ones with IC>=1492
+       Have features for 134/256=52% (with 90 unique) expected compounds and 1542=32% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1310: 19.1%,20.4% 
+       Have hits for 49/256 (with 37 unique) expected compounds and 990 unexpected ones with IC>=1310
+       Have features for 55/256=21% (with 39 unique) expected compounds and 1021=21% unexpected ones
+V256A-D1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 5920 26051 ], unexpected have IC=[0 0 1949 ] (25% 50% 75% ) @2246: 65.6%,22.2% 
+       Have hits for 168/256 (with 126 unique) expected compounds and 1078 unexpected ones with IC>=2246
+       Have features for 187/256=73% (with 107 unique) expected compounds and 1575=32% unexpected ones
+ M+Na: Expected have IC=[0 0 4710 ], unexpected have IC=[0 0 1463 ] (25% 50% 75% ) @1693: 40.6%,22.6% 
+       Have hits for 104/256 (with 81 unique) expected compounds and 1100 unexpected ones with IC>=1693
+       Have features for 116/256=45% (with 81 unique) expected compounds and 1321=27% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1393: 15.6%,17.6% 
+       Have hits for 40/256 (with 31 unique) expected compounds and 855 unexpected ones with IC>=1393
+       Have features for 44/256=17% (with 33 unique) expected compounds and 877=18% unexpected ones
+V256A-E1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 4818 25178 ], unexpected have IC=[0 0 2038 ] (25% 50% 75% ) @1899: 66.4%,25.8% 
+       Have hits for 170/256 (with 127 unique) expected compounds and 1255 unexpected ones with IC>=1899
+       Have features for 189/256=74% (with 112 unique) expected compounds and 1584=33% unexpected ones
+ M+Na: Expected have IC=[0 0 4261 ], unexpected have IC=[0 0 1633 ] (25% 50% 75% ) @1744: 44.5%,24.1% 
+       Have hits for 114/256 (with 91 unique) expected compounds and 1171 unexpected ones with IC>=1744
+       Have features for 127/256=50% (with 91 unique) expected compounds and 1423=29% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1367: 13.7%,18.8% 
+       Have hits for 35/256 (with 28 unique) expected compounds and 914 unexpected ones with IC>=1367
+       Have features for 39/256=15% (with 31 unique) expected compounds and 975=20% unexpected ones
+V256A-F1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 4110 25476 ], unexpected have IC=[0 0 1729 ] (25% 50% 75% ) @2122: 63.3%,21.5% 
+       Have hits for 162/256 (with 120 unique) expected compounds and 1048 unexpected ones with IC>=2122
+       Have features for 180/256=70% (with 102 unique) expected compounds and 1408=29% unexpected ones
+ M+Na: Expected have IC=[0 0 4231 ], unexpected have IC=[0 0 1225 ] (25% 50% 75% ) @1602: 38.7%,22.8% 
+       Have hits for 99/256 (with 76 unique) expected compounds and 1111 unexpected ones with IC>=1602
+       Have features for 110/256=43% (with 81 unique) expected compounds and 1230=25% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1496: 14.8%,17.2% 
+       Have hits for 38/256 (with 32 unique) expected compounds and 838 unexpected ones with IC>=1496
+       Have features for 42/256=16% (with 33 unique) expected compounds and 921=19% unexpected ones
+V256A-G1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[660 7556 39490 ], unexpected have IC=[0 0 2276 ] (25% 50% 75% ) @2328: 67.6%,24.9% 
+       Have hits for 173/256 (with 127 unique) expected compounds and 1211 unexpected ones with IC>=2328
+       Have features for 192/256=75% (with 98 unique) expected compounds and 1742=36% unexpected ones
+ M+Na: Expected have IC=[0 1520 6318 ], unexpected have IC=[0 0 1782 ] (25% 50% 75% ) @1711: 46.9%,25.9% 
+       Have hits for 120/256 (with 79 unique) expected compounds and 1261 unexpected ones with IC>=1711
+       Have features for 133/256=52% (with 75 unique) expected compounds and 1493=31% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1504: 21.5%,19.8% 
+       Have hits for 55/256 (with 45 unique) expected compounds and 961 unexpected ones with IC>=1504
+       Have features for 61/256=24% (with 48 unique) expected compounds and 1037=21% unexpected ones
+V256A-H1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 4676 31392 ], unexpected have IC=[0 0 1950 ] (25% 50% 75% ) @2069: 63.7%,24.0% 
+       Have hits for 163/256 (with 111 unique) expected compounds and 1165 unexpected ones with IC>=2069
+       Have features for 181/256=71% (with 105 unique) expected compounds and 1542=32% unexpected ones
+ M+Na: Expected have IC=[0 0 3648 ], unexpected have IC=[0 0 1465 ] (25% 50% 75% ) @1518: 40.2%,24.4% 
+       Have hits for 103/256 (with 80 unique) expected compounds and 1186 unexpected ones with IC>=1518
+       Have features for 115/256=45% (with 84 unique) expected compounds and 1307=27% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1534: 16.8%,17.0% 
+       Have hits for 43/256 (with 32 unique) expected compounds and 825 unexpected ones with IC>=1534
+       Have features for 48/256=19% (with 33 unique) expected compounds and 920=19% unexpected ones
+V256A-A2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 5550 23054 ], unexpected have IC=[0 0 1823 ] (25% 50% 75% ) @2274: 64.8%,21.1% 
+       Have hits for 166/256 (with 118 unique) expected compounds and 1025 unexpected ones with IC>=2274
+       Have features for 184/256=72% (with 95 unique) expected compounds and 1511=31% unexpected ones
+ M+Na: Expected have IC=[0 0 3749 ], unexpected have IC=[0 0 1387 ] (25% 50% 75% ) @1926: 38.3%,20.9% 
+       Have hits for 98/256 (with 76 unique) expected compounds and 1019 unexpected ones with IC>=1926
+       Have features for 109/256=43% (with 79 unique) expected compounds and 1271=26% unexpected ones
+  M+K: Expected have IC=[0 0 530 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1333: 22.7%,18.2% 
+       Have hits for 58/256 (with 45 unique) expected compounds and 886 unexpected ones with IC>=1333
+       Have features for 64/256=25% (with 49 unique) expected compounds and 923=19% unexpected ones
+V256A-B2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[1666 5620 21488 ], unexpected have IC=[0 0 2052 ] (25% 50% 75% ) @2260: 69.5%,23.4% 
+       Have hits for 178/256 (with 130 unique) expected compounds and 1138 unexpected ones with IC>=2260
+       Have features for 198/256=77% (with 111 unique) expected compounds and 1625=33% unexpected ones
+ M+Na: Expected have IC=[0 1502 5412 ], unexpected have IC=[0 0 1641 ] (25% 50% 75% ) @1847: 46.1%,23.2% 
+       Have hits for 118/256 (with 94 unique) expected compounds and 1129 unexpected ones with IC>=1847
+       Have features for 131/256=51% (with 90 unique) expected compounds and 1404=29% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1379: 20.7%,20.5% 
+       Have hits for 53/256 (with 41 unique) expected compounds and 995 unexpected ones with IC>=1379
+       Have features for 59/256=23% (with 43 unique) expected compounds and 1036=21% unexpected ones
+V256A-C2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[1544 7723 35057 ], unexpected have IC=[0 0 1975 ] (25% 50% 75% ) @2191: 70.7%,22.9% 
+       Have hits for 181/256 (with 127 unique) expected compounds and 1113 unexpected ones with IC>=2191
+       Have features for 201/256=79% (with 107 unique) expected compounds and 1635=34% unexpected ones
+ M+Na: Expected have IC=[0 0 4524 ], unexpected have IC=[0 0 1565 ] (25% 50% 75% ) @1764: 43.4%,23.3% 
+       Have hits for 111/256 (with 86 unique) expected compounds and 1135 unexpected ones with IC>=1764
+       Have features for 123/256=48% (with 85 unique) expected compounds and 1394=29% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1375: 22.3%,19.8% 
+       Have hits for 57/256 (with 43 unique) expected compounds and 964 unexpected ones with IC>=1375
+       Have features for 63/256=25% (with 47 unique) expected compounds and 1031=21% unexpected ones
+V256A-D2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 6259 27763 ], unexpected have IC=[0 0 1847 ] (25% 50% 75% ) @1993: 66.4%,23.8% 
+       Have hits for 170/256 (with 108 unique) expected compounds and 1156 unexpected ones with IC>=1993
+       Have features for 189/256=74% (with 104 unique) expected compounds and 1562=32% unexpected ones
+ M+Na: Expected have IC=[0 0 4745 ], unexpected have IC=[0 0 1569 ] (25% 50% 75% ) @1790: 41.4%,23.0% 
+       Have hits for 106/256 (with 79 unique) expected compounds and 1121 unexpected ones with IC>=1790
+       Have features for 118/256=46% (with 74 unique) expected compounds and 1340=28% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1692: 15.6%,17.0% 
+       Have hits for 40/256 (with 33 unique) expected compounds and 829 unexpected ones with IC>=1692
+       Have features for 45/256=18% (with 31 unique) expected compounds and 998=21% unexpected ones
+V256A-E2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 4757 18158 ], unexpected have IC=[0 0 1772 ] (25% 50% 75% ) @2097: 64.5%,22.0% 
+       Have hits for 165/256 (with 128 unique) expected compounds and 1068 unexpected ones with IC>=2097
+       Have features for 183/256=71% (with 109 unique) expected compounds and 1469=30% unexpected ones
+ M+Na: Expected have IC=[0 0 3711 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1601: 41.8%,21.6% 
+       Have hits for 107/256 (with 77 unique) expected compounds and 1049 unexpected ones with IC>=1601
+       Have features for 119/256=46% (with 85 unique) expected compounds and 1198=25% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1269: 17.6%,17.8% 
+       Have hits for 45/256 (with 36 unique) expected compounds and 865 unexpected ones with IC>=1269
+       Have features for 50/256=20% (with 40 unique) expected compounds and 881=18% unexpected ones
+V256A-F2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 4680 24908 ], unexpected have IC=[0 0 1664 ] (25% 50% 75% ) @1850: 63.3%,23.5% 
+       Have hits for 162/256 (with 110 unique) expected compounds and 1142 unexpected ones with IC>=1850
+       Have features for 180/256=70% (with 110 unique) expected compounds and 1463=30% unexpected ones
+ M+Na: Expected have IC=[0 0 4027 ], unexpected have IC=[0 0 1281 ] (25% 50% 75% ) @1564: 41.0%,22.8% 
+       Have hits for 105/256 (with 79 unique) expected compounds and 1110 unexpected ones with IC>=1564
+       Have features for 117/256=46% (with 84 unique) expected compounds and 1248=26% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1351: 16.8%,17.3% 
+       Have hits for 43/256 (with 32 unique) expected compounds and 840 unexpected ones with IC>=1351
+       Have features for 48/256=19% (with 36 unique) expected compounds and 884=18% unexpected ones
+V256A-G2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[1566 9417 32951 ], unexpected have IC=[0 0 2155 ] (25% 50% 75% ) @2054: 69.9%,25.6% 
+       Have hits for 179/256 (with 123 unique) expected compounds and 1245 unexpected ones with IC>=2054
+       Have features for 199/256=78% (with 111 unique) expected compounds and 1675=34% unexpected ones
+ M+Na: Expected have IC=[0 1684 7675 ], unexpected have IC=[0 0 1693 ] (25% 50% 75% ) @1722: 49.6%,24.7% 
+       Have hits for 127/256 (with 98 unique) expected compounds and 1201 unexpected ones with IC>=1722
+       Have features for 141/256=55% (with 102 unique) expected compounds and 1393=29% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1611: 17.2%,18.9% 
+       Have hits for 44/256 (with 36 unique) expected compounds and 920 unexpected ones with IC>=1611
+       Have features for 49/256=19% (with 40 unique) expected compounds and 1020=21% unexpected ones
+V256A-H2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 5916 25135 ], unexpected have IC=[0 0 1698 ] (25% 50% 75% ) @2018: 63.3%,21.9% 
+       Have hits for 162/256 (with 123 unique) expected compounds and 1064 unexpected ones with IC>=2018
+       Have features for 180/256=70% (with 115 unique) expected compounds and 1437=30% unexpected ones
+ M+Na: Expected have IC=[0 0 3497 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1867: 36.7%,19.4% 
+       Have hits for 94/256 (with 70 unique) expected compounds and 946 unexpected ones with IC>=1867
+       Have features for 105/256=41% (with 71 unique) expected compounds and 1184=24% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1374: 16.8%,16.3% 
+       Have hits for 43/256 (with 30 unique) expected compounds and 791 unexpected ones with IC>=1374
+       Have features for 48/256=19% (with 35 unique) expected compounds and 843=17% unexpected ones
+V256A-A3...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[1655 6995 25218 ], unexpected have IC=[0 0 1903 ] (25% 50% 75% ) @2104: 69.1%,23.0% 
+       Have hits for 177/256 (with 129 unique) expected compounds and 1120 unexpected ones with IC>=2104
+       Have features for 197/256=77% (with 112 unique) expected compounds and 1526=31% unexpected ones
+ M+Na: Expected have IC=[0 0 3743 ], unexpected have IC=[0 0 1293 ] (25% 50% 75% ) @1564: 40.2%,22.6% 
+       Have hits for 103/256 (with 73 unique) expected compounds and 1101 unexpected ones with IC>=1564
+       Have features for 115/256=45% (with 82 unique) expected compounds and 1238=25% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1650: 17.2%,16.5% 
+       Have hits for 44/256 (with 36 unique) expected compounds and 803 unexpected ones with IC>=1650
+       Have features for 49/256=19% (with 38 unique) expected compounds and 941=19% unexpected ones
+V256A-B3...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 8148 30752 ], unexpected have IC=[0 0 2211 ] (25% 50% 75% ) @2525: 66.4%,23.0% 
+       Have hits for 170/256 (with 122 unique) expected compounds and 1120 unexpected ones with IC>=2525
+       Have features for 189/256=74% (with 103 unique) expected compounds and 1723=35% unexpected ones
+ M+Na: Expected have IC=[0 1450 6874 ], unexpected have IC=[0 0 1664 ] (25% 50% 75% ) @1778: 46.9%,23.8% 
+       Have hits for 120/256 (with 85 unique) expected compounds and 1158 unexpected ones with IC>=1778
+       Have features for 133/256=52% (with 83 unique) expected compounds and 1389=29% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1535: 21.1%,20.8% 
+       Have hits for 54/256 (with 39 unique) expected compounds and 1013 unexpected ones with IC>=1535
+       Have features for 60/256=23% (with 40 unique) expected compounds and 1144=24% unexpected ones
+V256A-C3...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 4679 26933 ], unexpected have IC=[0 0 1966 ] (25% 50% 75% ) @1888: 67.2%,25.5% 
+       Have hits for 172/256 (with 127 unique) expected compounds and 1239 unexpected ones with IC>=1888
+       Have features for 191/256=75% (with 124 unique) expected compounds and 1601=33% unexpected ones
+ M+Na: Expected have IC=[0 0 4766 ], unexpected have IC=[0 0 1476 ] (25% 50% 75% ) @1735: 44.1%,22.4% 
+       Have hits for 113/256 (with 92 unique) expected compounds and 1090 unexpected ones with IC>=1735
+       Have features for 127/256=50% (with 88 unique) expected compounds and 1334=27% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1507: 16.0%,17.5% 
+       Have hits for 41/256 (with 26 unique) expected compounds and 849 unexpected ones with IC>=1507
+       Have features for 46/256=18% (with 29 unique) expected compounds and 937=19% unexpected ones
+V256A-D3...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[0 4826 28465 ], unexpected have IC=[0 0 1794 ] (25% 50% 75% ) @2195: 66.4%,22.6% 
+       Have hits for 170/256 (with 122 unique) expected compounds and 1100 unexpected ones with IC>=2195
+       Have features for 189/256=74% (with 100 unique) expected compounds and 1491=31% unexpected ones
+ M+Na: Expected have IC=[0 0 3556 ], unexpected have IC=[0 0 1304 ] (25% 50% 75% ) @1777: 36.3%,20.5% 
+       Have hits for 93/256 (with 74 unique) expected compounds and 996 unexpected ones with IC>=1777
+       Have features for 103/256=40% (with 70 unique) expected compounds and 1284=26% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1500: 19.5%,16.6% 
+       Have hits for 50/256 (with 42 unique) expected compounds and 808 unexpected ones with IC>=1500
+       Have features for 56/256=22% (with 43 unique) expected compounds and 894=18% unexpected ones
+V256B-A1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[3335 12126 25509 ], unexpected have IC=[0 0 2715 ] (25% 50% 75% ) @3064: 76.6%,23.5% 
+       Have hits for 196/256 (with 157 unique) expected compounds and 1143 unexpected ones with IC>=3064
+       Have features for 218/256=85% (with 120 unique) expected compounds and 1902=39% unexpected ones
+ M+Na: Expected have IC=[0 2275 6773 ], unexpected have IC=[0 0 2135 ] (25% 50% 75% ) @1749: 54.3%,27.4% 
+       Have hits for 139/256 (with 114 unique) expected compounds and 1332 unexpected ones with IC>=1749
+       Have features for 154/256=60% (with 110 unique) expected compounds and 1575=32% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1511: 18.8%,22.2% 
+       Have hits for 48/256 (with 38 unique) expected compounds and 1080 unexpected ones with IC>=1511
+       Have features for 53/256=21% (with 42 unique) expected compounds and 1193=25% unexpected ones
+V256B-B1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2908 7875 17194 ], unexpected have IC=[0 0 2654 ] (25% 50% 75% ) @2772: 75.4%,24.3% 
+       Have hits for 193/256 (with 146 unique) expected compounds and 1183 unexpected ones with IC>=2772
+       Have features for 214/256=84% (with 114 unique) expected compounds and 1804=37% unexpected ones
+ M+Na: Expected have IC=[0 1408 5388 ], unexpected have IC=[0 0 2055 ] (25% 50% 75% ) @1751: 47.3%,27.0% 
+       Have hits for 121/256 (with 82 unique) expected compounds and 1314 unexpected ones with IC>=1751
+       Have features for 135/256=53% (with 85 unique) expected compounds and 1593=33% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1375: 15.6%,19.8% 
+       Have hits for 40/256 (with 33 unique) expected compounds and 963 unexpected ones with IC>=1375
+       Have features for 44/256=17% (with 34 unique) expected compounds and 1031=21% unexpected ones
+V256B-C1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2588 6510 17414 ], unexpected have IC=[0 0 2658 ] (25% 50% 75% ) @2497: 76.2%,26.4% 
+       Have hits for 195/256 (with 150 unique) expected compounds and 1286 unexpected ones with IC>=2497
+       Have features for 217/256=85% (with 130 unique) expected compounds and 1898=39% unexpected ones
+ M+Na: Expected have IC=[0 1323 5559 ], unexpected have IC=[0 0 1822 ] (25% 50% 75% ) @1749: 46.1%,25.5% 
+       Have hits for 118/256 (with 93 unique) expected compounds and 1238 unexpected ones with IC>=1749
+       Have features for 131/256=51% (with 91 unique) expected compounds and 1499=31% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1415: 18.4%,20.6% 
+       Have hits for 47/256 (with 34 unique) expected compounds and 1001 unexpected ones with IC>=1415
+       Have features for 52/256=20% (with 37 unique) expected compounds and 1068=22% unexpected ones
+V256B-D1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2388 10973 25450 ], unexpected have IC=[0 0 2976 ] (25% 50% 75% ) @2356: 75.4%,27.9% 
+       Have hits for 193/256 (with 139 unique) expected compounds and 1358 unexpected ones with IC>=2356
+       Have features for 215/256=84% (with 110 unique) expected compounds and 1923=40% unexpected ones
+ M+Na: Expected have IC=[0 1463 5228 ], unexpected have IC=[0 0 2022 ] (25% 50% 75% ) @1569: 47.3%,28.6% 
+       Have hits for 121/256 (with 92 unique) expected compounds and 1392 unexpected ones with IC>=1569
+       Have features for 134/256=52% (with 94 unique) expected compounds and 1586=33% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1530: 20.3%,20.9% 
+       Have hits for 52/256 (with 40 unique) expected compounds and 1018 unexpected ones with IC>=1530
+       Have features for 58/256=23% (with 42 unique) expected compounds and 1134=23% unexpected ones
+V256B-E1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[3145 11346 23976 ], unexpected have IC=[0 0 2455 ] (25% 50% 75% ) @2936: 76.6%,22.6% 
+       Have hits for 196/256 (with 148 unique) expected compounds and 1100 unexpected ones with IC>=2936
+       Have features for 218/256=85% (with 129 unique) expected compounds and 1756=36% unexpected ones
+ M+Na: Expected have IC=[0 1581 5602 ], unexpected have IC=[0 0 1757 ] (25% 50% 75% ) @1804: 47.3%,24.4% 
+       Have hits for 121/256 (with 95 unique) expected compounds and 1185 unexpected ones with IC>=1804
+       Have features for 135/256=53% (with 92 unique) expected compounds and 1465=30% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1512: 15.2%,18.6% 
+       Have hits for 39/256 (with 32 unique) expected compounds and 906 unexpected ones with IC>=1512
+       Have features for 43/256=17% (with 34 unique) expected compounds and 1001=21% unexpected ones
+V256B-F1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2319 7671 16415 ], unexpected have IC=[0 0 1971 ] (25% 50% 75% ) @2702: 73.0%,20.4% 
+       Have hits for 187/256 (with 158 unique) expected compounds and 993 unexpected ones with IC>=2702
+       Have features for 208/256=81% (with 125 unique) expected compounds and 1587=33% unexpected ones
+ M+Na: Expected have IC=[0 1694 4970 ], unexpected have IC=[0 0 1512 ] (25% 50% 75% ) @1771: 49.6%,22.3% 
+       Have hits for 127/256 (with 103 unique) expected compounds and 1086 unexpected ones with IC>=1771
+       Have features for 141/256=55% (with 104 unique) expected compounds and 1328=27% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1414: 15.6%,18.3% 
+       Have hits for 40/256 (with 32 unique) expected compounds and 892 unexpected ones with IC>=1414
+       Have features for 45/256=18% (with 35 unique) expected compounds and 916=19% unexpected ones
+V256B-G1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2862 9309 16836 ], unexpected have IC=[0 0 2747 ] (25% 50% 75% ) @2726: 75.8%,25.2% 
+       Have hits for 194/256 (with 134 unique) expected compounds and 1227 unexpected ones with IC>=2726
+       Have features for 216/256=84% (with 112 unique) expected compounds and 1827=38% unexpected ones
+ M+Na: Expected have IC=[0 1546 4557 ], unexpected have IC=[0 0 1804 ] (25% 50% 75% ) @1614: 48.8%,27.1% 
+       Have hits for 125/256 (with 90 unique) expected compounds and 1320 unexpected ones with IC>=1614
+       Have features for 139/256=54% (with 94 unique) expected compounds and 1469=30% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1390: 17.2%,19.2% 
+       Have hits for 44/256 (with 31 unique) expected compounds and 934 unexpected ones with IC>=1390
+       Have features for 50/256=20% (with 34 unique) expected compounds and 985=20% unexpected ones
+V256B-H1...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[3728 12620 26258 ], unexpected have IC=[0 0 2545 ] (25% 50% 75% ) @3177: 77.0%,21.6% 
+       Have hits for 197/256 (with 158 unique) expected compounds and 1050 unexpected ones with IC>=3177
+       Have features for 219/256=86% (with 135 unique) expected compounds and 1847=38% unexpected ones
+ M+Na: Expected have IC=[0 1568 6248 ], unexpected have IC=[0 0 1928 ] (25% 50% 75% ) @1563: 50.4%,29.1% 
+       Have hits for 129/256 (with 99 unique) expected compounds and 1413 unexpected ones with IC>=1563
+       Have features for 143/256=56% (with 106 unique) expected compounds and 1563=32% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1367: 18.0%,21.0% 
+       Have hits for 46/256 (with 35 unique) expected compounds and 1022 unexpected ones with IC>=1367
+       Have features for 51/256=20% (with 36 unique) expected compounds and 1077=22% unexpected ones
+V256B-A2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[4342 12421 26616 ], unexpected have IC=[0 0 2562 ] (25% 50% 75% ) @3487: 78.1%,20.4% 
+       Have hits for 200/256 (with 162 unique) expected compounds and 991 unexpected ones with IC>=3487
+       Have features for 222/256=87% (with 127 unique) expected compounds and 1799=37% unexpected ones
+ M+Na: Expected have IC=[0 1704 7886 ], unexpected have IC=[0 0 1880 ] (25% 50% 75% ) @1641: 51.6%,27.1% 
+       Have hits for 132/256 (with 104 unique) expected compounds and 1317 unexpected ones with IC>=1641
+       Have features for 147/256=57% (with 107 unique) expected compounds and 1486=31% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1462: 21.1%,22.1% 
+       Have hits for 54/256 (with 40 unique) expected compounds and 1074 unexpected ones with IC>=1462
+       Have features for 60/256=23% (with 44 unique) expected compounds and 1150=24% unexpected ones
+V256B-B2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[3350 11529 25146 ], unexpected have IC=[0 0 2171 ] (25% 50% 75% ) @2804: 78.5%,21.8% 
+       Have hits for 201/256 (with 144 unique) expected compounds and 1061 unexpected ones with IC>=2804
+       Have features for 223/256=87% (with 130 unique) expected compounds and 1724=35% unexpected ones
+ M+Na: Expected have IC=[0 1963 5794 ], unexpected have IC=[0 0 1952 ] (25% 50% 75% ) @1602: 54.7%,28.0% 
+       Have hits for 140/256 (with 107 unique) expected compounds and 1363 unexpected ones with IC>=1602
+       Have features for 156/256=61% (with 106 unique) expected compounds and 1508=31% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1372: 18.4%,20.6% 
+       Have hits for 47/256 (with 39 unique) expected compounds and 1000 unexpected ones with IC>=1372
+       Have features for 52/256=20% (with 42 unique) expected compounds and 1042=21% unexpected ones
+V256B-C2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[3663 11161 21292 ], unexpected have IC=[0 0 4750 ] (25% 50% 75% ) @2852: 79.3%,32.3% 
+       Have hits for 203/256 (with 127 unique) expected compounds and 1572 unexpected ones with IC>=2852
+       Have features for 226/256=88% (with 98 unique) expected compounds and 2340=48% unexpected ones
+ M+Na: Expected have IC=[0 1850 6042 ], unexpected have IC=[0 0 3130 ] (25% 50% 75% ) @1600: 56.2%,36.0% 
+       Have hits for 144/256 (with 90 unique) expected compounds and 1749 unexpected ones with IC>=1600
+       Have features for 160/256=62% (with 85 unique) expected compounds and 1931=40% unexpected ones
+  M+K: Expected have IC=[0 0 1771 ], unexpected have IC=[0 0 1620 ] (25% 50% 75% ) @1553: 26.2%,25.6% 
+       Have hits for 67/256 (with 44 unique) expected compounds and 1245 unexpected ones with IC>=1553
+       Have features for 75/256=29% (with 48 unique) expected compounds and 1396=29% unexpected ones
+V256B-D2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2960 8824 18056 ], unexpected have IC=[0 0 2264 ] (25% 50% 75% ) @2867: 76.2%,22.3% 
+       Have hits for 195/256 (with 161 unique) expected compounds and 1086 unexpected ones with IC>=2867
+       Have features for 217/256=85% (with 135 unique) expected compounds and 1705=35% unexpected ones
+ M+Na: Expected have IC=[0 1583 7020 ], unexpected have IC=[0 0 1694 ] (25% 50% 75% ) @1798: 47.3%,24.1% 
+       Have hits for 121/256 (with 86 unique) expected compounds and 1174 unexpected ones with IC>=1798
+       Have features for 135/256=53% (with 84 unique) expected compounds and 1385=28% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1381: 18.4%,18.7% 
+       Have hits for 47/256 (with 35 unique) expected compounds and 909 unexpected ones with IC>=1381
+       Have features for 52/256=20% (with 40 unique) expected compounds and 944=19% unexpected ones
+V256B-E2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[3674 10050 22408 ], unexpected have IC=[0 0 2345 ] (25% 50% 75% ) @2856: 78.9%,21.5% 
+       Have hits for 202/256 (with 160 unique) expected compounds and 1045 unexpected ones with IC>=2856
+       Have features for 224/256=88% (with 131 unique) expected compounds and 1708=35% unexpected ones
+ M+Na: Expected have IC=[0 1696 6002 ], unexpected have IC=[0 0 1836 ] (25% 50% 75% ) @1984: 48.8%,23.8% 
+       Have hits for 125/256 (with 96 unique) expected compounds and 1160 unexpected ones with IC>=1984
+       Have features for 139/256=54% (with 94 unique) expected compounds and 1434=29% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1513: 17.2%,18.4% 
+       Have hits for 44/256 (with 37 unique) expected compounds and 895 unexpected ones with IC>=1513
+       Have features for 49/256=19% (with 39 unique) expected compounds and 988=20% unexpected ones
+V256B-F2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[2337 7309 20051 ], unexpected have IC=[0 0 2027 ] (25% 50% 75% ) @2474: 73.4%,22.2% 
+       Have hits for 188/256 (with 145 unique) expected compounds and 1079 unexpected ones with IC>=2474
+       Have features for 209/256=82% (with 125 unique) expected compounds and 1604=33% unexpected ones
+ M+Na: Expected have IC=[0 0 4848 ], unexpected have IC=[0 0 1650 ] (25% 50% 75% ) @1681: 43.8%,24.4% 
+       Have hits for 112/256 (with 87 unique) expected compounds and 1188 unexpected ones with IC>=1681
+       Have features for 125/256=49% (with 90 unique) expected compounds and 1411=29% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1612: 14.8%,16.8% 
+       Have hits for 38/256 (with 31 unique) expected compounds and 815 unexpected ones with IC>=1612
+       Have features for 42/256=16% (with 32 unique) expected compounds and 933=19% unexpected ones
+V256B-G2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[3295 9377 21854 ], unexpected have IC=[0 0 2137 ] (25% 50% 75% ) @2650: 78.1%,21.9% 
+       Have hits for 200/256 (with 152 unique) expected compounds and 1067 unexpected ones with IC>=2650
+       Have features for 222/256=87% (with 126 unique) expected compounds and 1632=34% unexpected ones
+ M+Na: Expected have IC=[0 1413 6076 ], unexpected have IC=[0 0 1735 ] (25% 50% 75% ) @1739: 46.9%,24.9% 
+       Have hits for 120/256 (with 92 unique) expected compounds and 1210 unexpected ones with IC>=1739
+       Have features for 133/256=52% (with 96 unique) expected compounds and 1424=29% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1341: 17.6%,19.4% 
+       Have hits for 45/256 (with 39 unique) expected compounds and 944 unexpected ones with IC>=1341
+       Have features for 50/256=20% (with 44 unique) expected compounds and 983=20% unexpected ones
+V256B-H2...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[1964 6657 14311 ], unexpected have IC=[0 0 1801 ] (25% 50% 75% ) @2295: 73.4%,21.7% 
+       Have hits for 188/256 (with 140 unique) expected compounds and 1057 unexpected ones with IC>=2295
+       Have features for 209/256=82% (with 121 unique) expected compounds and 1560=32% unexpected ones
+ M+Na: Expected have IC=[0 0 4239 ], unexpected have IC=[0 0 1621 ] (25% 50% 75% ) @1723: 43.4%,23.7% 
+       Have hits for 111/256 (with 93 unique) expected compounds and 1152 unexpected ones with IC>=1723
+       Have features for 123/256=48% (with 89 unique) expected compounds and 1365=28% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1338: 18.0%,19.7% 
+       Have hits for 46/256 (with 33 unique) expected compounds and 957 unexpected ones with IC>=1338
+       Have features for 51/256=20% (with 38 unique) expected compounds and 992=20% unexpected ones
+V256B-A3...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[3643 14424 29130 ], unexpected have IC=[0 0 2610 ] (25% 50% 75% ) @3075: 78.9%,23.1% 
+       Have hits for 202/256 (with 158 unique) expected compounds and 1124 unexpected ones with IC>=3075
+       Have features for 225/256=88% (with 132 unique) expected compounds and 1769=36% unexpected ones
+ M+Na: Expected have IC=[0 2369 7316 ], unexpected have IC=[0 0 2085 ] (25% 50% 75% ) @1971: 54.7%,25.5% 
+       Have hits for 140/256 (with 113 unique) expected compounds and 1239 unexpected ones with IC>=1971
+       Have features for 156/256=61% (with 112 unique) expected compounds and 1531=31% unexpected ones
+  M+K: Expected have IC=[0 0 1276 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1300: 23.8%,22.9% 
+       Have hits for 61/256 (with 47 unique) expected compounds and 1112 unexpected ones with IC>=1300
+       Have features for 68/256=27% (with 54 unique) expected compounds and 1149=24% unexpected ones
+V256B-B3...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[4226 10656 23124 ], unexpected have IC=[0 0 2214 ] (25% 50% 75% ) @3394: 77.7%,19.7% 
+       Have hits for 199/256 (with 164 unique) expected compounds and 957 unexpected ones with IC>=3394
+       Have features for 221/256=86% (with 117 unique) expected compounds and 1654=34% unexpected ones
+ M+Na: Expected have IC=[0 1709 5374 ], unexpected have IC=[0 0 1917 ] (25% 50% 75% ) @1796: 49.2%,26.2% 
+       Have hits for 126/256 (with 103 unique) expected compounds and 1275 unexpected ones with IC>=1796
+       Have features for 140/256=55% (with 100 unique) expected compounds and 1500=31% unexpected ones
+  M+K: Expected have IC=[0 0 0 ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @1467: 15.2%,21.6% 
+       Have hits for 39/256 (with 32 unique) expected compounds and 1050 unexpected ones with IC>=1467
+       Have features for 43/256=17% (with 34 unique) expected compounds and 1138=23% unexpected ones
+DMSO...1...101...201...301...401...501...601...701...801...901...1001...1101...1201...1301...1401...1501...1601...1701...1801...1901...2001...2101...2201...2301...2401...2501...2601...2701...2801...2901...3001...3101...3201...3301...3401...3501...3601...3701...3801...3901...4001...4101...4201...4301...4401...4501...4601...4701...4801...4901...5001...5101...done.
+  M+H: Expected have IC=[NaN NaN NaN ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @NaN: NaN%,0.0% 
+       Have hits for 0/0 (with 0 unique) expected compounds and 0 unexpected ones with IC>=NaN
+       Have features for 0/0=NaN% (with 0 unique) expected compounds and 694=14% unexpected ones
+ M+Na: Expected have IC=[NaN NaN NaN ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @NaN: NaN%,0.0% 
+       Have hits for 0/0 (with 0 unique) expected compounds and 0 unexpected ones with IC>=NaN
+       Have features for 0/0=NaN% (with 0 unique) expected compounds and 444=9% unexpected ones
+  M+K: Expected have IC=[NaN NaN NaN ], unexpected have IC=[0 0 0 ] (25% 50% 75% ) @NaN: NaN%,0.0% 
+       Have hits for 0/0 (with 0 unique) expected compounds and 0 unexpected ones with IC>=NaN
+       Have features for 0/0=NaN% (with 0 unique) expected compounds and 333=7% unexpected ones
+assignTimes:
+[M+H]
+Have times for 1241 compounds
+[M+Na]
+Have times for 1452 compounds
+[M+K]
+Have times for 1453 compounds
+[Warning: Negative limits ignored] 
+[> In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('is2D>testOneAxes', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m', 34)" style="font-weight:bold">is2D>testOneAxes</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m',34,0)">line 34</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('is2D', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m', 23)" style="font-weight:bold">is2D</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m',23,0)">line 23</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('axis>LocCheckCompatibleLimits', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m', 254)" style="font-weight:bold">axis>LocCheckCompatibleLimits</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m',254,0)">line 254</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('axis', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m', 86)" style="font-weight:bold">axis</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m',86,0)">line 86</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('logticks', '/Users/bst/Dropbox/Matlab/Util/logticks.m', 28)" style="font-weight:bold">logticks</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/Matlab/Util/logticks.m',28,0)">line 28</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('Compounds/checksensitivity', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m', 1105)" style="font-weight:bold">Compounds/checksensitivity</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m',1105,0)">line 1105</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('doassign', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/doassign.m', 3)" style="font-weight:bold">doassign</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/doassign.m',3,0)">line 3</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('s7setup', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m', 125)" style="font-weight:bold">s7setup</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m',125,0)">line 125</a>)] 
+assignTimes:
+[M+H]
+Have times for 1609 compounds
+[M+Na]
+Have times for 1624 compounds
+[M+K]
+Have times for 1627 compounds
+assignTimes:
+[M+H]
+Have times for 1740 compounds
+[M+Na]
+Have times for 1768 compounds
+[M+K]
+Have times for 1773 compounds
+assignTimes:
+[M+H]
+Have times for 1891 compounds
+[M+Na]
+Have times for 1917 compounds
+[M+K]
+Have times for 1919 compounds
+assignTimes:
+[M+H]
+Have times for 2016 compounds
+[M+Na]
+Have times for 2046 compounds
+[M+K]
+Have times for 2048 compounds
+assignTimes:
+[M+H]
+Have times for 2090 compounds
+[M+Na]
+Have times for 2100 compounds
+[M+K]
+Have times for 2100 compounds
+[Warning: Negative limits ignored] 
+[> In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('is2D>testOneAxes', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m', 34)" style="font-weight:bold">is2D>testOneAxes</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m',34,0)">line 34</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('is2D', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m', 23)" style="font-weight:bold">is2D</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m',23,0)">line 23</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('axis>LocCheckCompatibleLimits', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m', 254)" style="font-weight:bold">axis>LocCheckCompatibleLimits</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m',254,0)">line 254</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('axis', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m', 86)" style="font-weight:bold">axis</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m',86,0)">line 86</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('logticks', '/Users/bst/Dropbox/Matlab/Util/logticks.m', 28)" style="font-weight:bold">logticks</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/Matlab/Util/logticks.m',28,0)">line 28</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('Compounds/checksensitivity', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m', 1105)" style="font-weight:bold">Compounds/checksensitivity</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m',1105,0)">line 1105</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('doassign', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/doassign.m', 9)" style="font-weight:bold">doassign</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/doassign.m',9,0)">line 9</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('s7setup', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m', 125)" style="font-weight:bold">s7setup</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m',125,0)">line 125</a>)] 
+assignTimes:
+[M+H]
+Have times for 2178 compounds
+[M+Na]
+Have times for 2200 compounds
+[M+K]
+Have times for 2204 compounds
+checkmzoffset()
+File     Added Offset(*1e4) [  113,   538]
+Only 0 data points for ../../data/MassSpec/20200724/A1.mzXML ... skipping
+V256B-D3               -4.0 [ -2.6,  -4.3] N=168
+PR80-A1                -0.6 [ -3.1,  -0.3] N=84
+PR80-H11               -0.9 [  0.1,  -2.2] N=97
+R320-A                 -0.1 [  0.2,  -0.4] N=331
+R320-P                  0.5 [  1.7,  -1.3] N=325
+V5120                  -3.7 [  5.6,  -8.7] N=2877
+CDIQ0005-Col3           1.1 [ 25.2,  -4.4] N=10
+Only 7 data points for ../../data/MassSpec/20200724/A2.mzXML ... skipping
+Only 0 data points for ../../data/MassSpec/20200724/B2.mzXML ... skipping
+V256A-A1              -15.0 [  1.0, -23.2] N=143
+V256A-B1               -9.7 [  4.8, -21.0] N=159
+V256A-C1              -10.0 [  7.6, -22.9] N=181
+V256A-D1              -10.5 [ -0.1, -18.0] N=164
+V256A-E1               -9.4 [  5.3, -18.9] N=165
+V256A-F1               -7.5 [  3.7, -14.2] N=156
+V256A-G1               -4.0 [  3.4,  -7.8] N=165
+V256A-H1               -3.0 [  7.3,  -8.8] N=143
+V256A-A2               -3.8 [ 15.3, -15.1] N=140
+V256A-B2               -2.0 [  8.1,  -8.2] N=174
+V256A-C2               -3.5 [  3.9,  -9.4] N=159
+V256A-D2               -1.6 [  4.3,  -3.7] N=142
+V256A-E2                0.6 [  7.9,  -2.9] N=126
+V256A-F2                1.0 [ 10.0,  -5.3] N=138
+V256A-G2                1.7 [  7.1,  -2.8] N=171
+V256A-H2                5.2 [ 10.4,   1.9] N=126
+V256A-A3                3.3 [  5.6,   2.0] N=138
+V256A-B3                5.1 [ 15.4,  -0.6] N=157
+V256A-C3                6.7 [ 10.1,   4.7] N=151
+V256A-D3                6.2 [ 10.8,   3.8] N=148
+V256B-A1                7.6 [  7.3,   7.4] N=220
+V256B-B1                5.7 [  8.5,   2.8] N=197
+V256B-C1                7.8 [  9.0,   7.7] N=194
+V256B-D1                8.6 [ 12.7,   6.1] N=245
+V256B-E1                7.4 [ 10.3,   5.5] N=213
+V256B-F1                9.0 [ 15.1,   5.4] N=201
+V256B-G1                9.8 [ 10.3,   8.5] N=195
+V256B-H1                8.5 [ 11.9,   7.7] N=205
+V256B-A2                6.4 [ 13.9,   2.5] N=215
+V256B-B2                7.1 [  5.4,   7.4] N=200
+V256B-C2                2.3 [  5.3,   0.6] N=185
+V256B-D2                1.8 [  9.1,  -2.5] N=207
+V256B-E2                0.6 [  2.6,  -0.4] N=202
+V256B-F2                2.3 [  5.5,   0.6] N=170
+V256B-G2               -2.2 [  2.8,  -5.8] N=182
+V256B-H2                2.2 [  4.0,   0.9] N=184
+V256B-A3                5.0 [  9.6,   0.7] N=228
+V256B-B3                5.1 [ 11.1,   1.5] N=195
+Only 0 data points for ../../data/MassSpec/20200724/B7.mzXML ... skipping
+                       -0.6 [  6.9,  -3.3] over 20200724
+checktime(7,'timetol',0.33)
+V256B-D3              [(9.03@9.03) (25.11@25.08) ]
+PR80-A1               [(9.03@9.02) (28.84@28.79) ]
+PR80-H11              [(9.06@9.06) (27.52@27.50) ]
+R320-A                [(8.51@8.50) (28.84@28.81) ]
+R320-P                [(8.43@8.43) (27.64@27.63) ]
+CDIQ0005-Col3         [(17.14@17.11) (25.61@25.63) ]
+CDIQ0005-Col22        [(17.15@17.15) (25.69@25.71) ]
+[Warning: Iteration limit reached.] 
+[> In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('statrobustfit', '/Applications/MATLAB_R2020a.app/toolbox/stats/stats/private/statrobustfit.m', 80)" style="font-weight:bold">statrobustfit</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/stats/stats/private/statrobustfit.m',80,0)">line 80</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('robustfit', '/Applications/MATLAB_R2020a.app/toolbox/stats/stats/robustfit.m', 114)" style="font-weight:bold">robustfit</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/stats/stats/robustfit.m',114,0)">line 114</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('piecewise', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/piecewise.m', 9)" style="font-weight:bold">piecewise</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/piecewise.m',9,0)">line 9</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('Compounds/checktime', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m', 988)" style="font-weight:bold">Compounds/checktime</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m',988,0)">line 988</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('s7setup', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m', 131)" style="font-weight:bold">s7setup</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m',131,0)">line 131</a>)] 
+V256A-A1              [(8.99@9.02) (26.71@26.72) ]
+V256A-B1              [(9.03@9.09) (25.93@25.94) ]
+V256A-C1              [(8.49@8.58) (24.49@24.51) ]
+V256A-D1              [(8.61@8.69) (26.01@26.02) ]
+V256A-E1              [(9.86@9.96) (25.69@25.72) ]
+V256A-F1              [(8.86@8.95) (27.39@27.44) ]
+V256A-G1              [(8.58@8.70) (26.18@26.23) ]
+V256A-H1              [(8.41@8.56) (24.39@24.47) ]
+V256A-A2              [(8.71@8.86) (23.48@23.55) ]
+V256A-B2              [(8.74@8.92) (24.69@24.77) ]
+V256A-C2              [(8.64@8.82) (25.59@25.67) ]
+V256A-D2              [(8.36@8.47) (27.64@27.81) ]
+V256A-E2              [(8.73@8.91) (22.96@23.07) ]
+V256A-F2              [(8.34@8.50) (25.83@25.92) ]
+V256A-G2              [(8.69@8.82) (24.79@24.91) ]
+V256A-H2              [(8.51@8.65) (25.73@25.83) ]
+V256A-A3              [(9.04@9.17) (23.61@23.72) ]
+V256A-B3              [(8.43@8.58) (29.94@30.00) ]
+V256A-C3              [(8.76@8.86) (25.54@25.68) ]
+V256A-D3              [(8.54@8.62) (23.69@23.83) ]
+V256B-A1              [(8.41@8.50) (25.29@25.39) ]
+V256B-B1              [(8.66@8.75) (24.13@24.21) ]
+V256B-C1              [(9.51@9.60) (25.59@25.67) ]
+V256B-D1              [(8.36@8.42) (25.83@25.92) ]
+V256B-E1              [(8.61@8.65) (24.48@24.58) ]
+[Warning: Iteration limit reached.] 
+[> In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('statrobustfit', '/Applications/MATLAB_R2020a.app/toolbox/stats/stats/private/statrobustfit.m', 80)" style="font-weight:bold">statrobustfit</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/stats/stats/private/statrobustfit.m',80,0)">line 80</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('robustfit', '/Applications/MATLAB_R2020a.app/toolbox/stats/stats/robustfit.m', 114)" style="font-weight:bold">robustfit</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/stats/stats/robustfit.m',114,0)">line 114</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('piecewise', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/piecewise.m', 9)" style="font-weight:bold">piecewise</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/piecewise.m',9,0)">line 9</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('Compounds/checktime', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m', 988)" style="font-weight:bold">Compounds/checktime</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m',988,0)">line 988</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('s7setup', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m', 131)" style="font-weight:bold">s7setup</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m',131,0)">line 131</a>)] 
+V256B-F1              [(8.54@8.59) (24.84@24.94) ]
+V256B-G1              [(8.73@8.77) (26.71@26.80) ]
+V256B-H1              [(9.14@9.22) (25.36@25.44) ]
+V256B-A2              [(8.51@8.56) (24.31@24.39) ]
+V256B-B2              [(8.34@8.38) (24.79@24.90) ]
+V256B-C2              [(8.58@8.63) (25.73@25.80) ]
+V256B-D2              [(8.63@8.68) (25.19@25.28) ]
+V256B-E2              [(9.19@9.26) (25.54@25.64) ]
+V256B-F2              [(8.59@8.62) (25.69@25.78) ]
+V256B-G2              [(8.41@8.47) (26.01@26.09) ]
+V256B-H2              [(9.36@9.42) (29.94@30.02) ]
+V256B-A3              [(9.79@9.86) (27.39@27.46) ]
+V256B-B3              [(8.49@8.52) (25.33@25.42) ]
+                      [(8.34@8.39) (29.94@29.99) ] over 20200724
+
+[Warning: Negative limits ignored] 
+[> In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('is2D>testOneAxes', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m', 34)" style="font-weight:bold">is2D>testOneAxes</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m',34,0)">line 34</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('is2D', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m', 23)" style="font-weight:bold">is2D</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graphics/axis/is2D.m',23,0)">line 23</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('axis>LocCheckCompatibleLimits', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m', 254)" style="font-weight:bold">axis>LocCheckCompatibleLimits</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m',254,0)">line 254</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('axis', '/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m', 86)" style="font-weight:bold">axis</a> (<a href="matlab: opentoline('/Applications/MATLAB_R2020a.app/toolbox/matlab/graph2d/axis.m',86,0)">line 86</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('logticks', '/Users/bst/Dropbox/Matlab/Util/logticks.m', 28)" style="font-weight:bold">logticks</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/Matlab/Util/logticks.m',28,0)">line 28</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('Compounds/checksensitivity', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m', 1105)" style="font-weight:bold">Compounds/checksensitivity</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/lib/Compounds.m',1105,0)">line 1105</a>)
+  In <a href="matlab:matlab.internal.language.introspective.errorDocCallback('s7setup', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m', 132)" style="font-weight:bold">s7setup</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/S7/s7setup.m',132,0)">line 132</a>)] 
+summary():
+Contains 49 files, 5120 compounds, 3 adducts (2204 with elution time) Counts for norm IC>=0.10
+ 1 DMSO                        0/  0/  0 compounds identified/isolated/total, 5 false positives
+ 2 V256B-D3                  123/127/256 compounds identified/isolated/total, 18 false positives
+ 3 PR80-A1                    58/ 58/ 80 compounds identified/isolated/total, 8 false positives
+ 4 PR80-H11                   66/ 68/ 80 compounds identified/isolated/total, 7 false positives
+ 5 R320-A                    215/223/320 compounds identified/isolated/total, 22 false positives
+ 6 R320-P                    206/211/320 compounds identified/isolated/total, 20 false positives
+ 7 V5120                     2161/2204/5120 compounds identified/isolated/total, 0 false positives
+ 8 CDIQ0005-Col3               5/  8/ 16 compounds identified/isolated/total, 6 false positives
+ 9 CDIQ0005-Col22              5/  7/ 16 compounds identified/isolated/total, 2 false positives
+10 DMSO                        0/  0/  0 compounds identified/isolated/total, 0 false positives
+11 V256A-A1                   96/108/256 compounds identified/isolated/total, 16 false positives
+12 V256A-B1                  105/116/256 compounds identified/isolated/total, 14 false positives
+13 V256A-C1                  112/122/256 compounds identified/isolated/total, 10 false positives
+14 V256A-D1                   98/109/256 compounds identified/isolated/total, 11 false positives
+15 V256A-E1                  108/123/256 compounds identified/isolated/total, 15 false positives
+16 V256A-F1                   94/111/256 compounds identified/isolated/total, 9 false positives
+17 V256A-G1                  107/116/256 compounds identified/isolated/total, 23 false positives
+18 V256A-H1                   92/106/256 compounds identified/isolated/total, 10 false positives
+19 V256A-A2                   96/105/256 compounds identified/isolated/total, 22 false positives
+20 V256A-B2                  116/120/256 compounds identified/isolated/total, 13 false positives
+21 V256A-C2                  108/113/256 compounds identified/isolated/total, 7 false positives
+22 V256A-D2                   96/103/256 compounds identified/isolated/total, 16 false positives
+23 V256A-E2                   86/ 91/256 compounds identified/isolated/total, 13 false positives
+24 V256A-F2                   92/104/256 compounds identified/isolated/total, 9 false positives
+25 V256A-G2                  107/120/256 compounds identified/isolated/total, 12 false positives
+26 V256A-H2                   89/100/256 compounds identified/isolated/total, 12 false positives
+27 V256A-A3                   89/ 97/256 compounds identified/isolated/total, 10 false positives
+28 V256A-B3                  102/116/256 compounds identified/isolated/total, 18 false positives
+29 V256A-C3                  105/116/256 compounds identified/isolated/total, 11 false positives
+30 V256A-D3                   97/108/256 compounds identified/isolated/total, 5 false positives
+31 V256B-A1                  153/162/256 compounds identified/isolated/total, 18 false positives
+32 V256B-B1                  140/146/256 compounds identified/isolated/total, 32 false positives
+33 V256B-C1                  131/139/256 compounds identified/isolated/total, 27 false positives
+34 V256B-D1                  167/170/256 compounds identified/isolated/total, 27 false positives
+35 V256B-E1                  141/142/256 compounds identified/isolated/total, 27 false positives
+36 V256B-F1                  133/136/256 compounds identified/isolated/total, 15 false positives
+37 V256B-G1                  133/138/256 compounds identified/isolated/total, 39 false positives
+38 V256B-H1                  133/138/256 compounds identified/isolated/total, 14 false positives
+39 V256B-A2                  139/143/256 compounds identified/isolated/total, 20 false positives
+40 V256B-B2                  133/135/256 compounds identified/isolated/total, 20 false positives
+41 V256B-C2                  126/131/256 compounds identified/isolated/total, 33 false positives
+42 V256B-D2                  135/140/256 compounds identified/isolated/total, 10 false positives
+43 V256B-E2                  134/138/256 compounds identified/isolated/total, 18 false positives
+44 V256B-F2                  117/122/256 compounds identified/isolated/total, 22 false positives
+45 V256B-G2                  119/122/256 compounds identified/isolated/total, 18 false positives
+46 V256B-H2                  118/122/256 compounds identified/isolated/total, 13 false positives
+47 V256B-A3                  138/141/256 compounds identified/isolated/total, 17 false positives
+48 V256B-B3                  129/130/256 compounds identified/isolated/total, 16 false positives
+49 DMSO                        0/  0/  0 compounds identified/isolated/total, 1 false positives
+Saving compounds...done
+5A02[M+H] (1): m/z=397.1086 t=22.66 [22.59-22.72] sens=8952, FP=0, FN=0, hits=5g,0L,0H, miss=0s,0w
+Aliases:
+	48D08 [M+H ]: m/z=397.1086 (d=   0) t=24.11 (d=1.45) meanic=NaN
+	487G02[M+H ]: m/z=397.0989 (d= -97) t=NaN (d=NaN) meanic=NaN
+	567C07[M+Na]: m/z=397.1164 (d=  79) t=NaN (d=NaN) meanic=NaN
+	568C11[M+Na]: m/z=397.1198 (d= 112) t=NaN (d=NaN) meanic=NaN
+	605A03[M+Na]: m/z=397.1043 (d= -42) t=15.52 (d=-7.14) meanic=NaN
+	165A08[M+K ]: m/z=397.0988 (d= -98) t=23.47 (d=0.82) meanic=NaN
+	405H07[M+K ]: m/z=397.1085 (d=  -1) t=22.91 (d=0.25) meanic=NaN
+	488A10[M+K ]: m/z=397.1067 (d= -19) t=23.16 (d=0.50) meanic=NaN
+	568A03[M+K ]: m/z=397.1053 (d= -32) t=20.59 (d=-2.07) meanic=NaN
+	605F03[M+K ]: m/z=397.0988 (d= -98) t=NaN (d=NaN) meanic=NaN
+PR80-A1          1.39 [4572 m/z=397.1101 ( 15) t=22.59 ic= 10756 (0.87)    5A02]
+R320-A           2.11 [5963 m/z=397.1098 ( 12) t=22.62 ic= 18859 (1.00)    5A02]   Others: [5962 m/z=397.1066 (-20) t=15.45 ic=  2745 (0.15)    605A03]
+V5120            1.00 [21849 m/z=397.1109 ( 23) t=22.63 ic=  9822 (1.10)    5A02]   Others: [21846 m/z=397.1041 (-45) t=16.22 ic=  3371 (0.38)    ] [21850 m/z=397.1088 (  2) t=24.08 ic= 57267 (6.40)    48D08]
+CDIQ0005-Col3    0.47 [3916 m/z=397.1083 ( -2) t=22.66 ic= 15846 (3.79)    5A02]
+V256A-B2         0.91 [4414 m/z=397.1080 ( -5) t=22.72 ic=  1876 (0.23)    5A02]
+
