@@ -24,7 +24,7 @@ if ~exist('mzdata','var')
   mzdata={};
 end
 
-acicmass=225.208;
+acicmass=225.086189;
 for i=1:size(data,1)
   path=[msdir,'/',data(i).filename];
   if i>length(mzdata) || isempty(mzdata{i}) || ~strcmp(mzdata{i}.path,path)
