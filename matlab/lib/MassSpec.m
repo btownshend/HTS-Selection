@@ -394,8 +394,22 @@ classdef MassSpec < handle
           gscans=sort(unique(gscans));
           ok=any(gscans(args.mingroupsize:end)-gscans(1:end-args.mingroupsize+1)==args.mingroupsize-1);
           if args.debug
-            fprintf('m/z=%.4f, IC=%.0f new EIC [%.4f,%.4f] with %d scans (%d>%.0f) pass=%d\n', ...
-                    allpks(i,1:2), mzrange, length(sel),length(gscans),args.groupthresh, ok);
+            ngroup=0;
+            for k=1:length(gscans)
+              nn=1;
+              for m=k+1:length(gscans)
+                if gscans(m)-gscans(k) == m-k
+                  nn=nn+1;
+                else
+                  break;
+                end
+              end
+              if nn>ngroup
+                ngroup=nn;
+              end
+            end
+            fprintf('m/z=%.4f, IC=%.0f new EIC [%.4f,%.4f] with %d scans (%d>%.0f, group %d) pass=%d\n', ...
+                    allpks(i,1:2), mzrange, length(sel),length(gscans),args.groupthresh,ngroup, ok);
           end
           if (ok)
             % New EIC feature
