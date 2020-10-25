@@ -361,7 +361,7 @@ classdef MassSpec < handle
     % 7. Repeat steps (4)-(6) until all the data has been processed.
     % 8. Finally, a post processing step is implemented. Only EICs with a user defined number of continuous points (mingroupsize) above 
     % a user defined intensity threshold (groupthresh) are kept.
-      defaults=struct('mztol',0.01,'debug',false,'mingroupsize',5,'groupthresh',500,'minintensity',1000,'noise',500);
+      defaults=struct('mztol',0.01,'debug',false,'mingroupsize',2,'groupthresh',500,'minintensity',1000,'noise',500);
       args=processargs(defaults,varargin);
       % Build list of all peaks with time index as 3rd column
       allpks=[];
