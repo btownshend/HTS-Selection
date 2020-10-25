@@ -13,13 +13,16 @@ function c=s7contains(compounds, vecs, name)
     assert(length(vplate96)==length(ord));
     
     n=strsplit(name,'-');
-    assert(length(n)==2);
-    row=n{2}(1)-'A'+1;
-    if length(n{2})>1
-      col=str2num(n{2}(2:end));
-    else
-      col=nan;
+    col=nan;
+    row=nan;
+    
+    if length(n)==2
+      row=n{2}(1)-'A'+1;
+      if length(n{2})>1
+        col=str2num(n{2}(2:end));
+      end
     end
+    
     if strcmp(n{1},'V256A')
       index=(col-1)*8+row;
       c=vecs.v256(index,ord);
@@ -58,6 +61,12 @@ function c=s7contains(compounds, vecs, name)
       name=sprintf('%d%c%02d',plate,row+'A'-1,col);
       c=strcmp(compounds.names,name);
       assert(sum(c)==1);
+    elseif strncmp(n{1},'V2560',5)
+      c=arrayfun(@(z) z.Well384(1)-'A'+1<=8,compounds.sdf.sdf);
+      if n{1}(6)=='B'
+        c=~c;
+      end
+      assert(sum(c)==2560);
     else
       error('Unable to parse %s',name);
     end
