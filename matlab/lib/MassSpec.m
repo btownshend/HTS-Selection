@@ -442,6 +442,106 @@ classdef MassSpec < handle
       obj.featurelists=[obj.featurelists,fl];
     end
 
+    function targetedFeatureDetect(obj,mz,varargin)
+    % Build chromatograms using targets
+    % Retention time arg is optional
+      defaults=struct('mztol',0.01,'timetol',[],'debug',false,'rt',[],'names',{{}},'noise',500);
+      args=processargs(defaults,varargin);
+      
+      [mz,ord]=sort(mz);
+
+      if ~isempty(args.rt)
+        assert(length(args.rt)==length(mz));
+        args.rt=args.rt(ord);
+      end
+      if ~isempty(args.names)
+        assert(length(args.names)==length(mz));
+        args.names=args.names(ord);
+      end
+      mzrange(:,1)=mz-args.mztol;
+      mzrange(:,2)=mz+args.mztol;
+      % Adjust overlaps
+      if isempty(args.rt)
+        % Merge duplicate or overlapping m/z
+        ndup=0;
+        while true
+          dup=find(mzrange(1:end-1,2)>mzrange(2:end,1),1);
+          if isempty(dup)
+            break;
+          end
+          mzrange(dup,2)=mzrange(dup+1,2);
+          mzrange=mzrange([1:dup,dup+2:end],:);
+          if ~isempty(args.names)
+            args.names{dup}=strjoin(args.names([dup,dup+1]),',');
+            args.names=args.names([1:dup,dup+2:end]);
+          end
+          ndup=ndup+1;
+        end
+        if ndup>0
+          fprintf('Merged %d duplicate m/z\n', ndup);
+        end
+      else
+        % With RT given, need to handle overlaps -- TODO
+      end
+      
+      % Buld EIC for each mass
+      fl=FeatureList([obj.name,' chromatograms'],'targetedFeatureDetect',args);
+      if args.debug
+        fprintf('Extracting features for %d masses...',size(mzrange,1));
+      end
+      
+      for i=1:size(mzrange,1)
+        if args.debug && mod(i,500)==1
+          fprintf('%d...',i);
+        end
+        
+        if isempty(args.rt)
+          fname=sprintf('%.4f-%.4f',mzrange(i,:));
+        else
+          timerange=rt(i)+[-1,1]*args.timetol;
+          fname=sprintf('%.4f-%.4f@%.1f-%.1f',mzrange(i,:),timerange);
+        end
+        if ~isempty(args.names)
+          fname=[args.names{i},' ',fname];
+        end
+          
+        % New EIC feature
+        p=[];
+        for j=1:length(obj.time)
+          if ~isempty(args.rt) && (obj.time(j)<timerange(1) || obj.time(j)>timerange(2))
+            continue;
+          end
+          peaks=obj.peaks{j};
+          ind=peaks(:,1)>=mzrange(i,1) & peaks(:,1)<mzrange(i,2);
+          if any(ind)
+            p(end+1,:)=[mean(peaks(ind,1)),sum(peaks(ind,2)),j];
+          else
+            p(end+1,:)=[mean(mzrange(i,:)),0,j];
+          end
+        end
+        if isempty(p)
+          continue;   % Not found
+        end
+        if ~any(p(:,2)>args.noise)
+          continue;   % Too small
+        end
+        %p=p(1:find(isfinite(p(:,1)),1,'last'),:);   % Removing trailing nans
+        first=max(1,find(p(:,2)>0,1)-1);
+        last=min(length(p),find(p(:,2)>0,1,'last')+1);
+        p=p(first:last,:);
+        p(:,3)=obj.time(p(:,3)); % Convert from scan to time
+        feature=Feature(p,fname);
+        fl.append(feature);
+      end
+      if args.debug
+        fprintf('done\n');
+      end
+      % Sort by mz
+      fl.sortbymz();
+      % Append
+      obj.featurelists=[obj.featurelists,fl];
+    end
+
     function deconvolve(obj,varargin)
       defaults=struct('src',[]);
       args=processargs(defaults,varargin);
