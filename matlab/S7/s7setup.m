@@ -122,7 +122,7 @@ for i=1:size(data,1)
 end
 
 s7compounds.findfeatures();
-doassign;
+doassign(s7compounds);
 
 report=s7compounds.report();
 
