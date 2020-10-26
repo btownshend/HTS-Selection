@@ -24,16 +24,16 @@ classdef Compounds < handle
     fsens;    % fsens(j) is the relative sensitivity for file j
     astats;   % astats(i) - struct showing setup for assigning elution time to compound i
     sdf;      % SDF data
+    MZFUZZ;   % global mztol
+    TIMEFUZZ; % global timetol
+    ADDUCTS;  % adducts to use
   end
   
   properties(Constant)
-    MZFUZZ=0.006;
-    TIMEFUZZ=40/60;   % in minutes
-    ADDUCTS=struct('name',{'M+H','M+Na','M+K'},'mass',{1.007825035,22.9897677,38.963708});
   end
   
   methods
-    function obj=Compounds()
+    function obj=Compounds(mzfuzz,timefuzz)
       obj.multihits={};
       obj.contains=false(0,0);
       obj.samples={};
@@ -41,6 +41,17 @@ classdef Compounds < handle
       obj.reffeatures=FeatureList.empty;
       obj.astats=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{});
       obj.sdf=SDF();
+      if nargin<1
+        obj.MZFUZZ=0.006;
+      else
+        obj.MZFUZZ=mzfuzz;
+      end
+      if nargin<2
+        obj.TIMEFUZZ=40/60;   % in minutes
+      else
+        obj.TIMEFUZZ=timefuzz;
+      end
+      obj.ADDUCTS=struct('name',{'M+H','M+Na','M+K'},'mass',{1.007825035,22.9897677,38.963708});
     end
 
     function ind=find(obj,name)
