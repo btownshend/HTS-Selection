@@ -554,7 +554,9 @@ classdef Compounds < handle
                 end
                 
                 % Estimate target sensitity given this set
-                tsens=nanmedian(intensity(selexpected)./obj.fsens(srcfile(selexpected)));
+                ratio=intensity(selexpected)./obj.fsens(srcfile(selexpected));
+                ratio=ratio(isfinite(ratio));   % Using nanmedian() is much slower
+                tsens=median(ratio);
                 expectedIC=zeros(size(obj.fsens));
                 expectedIC(expected)=tsens*obj.fsens(expected);
                 normic=zeros(size(obj.fsens));
