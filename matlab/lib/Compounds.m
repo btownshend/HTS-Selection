@@ -473,7 +473,7 @@ classdef Compounds < handle
     %   build list of observations across features (elution time,whether compound is expected) that are not already assigned
     %   find elution times which have <= given number of false negatives and falsepositives
     %   if unique, assign to compound;  if multiples display message
-      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[],'maxFN',0,'maxFP',0,'clear',true,'detectionThreshold',2000,'normicrange',[0.4,2.5]);
+      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[],'maxFN',0,'maxFP',0,'clear',true,'detectionThreshold',2000,'normicrange',[0.4,2.5],'usefiles',[]);
       args=processargs(defaults,varargin);
 
       if args.clear || isempty(obj.astats)
@@ -503,6 +503,9 @@ classdef Compounds < handle
           etimes=[];intensity=[];srcfile=[];
           mztarget=obj.mztarget(i,k);
           for j=1:length(obj.files)
+            if ~isempty(args.usefiles) && ~ismember(j,args.usefiles)
+              continue;
+            end
             mhits=obj.multihits{i,k,j};
             if ~isempty(mhits)
               used=obj.featureindex(:,:,j);
@@ -545,7 +548,11 @@ classdef Compounds < handle
                   continue;
                 end
                 expected=obj.contains(i,:);   % Files expected to contain this target
-                 
+                if ~isempty(args.usefiles)
+                  % Remove the unused files from expected
+                  expected(setdiff(1:length(expected),args.usefiles))=false;
+                end
+                
                 % Estimate target sensitity given this set
                 tsens=nanmedian(intensity(selexpected)./obj.fsens(srcfile(selexpected)));
                 expectedIC=zeros(size(obj.fsens));
