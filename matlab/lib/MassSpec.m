@@ -482,6 +482,17 @@ classdef MassSpec < handle
         end
       else
         % With RT given, need to handle overlaps -- TODO
+        for i=1:length(mz)
+          for j=i+1:length(mz)
+            if mz(j)-mz(i) < 2*args.mztol
+              break;   % Distinct m/z
+            end
+            if abs(args.rt(j)-args.rt(i)) < 2*args.timetol
+              fprintf('Overlap: %.4f@%.2f and %.4f@%.2f\n', mz(i), args.rt(i), mz(j), args.rt(j));
+            end
+          end
+        end
+        
       end
       
       % Buld EIC for each mass
