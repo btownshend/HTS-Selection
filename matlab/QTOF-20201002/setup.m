@@ -13,8 +13,11 @@ if ~exist('s7vecs','var')
   s7vecs=load([matdir,'s7vecs.mat']);
 end
 
+mztol=.0005;
+
 if ~exist('qsetup','var')
-  qsetup=Compounds();
+  qsetup=Compounds(mztol,40/60);
+  qsetup.ADDUCTS=qsetup.ADDUCTS(1);   % Only M+H for now
   qsetup.addCompoundsFromSDF(s7sdf);
 end
 
@@ -40,7 +43,7 @@ data={ % Well, name, filename, mzmap, timemap,contains
 wells={'A3','B3','C3','D3','E3','F3','G3','H3',...
        'A4','B4','C4','D4','E4','F4','G4','H4',...
        'A5','B5','C5','D5','E5','F5','G5','H5',...
-       'A6','B6','C6','D6','E6','F6','G6','H6'};
+       'A6','B6','C6','D6'};
 for i=1:length(wells)
   data(end+1,:)={wells{i},['V256A-',wells{i}],[msdir2,'/',wells{i},'.mzXML'],mzmap2,timemap,{}};
 end
@@ -75,7 +78,6 @@ if ~exist('mzdata','var')
 end
 
 for i=1:size(data,1)
-  mztol=.0005;
   path=data(i).filename;
   if i>length(mzdata) || isempty(mzdata{i}) || ~strcmp(mzdata{i}.path,path)
       mztmp=MassSpec(path);
@@ -111,14 +113,27 @@ for i=1:size(data,1)
 end
 
 qsetup.findfeatures();
-return;
 
-doassign;
+ref=3;
+trace=[];
+timetol=0.2;
+usefiles=1:length(qsetup.samples);
+usefiles=setdiff(usefiles,1:9);   % Skip pre/sn ones
+minhits=2;
+qsetup.assignTimes('clear',true,'timetol',timetol,'mztol',mztol,'trace',trace,'usefiles',usefiles,'minhits',minhits);
+qsetup.checksensitivity(ref);
+qsetup.assignTimes('clear',false,'timetol',timetol,'mztol',mztol,'trace',trace,'usefiles',usefiles,'minhits',minhits);
+qsetup.assignTimes('clear',false,'timetol',timetol,'normicrange',[0.5,4.5],'trace',trace,'usefiles',usefiles,'minhits',minhits);
+qsetup.assignTimes('clear',false,'timetol',timetol,'maxFP',1,'trace',trace,'usefiles',usefiles,'minhits',minhits);
+qsetup.assignTimes('clear',false,'timetol',timetol,'maxFN',1,'trace',trace,'usefiles',usefiles,'minhits',minhits);
+qsetup.assignTimes('clear',false,'timetol',timetol,'maxFN',1,'maxFP',1,'trace',trace,'usefiles',usefiles,'minhits',minhits);
+qsetup.checksensitivity(ref);
+qsetup.assignTimes('clear',false,'timetol',timetol,'maxFN',2,'maxFP',2,'trace',trace,'usefiles',usefiles,'minhits',minhits);
+
 
 report=qsetup.report();
 
 qsetup.checkmzoffset();
-ref=7;
 qsetup.checktime(ref,'timetol',qsetup.TIMEFUZZ/2);
 qsetup.checksensitivity(ref);
 
