@@ -527,7 +527,9 @@ classdef MassSpec < handle
           peaks=obj.peaks{j};
           ind=peaks(:,1)>=mzrange(i,1) & peaks(:,1)<mzrange(i,2);
           if any(ind)
-            p(end+1,:)=[mean(peaks(ind,1)),sum(peaks(ind,2)),j];
+            psel=peaks(ind,:);
+            [~,ia]=max(psel(:,2));
+            p(end+1,:)=[psel(ia),sum(psel(:,2)),j];
           else
             p(end+1,:)=[mean(mzrange(i,:)),0,j];
           end
