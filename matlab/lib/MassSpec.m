@@ -542,7 +542,7 @@ classdef MassSpec < handle
         end
         %p=p(1:find(isfinite(p(:,1)),1,'last'),:);   % Removing trailing nans
         first=max(1,find(p(:,2)>0,1)-1);
-        last=min(length(p),find(p(:,2)>0,1,'last')+1);
+        last=min(size(p,1),find(p(:,2)>0,1,'last')+1);
         p=p(first:last,:);
         p(:,3)=obj.time(p(:,3)); % Convert from scan to time
         feature=Feature(p,fname);
