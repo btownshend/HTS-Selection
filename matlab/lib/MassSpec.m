@@ -442,7 +442,7 @@ classdef MassSpec < handle
       obj.featurelists=[obj.featurelists,fl];
     end
 
-    function targetedFeatureDetect(obj,mz,varargin)
+    function fl=targetedFeatureDetect(obj,mz,varargin)
     % Build chromatograms using targets
     % Retention time arg is optional
       defaults=struct('mztol',0.01,'timetol',[],'debug',false,'rt',[],'names',{{}},'noise',500);
@@ -549,8 +549,10 @@ classdef MassSpec < handle
       end
       % Sort by mz
       fl.sortbymz();
-      % Append
-      obj.featurelists=[obj.featurelists,fl];
+      if nargout==0
+        % Append
+        obj.featurelists=[obj.featurelists,fl];
+      end
     end
 
     function deconvolve(obj,varargin)
