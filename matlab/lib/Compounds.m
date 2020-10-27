@@ -638,7 +638,7 @@ classdef Compounds < handle
 
           % Construct consensus view
           obj.meantime(i)=mean(bestwindow);
-          obj.timewindow(i,1:2)=bestwindow;
+          obj.timewindow(i,1:2)=obj.meantime(i)+args.timetol*[-1,1];
           obj.astats(i)=astats;
           for kk=1:length(obj.ADDUCTS)
             for j=1:length(obj.files)
