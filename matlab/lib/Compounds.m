@@ -417,7 +417,7 @@ classdef Compounds < handle
       setfig(ti);clf;
       niter=3;
       for iter=1:niter
-        allid=obj.checkComposition(ms,'map',map,'timetol',500/60/iter,'mztol',.02/iter);
+        allid=obj.checkComposition(ms,'map',map,'timetol',500/60/iter,'mztol',obj.MZFUZZ*2/iter);
         t=[];mz=[];  % Build lists of [reference,file]
         for i=1:length(allid(:))
           if isfinite(allid(i).time)
@@ -1236,7 +1236,7 @@ classdef Compounds < handle
     
     function ploteics(obj,name,varargin)
     % Plot EIC's for given compound using provided ms cell array aligned with obj.samples
-      defaults=struct('mzdata',[],'adduct',1,'falsethresh',0.1,'minic',400,'zoom',true,'mztol',.01,'timerange',[-inf,inf]);
+      defaults=struct('mzdata',[],'adduct',1,'falsethresh',0.1,'minic',400,'zoom',true,'mztol',obj.MZFUZZ,'timerange',[-inf,inf]);
       args=processargs(defaults,varargin);
 
       if ischar(name)
