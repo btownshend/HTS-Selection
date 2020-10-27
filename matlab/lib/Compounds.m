@@ -51,7 +51,7 @@ classdef Compounds < handle
       else
         obj.TIMEFUZZ=timefuzz;
       end
-      obj.ADDUCTS=struct('name',{'M+H','M+Na','M+K'},'mass',{1.007825035,22.9897677,38.963708});
+      obj.ADDUCTS=struct('name',{'M+H','M+Na','M+K'},'mass',{1.007276,22.989218,38.963158});
     end
 
     function ind=find(obj,name)

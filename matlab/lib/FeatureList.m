@@ -335,7 +335,7 @@ classdef FeatureList < handle
       args=processargs(defaults,varargin);
 
       ilist=[];
-      isodiff=1.0030;   % Although C13-C12 should be 1.003355, we see 1.0030 empircally
+      isodiff=1.003355;   % Although C13-C12 should be 1.003355, we see 1.0030 empircally
       % cratio=.0107/.9893;
       % ncarbons=[8,30];
       % ratio1=binopdf(1,ncarbons,cratio);
