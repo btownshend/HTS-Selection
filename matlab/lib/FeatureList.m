@@ -156,6 +156,11 @@ classdef FeatureList < handle
       obj.features=obj.features(ord);
     end
     
+    function sortbytime(obj)
+      [~,ord]=sort([obj.features.time]);
+      obj.features=obj.features(ord);
+    end
+    
     function [fl,sel]=getbymz(obj,mz,varargin)
       defaults=struct('mztol',0.01,'timerange',[]);
       args=processargs(defaults,varargin);
