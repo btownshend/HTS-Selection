@@ -263,7 +263,7 @@ classdef FeatureList < handle
           leftvar =min(conv( leftnoise.^2,wind,'valid'));
           rightvar=min(conv(rightnoise.^2,wind,'valid'));
           noise=sqrt(mean([leftvar;rightvar]));
-          f=Feature(rawpeaks,[],noise);
+          f=Feature(rawpeaks,obj.features(i).name,noise);
           if ismember(i,args.trace) || isnan(noise)
             keyboard;
           end

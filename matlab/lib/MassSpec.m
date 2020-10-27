@@ -506,14 +506,16 @@ classdef MassSpec < handle
           fprintf('%d...',i);
         end
         
-        if isempty(args.rt)
+        if ~isempty(args.rt)
+          timerange=args.rt(i)+[-1,1]*args.timetol;
+        end
+        
+        if ~isempty(args.names)
+          fname=args.names{i};
+        elseif isempty(args.rt)
           fname=sprintf('%.4f-%.4f',mzrange(i,:));
         else
-          timerange=rt(i)+[-1,1]*args.timetol;
           fname=sprintf('%.4f-%.4f@%.1f-%.1f',mzrange(i,:),timerange);
-        end
-        if ~isempty(args.names)
-          fname=[args.names{i},' ',fname];
         end
           
         % New EIC feature
