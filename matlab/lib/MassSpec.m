@@ -679,5 +679,45 @@ classdef MassSpec < handle
       ylabel(o2.name);
     end
         
+    function findtarget(obj,formula,varargin)
+    % Scan for a particular m/z include adduct and isotope search
+      defaults=struct('mztol',0.0005,'timetol',0.6,'noise',500,...
+                      'adducts',struct('name',{'M+H','M+Na','M+K'},'mass',{1.007276,22.989218,38.963158}));
+      args=processargs(defaults,varargin);
+      
+      isotopes=getisotopes(formula,'minabundance',.001);
+      tstep=median(diff(obj.time));
+      for i=1:length(args.adducts)
+        a=args.adducts(i);
+        mz=isotopes(1).mass+a.mass;
+        fprintf('%s[%s] m/z=%.4f\n', isotopes(1).name, a.name,isotopes(1).mass+a.mass);
+        fl=obj.targetedFeatureDetect(mz,'names',{a.name},'mztol',args.mztol,'noise',args.noise,'timetol',args.timetol);
+        fld=fl.deconvolve('noise',500,'oversegmentationfilter',args.timetol);
+        for j=1:length(fld.features)
+          f=fld.features(j);
+          fprintf(' %-41.41s %.4f d=%3.0f T=%5.2f, I=%7.0f\n', sprintf('%s@%.2f',isotopes(1).name,f.time), f.mz, (f.mz-mz)*1e4, f.time, f.intensity);
+          %fprintf('  timerange=[%.3f,%.3f]\n', f.timerange);
+          for k=2:length(isotopes)
+            if isotopes(k).abundance*f.intensity < args.noise/2
+              continue;
+            end
+            mzi=isotopes(k).mass+a.mass;
+            fli=obj.targetedFeatureDetect(mzi,'names',{isotopes(k).name},'mztol',args.mztol,'noise',0,'timetol',tstep/2,'rt',f.time);
+            fprintf('  %-40.40s %.4f',isotopes(k).name,mzi);
+            if length(fli.features)>0
+              fi=fli.features(1);
+              assert(fi.time==f.time);
+              assert(fi.npeaks==1);
+              fprintf(' d=%3.0f T=%5.2f, I=%7.0f Rel=%4.1f%%',(fi.mz-mzi)*1e4, fi.time, fi.intensity,fi.intensity/f.intensity*100);
+            else
+              fprintf(' d=%3.0f T=%5.2f, I=%7.0f Rel=%4.1f%%',0, f.time, 0,0);
+            end
+            fprintf(' Expected %4.1f%%',isotopes(k).abundance/isotopes(1).abundance*100);
+            fprintf('\n');
+          end
+        end
+      end
+    end
+      
   end % methods
 end % classdef
