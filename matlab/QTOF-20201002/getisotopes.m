@@ -51,7 +51,7 @@ function c=getisotopes(f,varargin)
     if isoabund(i).abund>0.5
       isoabund(i).name=isoabund(i).element;
     else
-      isoabund(i).name=sprintf('%s[%d]',isoabund(i).element,isoabund(i).n);
+      isoabund(i).name=sprintf('[%d]%s',isoabund(i).n,isoabund(i).element);
     end
   end
 
@@ -71,7 +71,12 @@ function c=getisotopes(f,varargin)
     end
   else
     % Only 1 atom type
-    a=isoabund(strcmp({isoabund.element},atoms{1}));    
+    a=isoabund(strcmp({isoabund.element},atoms{1}));   
+    assert(abs(sum([a.abund])-1)<= .001);
+    if isempty(a)
+      error('Bad element: %s', atoms{1});
+    end
+    
     n=f.(atoms{1});
     v=zeros(length(a),1);
     v(1)=n;
@@ -113,7 +118,7 @@ function c=getisotopes(f,varargin)
       end
     end
   end
-  assert(abs(sum([c.abundance])-1)<args.minabundance*10);
+  assert(abs(sum([c.abundance])-1)<.02);
   [~,ord]=sort([c.abundance],'desc');
   c=c(ord);
   
@@ -123,5 +128,8 @@ function c=getisotopes(f,varargin)
     set(gca,'YScale','log');
     xlabel('Mass');
     ylabel('Abundance');
+  end
+  if nargout<1
+    struct2table(c)
   end
 end
