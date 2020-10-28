@@ -1,8 +1,31 @@
 function c=getisotopes(f,varargin)
+% Get list of isotopes for given formula (a struct), returning a struct of name,mass,abundance (relative to original)
   defaults=struct('minabundance',1e-4,'plot',false);
   args=processargs(defaults,varargin);
 
-  % Get list of isotopes for given formula (a struct), returning a struct of name,mass,abundance (relative to original)
+  if ischar(f)
+    % Convert to a struct
+    fs=struct();
+    upper=find(f>='A' & f<='Z');
+    upper(end+1)=length(f)+1;
+    for i=1:length(upper)-1
+      pos=upper(i);
+      if pos<length(f) & f(pos+1)>='a' & f(pos+1)<='z'
+        sym=f(pos:pos+1);
+        npos=pos+2;
+      else
+        sym=f(pos);
+        npos=pos+1;
+      end
+      if npos<upper(i+1)
+        fs.(sym)=str2num(f(npos:upper(i+1)-1));
+      else
+        fs.(sym)=1;
+      end
+    end
+    f=fs;
+  end
+  
   isoabund={1,'H',99.9885,1.007825   % n, element, %abund, mass
             2,'H',0.0115,2.0140
             12,'C',98.93,12
