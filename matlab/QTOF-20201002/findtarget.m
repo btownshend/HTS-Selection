@@ -8,6 +8,7 @@ function findtarget(obj,mzd,id,varargin)
   nadducts=length(masslist);
 
   isotopes=getisotopes(obj.sdf.sdf(id).Formula,'minabundance',.001);
+  tstep=median(diff(mzd.time));
   for i=1:length(args.adducts)
     a=args.adducts(i);
     mz=isotopes(1).mass+a.mass;
@@ -23,10 +24,12 @@ function findtarget(obj,mzd,id,varargin)
           continue;
         end
         mzi=isotopes(k).mass+a.mass;
-        fli=mzd.targetedFeatureDetect(mzi,'names',{isotopes(k).name},'mztol',args.mztol,'noise',0,'timetol',diff(f.timerange)/2*1.01,'rt',mean(f.timerange));
+        fli=mzd.targetedFeatureDetect(mzi,'names',{isotopes(k).name},'mztol',args.mztol,'noise',0,'timetol',tstep/2,'rt',f.time);
         fprintf('  %-40.40s %.4f',isotopes(k).name,mzi);
         if length(fli.features)>0
           fi=fli.features(1);
+          assert(fi.time==f.time);
+          assert(fi.npeaks==1);
           fprintf(' d=%3.0f T=%5.2f, I=%7.0f Rel=%4.1f%%',(fi.mz-mzi)*1e4, fi.time, fi.intensity,fi.intensity/f.intensity*100);
         else
           fprintf(' d=%3.0f T=%5.2f, I=%7.0f Rel=%4.1f%%',0, f.time, 0,0);
