@@ -685,7 +685,7 @@ classdef MassSpec < handle
                       'adducts',struct('name',{'M+H','M+Na','M+K'},'mass',{1.007276,22.989218,38.963158}));
       args=processargs(defaults,varargin);
       
-      isotopes=getisotopes(formula,'minabundance',.001);
+      isotopes=Chem.getisotopes(formula,'minabundance',.001);
       tstep=median(diff(obj.time));
       for i=1:length(args.adducts)
         a=args.adducts(i);

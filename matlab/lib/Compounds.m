@@ -1599,5 +1599,11 @@ classdef Compounds < handle
       fclose(fd);
     end
     
+    function dbsave(obj)
+      for i=1:length(obj.names)
+        Chem.dbsavecompound(obj.names{i},obj.sdf.sdf(i).Formula);
+      end
+    end
+
   end
 end
