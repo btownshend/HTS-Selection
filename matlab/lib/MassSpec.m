@@ -679,7 +679,7 @@ classdef MassSpec < handle
       ylabel(o2.name);
     end
         
-    function findtarget(obj,formula,varargin)
+    function [bestfeature,bestmz,bestfound]=findtarget(obj,formula,varargin)
     % Scan for a particular m/z include adduct and isotope search
       defaults=struct('dbsave',false,'mztol',0.0005,'timetol',0.6,'noise',500,'debug',false,...
                       'adducts',struct('name',{'M+H','M+Na','M+K'},'mass',{1.007276,22.989218,38.963158}));
@@ -697,6 +697,7 @@ classdef MassSpec < handle
       end
       
       tstep=median(diff(obj.time));
+      bestfeature=Feature(); bestmz=nan; bestfound=0;
       for i=1:length(args.adducts)
         a=args.adducts(i);
         if args.dbsave
@@ -728,6 +729,7 @@ classdef MassSpec < handle
             %fprintf(' %-41.41s %.4f d=%3.0f T=%5.2f, I=%7.0f\n', sprintf('%s@%.2f',isotopes(1).name,f.time), f.mz, (f.mz-mz)*1e4, f.time, f.intensity);
             %fprintf('  timerange=[%.3f,%.3f]\n', f.timerange);
           end
+          nfound=0;nmissing=0;
           for k=1:length(isotopes)
             if isotopes(k).abundance*f.intensity < args.noise/2
               continue;
@@ -751,6 +753,7 @@ classdef MassSpec < handle
                 nins=mysql(cmd);
                 assert(nins==1);
               end
+              intensity=fi.intensity;
             else
               if args.debug
                 fprintf('      ');
@@ -762,7 +765,37 @@ classdef MassSpec < handle
                 nins=mysql(cmd);
                 assert(nins==1);
               end
+              intensity=0;
             end
+            relabund=intensity/f.intensity;
+            expabund=isotopes(k).abundance/isotopes(1).abundance;
+            if args.debug
+              fprintf(' I=%7.0f A=%5.1f%%/%5.1f%% -> %.2f',intensity,[relabund,expabund]*100,relabund/expabund);
+            end
+            if relabund>=0.8*expabund && relabund<1.3*expabund
+              if args.debug
+                fprintf('+');
+              end
+              nfound=nfound+1;
+            elseif relabund<0.8*expabund && f.intensity*expabund>args.noise*2
+              if args.debug
+                fprintf('-');
+              end
+              nmissing=nmissing+1;
+            else % Too high, could be overlapping peak
+              ;
+            end
+            if args.debug
+              fprintf('\n');
+            end
+          end
+          if args.debug
+            fprintf('  Score: found:%d, missing:%d\n', nfound, nmissing);
+          end
+          if nmissing==0 && (nfound>bestfound || (nfound==bestfound && f.intensity>bestfeature.intensity))
+            bestfound=nfound;
+            bestfeature=f;
+            bestmz=mz;
           end
         end
       end
