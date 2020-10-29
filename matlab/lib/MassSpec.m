@@ -711,19 +711,20 @@ classdef MassSpec < handle
           mysql(sprintf('DELETE FROM features WHERE msrun=%d AND adduct=%d AND formula_pk=%d',msrun,apk,fpk));
         end
         mz=isotopes(1).mass+a.mass;
-        fprintf('%s[%s] m/z=%.4f\n', isotopes(1).name, a.name,isotopes(1).mass+a.mass);
+        fprintf('\n%s[%s] m/z=%.4f\n', isotopes(1).name, a.name,isotopes(1).mass+a.mass);
         fl=obj.targetedFeatureDetect(mz,'names',{a.name},'mztol',args.mztol,'noise',args.noise,'timetol',args.timetol);
         fld=fl.deconvolve('noise',500,'oversegmentationfilter',args.timetol);
         for j=1:length(fld.features)
           f=fld.features(j);
-          fprintf(' %-41.41s %.4f d=%3.0f T=%5.2f, I=%7.0f\n', sprintf('%s@%.2f',isotopes(1).name,f.time), f.mz, (f.mz-mz)*1e4, f.time, f.intensity);
           if args.dbsave
             mysql(sprintf('INSERT INTO features(msrun,formula_pk,adduct,rt,mztol) VALUES(%d,%d,%d,%f,%f)',msrun,fpk,apk,f.time,args.mztol));
             feature=mysql('SELECT LAST_INSERT_ID()');
             fprintf('Created feature %d\n', feature);
           end
+          fprintf(' %.2f\n',f.time);
+          %fprintf(' %-41.41s %.4f d=%3.0f T=%5.2f, I=%7.0f\n', sprintf('%s@%.2f',isotopes(1).name,f.time), f.mz, (f.mz-mz)*1e4, f.time, f.intensity);
           %fprintf('  timerange=[%.3f,%.3f]\n', f.timerange);
-          for k=2:length(isotopes)
+          for k=1:length(isotopes)
             if isotopes(k).abundance*f.intensity < args.noise/2
               continue;
             end
