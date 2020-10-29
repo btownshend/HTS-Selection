@@ -160,6 +160,36 @@ classdef Chem < handle
       end
     end
     
+    function c=dbsavecompound(name,formula)
+    % Save compound in database along with isotopes and return PK
+    %mysql('use hts');
+      c=mysql(sprintf('select compound from compounds where id=''%s''',name));
+      if ~isempty(c)
+        fprintf('Database already contains %s\n', name);
+        return;
+      end
+      mysql('start transaction');
+      if isstruct(formula)
+        formula=Chem.struct2formula(formula);
+      end
+      f=mysql(sprintf('select formula_pk from formulas where formula=''%s''',formula));
+      if isempty(f)
+        mysql(sprintf('insert into formulas(formula) values(''%s'')',formula));
+        f=mysql(sprintf('select formula_pk from formulas where formula=''%s''',formula));
+        iso=Chem.getisotopes(formula);
+        vals='';
+        for i=1:length(iso)
+          vals=sprintf('%s\n(%d,''%s'',%f,%f),',vals,f,iso(i).name,iso(i).mass,iso(i).abundance);
+        end
+        vals=vals(1:end-1);  % Remove trailing comma
+        mysql(sprintf('insert into isotopes(formula_pk,formula,mass,abundance) VALUES\n%s',vals));
+        fprintf('Added %d isotopes for %s\n', length(iso), formula);
+      end
+      mysql(sprintf('insert into compounds(id,formula_pk) values(''%s'',%d)',name,f));
+      c=mysql(sprintf('select compound from compounds where id=''%s''',name));
+      mysql('commit');
+      fprintf('Created compound %d for %s (%s)\n', c, name, formula);
+    end
     
   end
 end % Chem

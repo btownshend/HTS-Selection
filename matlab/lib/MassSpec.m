@@ -681,14 +681,35 @@ classdef MassSpec < handle
         
     function findtarget(obj,formula,varargin)
     % Scan for a particular m/z include adduct and isotope search
-      defaults=struct('mztol',0.0005,'timetol',0.6,'noise',500,...
+      defaults=struct('dbsave',false,'mztol',0.0005,'timetol',0.6,'noise',500,...
                       'adducts',struct('name',{'M+H','M+Na','M+K'},'mass',{1.007276,22.989218,38.963158}));
       args=processargs(defaults,varargin);
       
       isotopes=Chem.getisotopes(formula,'minabundance',.001);
+      if args.dbsave
+        msrun=obj.dbsave();
+        if isstruct(formula)
+          formula=Chem.struct2formula(formula);
+        end
+        cmd=sprintf('SELECT formula_pk FROM formulas WHERE formula=''%s''',formula);
+        fpk=mysql(cmd);
+        assert(~isempty(fpk));
+      end
+      
       tstep=median(diff(obj.time));
       for i=1:length(args.adducts)
         a=args.adducts(i);
+        if args.dbsave
+          apk=mysql(sprintf('select adduct from adducts where name=''%s''',a.name));
+          if isempty(apk)
+            fprintf('Added adduct %s to database\n', a.name);
+            mysql(sprintf('insert into adducts(name,mass) values(''%s'',%f)',a.name,a.mass));
+            apk=mysql(sprintf('select adduct from adducts where name=''%s''',a.name));
+            assert(~isempty(apk));
+          end
+          % Clear any old entries
+          mysql(sprintf('DELETE FROM features WHERE msrun=%d AND adduct=%d AND formula_pk=%d',msrun,apk,fpk));
+        end
         mz=isotopes(1).mass+a.mass;
         fprintf('%s[%s] m/z=%.4f\n', isotopes(1).name, a.name,isotopes(1).mass+a.mass);
         fl=obj.targetedFeatureDetect(mz,'names',{a.name},'mztol',args.mztol,'noise',args.noise,'timetol',args.timetol);
@@ -696,6 +717,11 @@ classdef MassSpec < handle
         for j=1:length(fld.features)
           f=fld.features(j);
           fprintf(' %-41.41s %.4f d=%3.0f T=%5.2f, I=%7.0f\n', sprintf('%s@%.2f',isotopes(1).name,f.time), f.mz, (f.mz-mz)*1e4, f.time, f.intensity);
+          if args.dbsave
+            mysql(sprintf('INSERT INTO features(msrun,formula_pk,adduct,rt,mztol) VALUES(%d,%d,%d,%f,%f)',msrun,fpk,apk,f.time,args.mztol));
+            feature=mysql('SELECT LAST_INSERT_ID()');
+            fprintf('Created feature %d\n', feature);
+          end
           %fprintf('  timerange=[%.3f,%.3f]\n', f.timerange);
           for k=2:length(isotopes)
             if isotopes(k).abundance*f.intensity < args.noise/2
@@ -709,8 +735,22 @@ classdef MassSpec < handle
               assert(fi.time==f.time);
               assert(fi.npeaks==1);
               fprintf(' d=%3.0f T=%5.2f, I=%7.0f Rel=%4.1f%%',(fi.mz-mzi)*1e4, fi.time, fi.intensity,fi.intensity/f.intensity*100);
+              if args.dbsave
+                cmd=sprintf(['INSERT INTO isopeaks(feature,isotope,obsmz,ioncount) ',...
+                             'SELECT %d,i.isotope,%.5f,%.0f FROM isotopes i ',...
+                             'WHERE i.formula=''%s'''],feature, fi.mz,fi.intensity,isotopes(k).name);
+                nins=mysql(cmd);
+                assert(nins==1);
+              end
             else
               fprintf(' d=%3.0f T=%5.2f, I=%7.0f Rel=%4.1f%%',0, f.time, 0,0);
+              if args.dbsave
+                cmd=sprintf(['INSERT INTO isopeaks(feature,isotope,ioncount) ',...
+                             'SELECT %d,i.isotope,0 FROM isotopes i ',...
+                             'WHERE i.formula=''%s'''],feature,isotopes(k).name);
+                nins=mysql(cmd);
+                assert(nins==1);
+              end
             end
             fprintf(' Expected %4.1f%%',isotopes(k).abundance/isotopes(1).abundance*100);
             fprintf('\n');
@@ -719,5 +759,21 @@ classdef MassSpec < handle
       end
     end
       
+    function msrun=dbsave(obj)
+      if mysql('status')~=0
+        mysql('open','35.203.151.202','hts','driver');
+      end
+      mysql('use hts');
+      path=strrep(obj.path,'../','');
+      path=strrep(path,'data/','');
+      path=strrep(path,'MassSpec/','');
+      msrun=mysql(sprintf('select msrun from msruns where filename=''%s''',path));
+      if isempty(msrun)
+        nins=mysql(sprintf('insert into msruns(created,name,filename) values(NOW(),''%s'',''%s'')',obj.name, path));
+        assert(nins==1);
+        msrun=mysql(sprintf('select msrun from msruns where filename=''%s''',path));
+      end
+    end
+    
   end % methods
 end % classdef
