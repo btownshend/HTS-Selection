@@ -41,3 +41,6 @@ results/report-202008241747.csv
 matlab/QTOF-20201002/build
 matlab/QTOF-20201002/build2
 matlab/QTOF-20201002/build3
+matlab/QTOF-20201002/ident.csv
+matlab/QTOF-20201002/validate.txt
+results/report-202010250850.csv
