@@ -44,3 +44,5 @@ matlab/QTOF-20201002/build3
 matlab/QTOF-20201002/ident.csv
 matlab/QTOF-20201002/validate.txt
 results/report-202010250850.csv
+matlab/QTOF-20201002/ident_hold.csv
+matlab/QTOF-20201002/findallhits.txt
