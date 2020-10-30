@@ -24,4 +24,4 @@ fprintf('Have %d single-occurence entries, %d multiple consistent ones, %d incon
 setfig('Elution Time');clf;
 histogram(etime,50);
 xlabel('Elution Time (min)');
-
+title('Elution time distribution for multiples');
