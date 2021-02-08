@@ -721,7 +721,7 @@ classdef MassSpec < handle
       end
       
       tstep=median(diff(obj.time));
-      bestfeature=Feature(); bestmz=nan; bestfound=0;
+      bestfeature=[]; bestmz=[]; bestfound=[];
       for i=1:length(args.adducts)
         a=args.adducts(i);
         if args.dbsave
@@ -828,22 +828,20 @@ classdef MassSpec < handle
           if args.debug
             fprintf('  Score: found:%d, missing:%d\n', nfound, nmissing);
           end
-          if nmissing==0 && (nfound>bestfound || (nfound==bestfound && f.intensity>bestfeature.intensity))
-            bestfound=nfound;
-            bestfeature=f;
-            bestmz=mz;
+          if nfound-nmissing>=2
+            bestfound(end+1)=nfound-nmissing;
+            bestfeature=[bestfeature,f];
+            bestmz(end+1)=mz;
           end
         end
       end
       if args.debug
-        if bestfound>0
-          fprintf('Best candidate has %d found: %s mz=%.4f, T=%.2f, \n', bestfound, bestfeature.name, bestmz, bestfeature.time);
+        if length(bestfound)>0
+          [~,top]=max(bestfound);
+          fprintf('Best candidate has %d found: %s mz=%.4f, T=%.2f, \n', bestfound(top), bestfeature(top).name, bestmz(top), bestfeature(top).time);
         else
           fprintf('No feasible candidates\n');
         end
-      end
-      if args.debug && bestfound>4
-        %keyboard;
       end
     end
       
