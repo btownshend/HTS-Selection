@@ -1574,9 +1574,9 @@ classdef Compounds < handle
       f=obj.sdf.getformula(i);
     end
 
-    % Each row has fields:  ID, m/z, retention time, identity, formula
     function export(obj,filename,varargin)
     % Export via CSV (can be used as import to mzmine)
+    % Each row has fields:  ID, m/z, retention time, identity, formula, tsens
       defaults=struct('adducts',[],'notimes',false,'ind',[]);
       args=processargs(defaults,varargin);
     
@@ -1590,15 +1590,26 @@ classdef Compounds < handle
         args.adducts=1:length(obj.ADDUCTS);
       end
       fd=fopen(filename,'w');
-      fprintf(fd,'ID, m/z, retention time, identity, formula\n');
+      fprintf(fd,'ID, m/z, retention time, identity, formula, tsens\n');
       for ii=1:length(args.ind)
         i=args.ind(ii);
-        for j=1:length(args.adducts)
-          t=obj.meantime(i);
-          if isnan(t) || args.notimes
-            t=0;
+        if isempty(args.adducts)
+          % Export only best one (highest IC)
+          bestadduct=1;
+          for j=1:length(args.adducts)
+            if obj.tsens(i,j)>obj.tsens(i,bestadduct)
+              bestadduct=j;
+            end
           end
-          fprintf(fd,'%d,%.4f,%.2f,%s[%s],%s\n', i, obj.mass(i)+obj.ADDUCTS(j).mass,t/60.0,obj.names{i},obj.ADDUCTS(j).name,obj.getformula(i));
+          fprintf(fd,'%d,%.4f,%.2f,%s[%s],%s,%f\n', i, obj.mass(i)+obj.ADDUCTS(bestadduct).mass,t/60.0,obj.names{i},obj.ADDUCTS(bestadduct).name,obj.getformula(i),obj.tsens(i,bestadduct));
+        else
+          for j=1:length(args.adducts)
+            t=obj.meantime(i);
+            if isnan(t) || args.notimes
+              t=0;
+            end
+            fprintf(fd,'%d,%.4f,%.2f,%s[%s],%s\n', i, obj.mass(i)+obj.ADDUCTS(j).mass,t/60.0,obj.names{i},obj.ADDUCTS(j).name,obj.getformula(i));
+          end
         end
       end
       fclose(fd);
