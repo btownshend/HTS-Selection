@@ -755,11 +755,16 @@ classdef MassSpec < handle
           end
           nfound=0;nmissing=0;
           for k=1:length(isotopes)
-            if isotopes(k).abundance*f.intensity < args.noise/2
+            if max(isotopes(k).abundance)*f.intensity < args.noise/2
               continue;
             end
             mzi=isotopes(k).mass+a.mass;
             fli=obj.targetedFeatureDetect(mzi,'names',{isotopes(k).name},'mztol',args.mztol,'noise',0,'timetol',tstep/2,'rt',f.time);
+            if length(fli.features)==0
+              % None found, but may be shadowed by a nearby larger peak
+              fli=obj.targetedFeatureDetect(mzi,'names',{isotopes(k).name},'mztol',mzi/args.mzrp,'noise',0,'timetol',tstep/2,'rt',f.time);
+            end
+            
             if args.debug
               fprintf('  %-40.40s %.4f',isotopes(k).name,mzi);
             end
@@ -793,6 +798,13 @@ classdef MassSpec < handle
             end
             relabund=intensity/f.intensity;
             expabund=isotopes(k).abundance/isotopes(1).abundance;
+            if length(expabund)>1
+              % Multiple hypotheses depending on how it is merged
+              expabund=[expabund,sum(expabund)];
+              dist=abs(relabund-expabund);
+              [~,ind]=min(dist);
+              expabund=expabund(ind);
+            end
             if args.debug
               fprintf(' I=%7.0f A=%5.1f%%/%5.1f%% -> %.2f',intensity,[relabund,expabund]*100,relabund/expabund);
             end
