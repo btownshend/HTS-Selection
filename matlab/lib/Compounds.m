@@ -734,8 +734,12 @@ classdef Compounds < handle
         end
         obj.contains(:,findex)=ismember(obj.names,args.contains);
       end
-      fl=ms.featurelists(end);
-      obj.allfeatures(findex)=fl;
+      if ~isempty(ms.featurelists)
+        fl=ms.featurelists(end);
+        obj.allfeatures(findex)=fl;
+      else
+        fprintf('Warning: not setting Compounds.featurelists\n');
+      end
       if length(obj.reffeatures)>=findex
         % Clear it
         obj.reffeatures(findex)=FeatureList.empty;
