@@ -1574,9 +1574,9 @@ classdef Compounds < handle
       f=obj.sdf.getformula(i);
     end
 
-    function export2mzmine(obj,filename,varargin)
-    % Export to mzmine2 via CSV
     % Each row has fields:  ID, m/z, retention time, identity, formula
+    function export(obj,filename,varargin)
+    % Export via CSV (can be used as import to mzmine)
       defaults=struct('adducts',[],'notimes',false,'ind',[]);
       args=processargs(defaults,varargin);
     
