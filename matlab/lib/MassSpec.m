@@ -682,10 +682,33 @@ classdef MassSpec < handle
     function [bestfeature,bestmz,bestfound]=findtarget(obj,formula,varargin)
     % Scan for a particular m/z include adduct and isotope search
       defaults=struct('dbsave',false,'mztol',0.0005,'timetol',0.6,'noise',500,'debug',false,...
+                      'mzrp',15000,...   % Resolving power -- adjacent peaks with mz/dmz>rp are likely merged
                       'adducts',struct('name',{'M+H','M+Na','M+K'},'mass',{1.007276,22.989218,38.963158}));
       args=processargs(defaults,varargin);
       
       isotopes=Chem.getisotopes(formula,'minabundance',.001);
+      % Merge isotopes that are too close to resolve
+      isoorig=isotopes;
+      [~,ord]=sort([isotopes.mass]);
+      isotopes=isotopes(ord);
+      i=1;
+      while i<length(isotopes)
+        if isotopes(i+1).mass-isotopes(i).mass < isotopes(i).mass/args.mzrp
+          abund=[isotopes([i,i+1]).abundance];
+          total=sum(abund);
+          meanmass=(isotopes(i).mass*sum(isotopes(i).abundance)+isotopes(i+1).mass*sum(isotopes(i+1).abundance))/total;
+          if sum(isotopes(i+1).abundance)>sum(isotopes(i).abundance)
+            isotopes=isotopes([1:i-1,i+1:end]);
+          else
+            isotopes=isotopes([1:i,i+2:end]);
+          end
+          isotopes(i).abundance=abund;
+          isotopes(i).mass=meanmass;
+        else
+          i=i+1;
+        end
+      end
+      
       if args.dbsave
         msrun=obj.dbsave();
         if isstruct(formula)
