@@ -13,10 +13,14 @@ classdef SDF < handle
         obj.sdf=struct.empty;
       end
 
-      function n=getname(obj,i,withnum)
-        n=sprintf('%s%s',strrep(obj.sdf(i).BATCH_PLATE,'CDIV0',''),obj.sdf(i).BATCH_WELL);
-        if n(1)=='0'
-          n=n(2:end);
+      function n=getname(obj,i,withnum,usecdiv)
+        if nargin>=4 && usecdiv
+          n=sprintf('V%s%s',strrep(obj.sdf(i).BATCH_PLATE,'CDIV0',''),obj.sdf(i).BATCH_WELL);
+        else
+          n=sprintf('Q%s%s',strrep(obj.sdf(i).Plate384,'CDIQ0',''),obj.sdf(i).Well384);
+        end
+        if n(2)=='0'
+          n=n([1,3:end]);
         end
         if nargin<3 || withnum
           n=sprintf('%s(%d)',n,i);
