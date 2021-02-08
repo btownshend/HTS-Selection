@@ -1581,7 +1581,7 @@ classdef Compounds < handle
       args=processargs(defaults,varargin);
     
       if isempty(args.ind)
-        ind=true(size(obj.mass));
+        args.ind=true(size(obj.mass));
       end
       if islogical(args.ind)
         args.ind=find(args.ind);
