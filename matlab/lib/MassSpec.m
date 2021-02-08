@@ -496,6 +496,7 @@ classdef MassSpec < handle
       end
       
       % Buld EIC for each mass
+      args.mz=mz;   % So it is added to params
       fl=FeatureList([obj.name,' chromatograms'],'targetedFeatureDetect',args);
       if args.debug
         fprintf('Extracting features for %d masses...',size(mzrange,1));
