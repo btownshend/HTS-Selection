@@ -197,7 +197,11 @@ classdef FeatureList < handle
         psel=e.peaks(:,3)>=args.timerange(1) & e.peaks(:,3)<=args.timerange(2);
         if any(psel)
           h=plot(e.peaks(psel,3),e.peaks(psel,2));
-          leg{end+1}=sprintf('%s.%d %s',args.prefix,find(e==obj.features),e.name);
+          name=e.name;
+          if length(name)>20
+            name=[name(1:17),'...'];
+          end
+          leg{end+1}=sprintf('%s.%d %s',args.prefix,find(e==obj.features),name);
         else
           h=[];
         end
@@ -215,7 +219,11 @@ classdef FeatureList < handle
             set(h,'HandleVisibility','off');   % No legend entry for above
             set(h2,'Color',get(h,'Color'));
           end
-          leg{end+1}=sprintf('%s.%d %s',args.prefix,find(e==obj.features),e.name);
+          name=e.name;
+          if length(name)>20
+            name=[name(1:17),'...'];
+          end
+          leg{end+1}=sprintf('%s.%d %s',args.prefix,find(e==obj.features),name);
         end
       end
       legend(leg,'Location','best');
