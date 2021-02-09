@@ -1345,7 +1345,7 @@ classdef Compounds < handle
     
     function ploteics(obj,name,varargin)
     % Plot EIC's for given compound using provided ms cell array aligned with obj.samples
-      defaults=struct('mzdata',[],'adduct',1,'falsethresh',0.1,'minic',400,'zoom',true,'mztol',obj.MZFUZZ,'timerange',[-inf,inf]);
+      defaults=struct('mzdata',[],'adduct',[],'falsethresh',0.1,'minic',400,'zoom',true,'mztol',obj.MZFUZZ,'timerange',[-inf,inf]);
       args=processargs(defaults,varargin);
 
       if ischar(name)
@@ -1354,6 +1354,10 @@ classdef Compounds < handle
         ind=name;
       end
 
+      if isempty(args.adduct)
+        args.adduct=obj.astats(ind).adduct;
+      end
+      
       if args.zoom & isfinite(obj.meantime(ind))
         args.timerange=obj.meantime(ind)+[-5,5];
       end
