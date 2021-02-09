@@ -133,8 +133,9 @@ for i=1:size(data,1)
     if exist(matpath,'file')
       fprintf('Load matfile from %s\n', matpath);
       mztmp=load(matpath);
-      assert(length(fieldnames(mztmp))==1);  % Saved as a variable
-      mzdata{i}=mztmp.(fieldnames(mztmp));
+      fn=fieldnames(mztmp);
+      assert(length(fn)==1);  % Saved as a variable
+      mzdata{i}=mztmp.(fn{1});
     else
       fprintf('Load mzXML from %s\n', path);
       mztmp=MassSpec(path);
