@@ -586,7 +586,8 @@ classdef Compounds < handle
                 if esort(n)-esort(m) > 2*args.timetol
                   break
                 end
-                sel=find(etimes>=esort(m) & etimes<=esort(n));
+                timewindow=mean(esort([m,n]))+args.timetol*[-1,1];
+                sel=find(etimes>=timewindow(1) & etimes<=timewindow(2));
                 % Keep only one peak per srcfile; the largest one
                 keep=false(size(sel));
                 for is=1:length(sel)
@@ -654,6 +655,7 @@ classdef Compounds < handle
                 end
                 if length(sel)>length(bestset)
                   bestset=sel;
+                  bestwindow=timewindow;
                   astats=struct('run',arun,'args',args,'adduct',k,'sel',srcfile(sel),'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN);
                   nbest=1;
                   if ismember(i,args.trace)
@@ -685,7 +687,6 @@ classdef Compounds < handle
             continue;
           end
 
-          bestwindow=[min(etimes(bestset)),max(etimes(bestset))];
           nFP=length(unique(srcfile(~cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
           ntrue=length(unique(srcfile(cont & etimes>=bestwindow(1) & etimes<=bestwindow(2))));
           nFN=sum(obj.contains(i,:))-ntrue;
