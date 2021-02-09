@@ -1543,7 +1543,7 @@ classdef Compounds < handle
       plot(obj.timewindow(ind,1)*[1,1],ax(3:4),':b');
       plot(obj.timewindow(ind,2)*[1,1],ax(3:4),':b');
       if all(isfinite(obj.timewindow(ind,:)))
-        set(gca,'XTick',round(obj.timewindow(ind,:)));
+        set(gca,'XTick',round(obj.timewindow(ind,:),1));
       end
       ylabel('Ion Count');
       yyaxis right
