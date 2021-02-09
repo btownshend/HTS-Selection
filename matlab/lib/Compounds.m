@@ -1581,16 +1581,14 @@ classdef Compounds < handle
             break;
           end
           assert(obj.timewindow(ii,2)>obj.timewindow(jj,1));
-          for k1=1:length(obj.ADDUCTS)
-            m1=(obj.mass(ii)+obj.ADDUCTS(k1).mass);
-            for k2=1:length(obj.ADDUCTS)
-              m2=(obj.mass(jj)+obj.ADDUCTS(k2).mass);
-              mdiff=m1-m2;
-              if abs(mdiff) < 2*obj.MZFUZZ
-                fprintf('Overlap: %6.6s+%-4.4s (%.4f,[%.2f,%.2f]) and %6.6s+%-4.4s (%.4f,[%.2f,%.2f]) dmz=%.4f\n', obj.names{ii},obj.ADDUCTS(k1).name,m1,obj.timewindow(ii,:),obj.names{jj},obj.ADDUCTS(k2).name,m2,obj.timewindow(jj,:),abs(mdiff));
-                nover=nover+1;
-              end
-            end
+          k1=obj.astats(ii).adduct;
+          m1=(obj.mass(ii)+obj.ADDUCTS(k1).mass);
+          k2=obj.astats(jj).adduct;
+          m2=(obj.mass(jj)+obj.ADDUCTS(k2).mass);
+          mdiff=m1-m2;
+          if abs(mdiff) < 2*obj.MZFUZZ
+            fprintf('Overlap: %6.6s+%-4.4s (%.4f,[%.2f,%.2f]) and %6.6s+%-4.4s (%.4f,[%.2f,%.2f]) dmz=%2.0f dt=%.2f\n', obj.names{ii},obj.ADDUCTS(k1).name,m1,obj.timewindow(ii,:),obj.names{jj},obj.ADDUCTS(k2).name,m2,obj.timewindow(jj,:),abs(mdiff)*1e5,abs(obj.meantime(ii)-obj.meantime(jj)));
+            nover=nover+1;
           end
         end
       end
