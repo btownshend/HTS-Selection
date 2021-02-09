@@ -637,10 +637,17 @@ classdef Compounds < handle
                 nFP=sum(falsepos);
                 nFN=sum(missstrong|hitlow|hithigh);
                 if ismember(i,args.trace)
-                  fprintf('m=%d,n=%d, keep=%s, hits=(%d good,%d low, %d high), miss=(%d strong,%d weak), FP=%d,FN=%d, width=%.2f,rng=[%.2f,%.2f]\n',m,n,sprintf('%d ',sel),sum(hitgood),sum(hitlow),sum(hithigh),sum(missstrong),sum(missweak),nFP,nFN,esort(n)-esort(m),esort([m,n]));
-                  if m==3 && n==11
-                    keyboard;
+                  selstr='';
+                  for ij=1:length(sel)
+                    selstr=sprintf('%s %.2f',selstr,etimes(sel(ij)));
+                    if any(sel(ij)==selexpected)
+                      selstr(end+1)='*';
+                    end
                   end
+                  if length(selstr)>0
+                    selstr=selstr(2:end);
+                  end
+                  fprintf('m=%d,n=%d, keep=%s, hits=(%d good,%d low, %d high), miss=(%d strong,%d weak), FP=%d,FN=%d, width=%.2f,rng=[%.2f,%.2f]\n',m,n,selstr,sum(hitgood),sum(hitlow),sum(hithigh),sum(missstrong),sum(missweak),nFP,nFN,esort(n)-esort(m),esort([m,n]));
                 end
                 if sum(hitgood)<args.minhits || nFP>args.maxFP || nFN > args.maxFN
                   continue;
