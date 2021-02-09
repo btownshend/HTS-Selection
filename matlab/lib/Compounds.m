@@ -884,6 +884,10 @@ classdef Compounds < handle
       defaults=struct('sort',false);
       args=processargs(defaults,varargin);
 
+      if any(isfinite(obj.meantime) & ~any(isfinite(obj.tsens),2))
+        error('Run checksensitivity before report');
+      end
+      
       ugroups=unique(obj.group,'sorted');
       if args.sort
         [~,ord]=sort(obj.names);
@@ -902,18 +906,19 @@ classdef Compounds < handle
              [~,adduct]=max(obj.tsens(i,:));   % Use highest adduct
            end
            x(row).name=obj.names{i};
-           x(row).mass=obj.mass(i);
+           x(row).mass=round(obj.mass(i),5);
            x(row).adduct=obj.ADDUCTS(adduct).name;
-           x(row).mz=obj.mztarget(i,adduct);
-           x(row).time=obj.meantime(i);
-           x(row).sensitivity=obj.tsens(i,adduct);
+           x(row).mz=round(obj.mztarget(i,adduct),5);
+           x(row).time=round(obj.meantime(i),2);
+           x(row).sensitivity=round(obj.tsens(i,adduct));
+           x(row).FP=obj.astats(i).FP;
+           x(row).FN=obj.astats(i).FN;
            for m=1:length(files)
              x(row).file{m}=obj.samples{files(m)};
-             x(row).mzoffset(m)=obj.mz(i,adduct,files(m))-obj.mztarget(i,adduct);
-             x(row).elution(m)=obj.time(i,adduct,files(m));
-             x(row).ioncount(m)=obj.ic(i,adduct,files(m));
+             x(row).mzoffset(m)=round((obj.mz(i,adduct,files(m))-obj.mztarget(i,adduct))*1e5);
+             x(row).rt(m)=round(obj.time(i,adduct,files(m)),2);
+             x(row).ic(m)=round(obj.ic(i,adduct,files(m)));
            end
-           x(row).falsenegs=sum(obj.normic(i,adduct,~obj.contains(i,:))>0.1);
            row=row+1;
          end
         end
