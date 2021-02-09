@@ -35,12 +35,19 @@ fprintf('Allow 3 false positives and 1 false negative\n');
 v256.assignTimes('clear',false,'timetol',timetol,'maxFP',3,'maxFN',1,'mztol',mztol,'trace',trace,'minhits',minhits);
 fprintf('Increased time tol\n');
 v256.assignTimes('clear',false,'timetol',timetol*2,'maxFP',0,'maxFN',0,'mztol',mztol,'trace',trace,'minhits',minhits);
+fprintf('Increased normicrange\n');
+v256.assignTimes('clear',false,'timetol',timetol,'mztol',mztol,'normicrange',[0.2,5],'trace',trace,'minhits',minhits);
 v256.checksensitivity(); % Final
 v256.platesummary;
-save('v256.mat','v256');
 
 report=v256.report();
 ds=datestr(now,'YYYYmmDDHHMM');
 resultsdir='../../results/';
 writetable(report,'/tmp/report.csv','QuoteStrings',true);
 system(sprintf('sed -e "s/NaN//g" /tmp/report.csv > %s',[resultsdir,sprintf('report-%s.csv',ds)]));
+
+fprintf('Saving compounds...');
+save(sprintf('%s/v256-%s.mat',matdir,ds),'v256');
+fprintf('done\n');
+
+save('v256.mat','v256');
