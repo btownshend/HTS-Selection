@@ -3,9 +3,9 @@ classdef Compounds < handle
   properties
     names;   % names{i} - Name of compound i (e.g.'51B07')
     mass;    % mass(i) - monoisotpic mass of compounds i
-    samples;   % Name of sample (mass spec file)
+    samples;   % samples{j} - Name of sample (mass spec file)
     files;   % files{j} - Mass spec filename j
-    maps;    % Piecewise linear maps for converting between references (col 1) and file values (col2)
+    maps;    % maps{j} - Piecewise linear maps for converting between references (col 1) and file values (col2) in file j
     moles;   % moles(j) - Moles of each compound loaded in run j
     group;   % group{j} - name of group this file belongs to
     contains;% contains(i,j) is true if we expected to find compound i in file j
