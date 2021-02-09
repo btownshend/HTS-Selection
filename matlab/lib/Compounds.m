@@ -920,6 +920,33 @@ classdef Compounds < handle
       x=struct2table(x);
     end
     
+    function platesummary(obj)
+    % Summarize stats by original CDIV plate
+      plate={obj.sdf.sdf.BATCH_PLATE};
+      uplate=unique(plate);
+      for i=1:length(uplate)
+        sel=strcmp(plate,uplate{i});
+        nfound(i)=sum(isfinite(obj.meantime(sel)));
+        sens(i)=nanmedian(nanmax(obj.tsens(sel,:),[],2));
+        fprintf('%s: %d found, %.0f sens\n', uplate{i}, nfound(i), sens(i));
+      end
+      setfig('platesummary');clf;
+      tiledlayout('flow');
+      nexttile;
+      bar(nfound);
+      set(gca,'XTick',1:length(uplate));
+      set(gca,'XTickLabel',uplate);
+      set(gca,'XTickLabelRotation',90);
+      ylabel('Number of compounds found (/80)');
+      nexttile
+      bar(sens);
+      set(gca,'XTick',1:length(uplate));
+      set(gca,'XTickLabel',uplate);
+      set(gca,'XTickLabelRotation',90);
+      ylabel('Median sensitivity');
+      set(gca,'YScale','log');
+    end
+    
     function pcolorplot(obj,adduct)
     % Heat map of ioncount in matrix of compounds * files
       if nargin<2
