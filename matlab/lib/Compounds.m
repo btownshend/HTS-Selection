@@ -876,34 +876,46 @@ classdef Compounds < handle
       end
     end
     
-    function x=report(obj) 
+    function x=report(obj,varargin) 
     % Build table on data by compound
     % Each row is a single compound
     % Data by group
+      defaults=struct('sort',false);
+      args=processargs(defaults,varargin);
+
       ugroups=unique(obj.group,'sorted');
-      x=[];
-      [~,ord]=sort(obj.names);
+      if args.sort
+        [~,ord]=sort(obj.names);
+      else
+        ord=1:length(obj.names);
+      end
+      x=[];row=1;
       for ii=1:length(obj.names)
         i=ord(ii);
-        x(ii).name=obj.names{i};
-        x(ii).mass=obj.mass(i);
-        
         for j=1:length(ugroups)
          files=find(strcmp(obj.group,ugroups{j})& obj.contains(i,:));
          if ~isempty(files)
-         for k=1:length(obj.ADDUCTS)
-          x(ii).mzoffset(j,k)=nanmean(obj.mz(i,k,files),3)-obj.mztarget(i,k);
-          x(ii).elution(j,k)=nanmean(obj.time(i,k,files),3);
-          x(ii).ioncount(j,k)=nanmean(obj.ic(i,k,files),3);
-          f='';
-          for k=1:length(files)
-            f=[f,obj.samples{files(k)},','];
-          end
-          f=f(1:end-1);  % Remove trailing comma
-          x(ii).files{j}=f;
-          end
+           if ~isempty(obj.astats) && ~isempty(obj.astats(i).adduct)
+             adduct=obj.astats(i).adduct;  % Same adduct as used to assign it
+           else
+             [~,adduct]=max(obj.tsens(i,:));   % Use highest adduct
+           end
+           x(row).name=obj.names{i};
+           x(row).mass=obj.mass(i);
+           x(row).adduct=obj.ADDUCTS(adduct).name;
+           x(row).mz=obj.mztarget(i,adduct);
+           x(row).time=obj.meantime(i);
+           x(row).sensitivity=obj.tsens(i,adduct);
+           for m=1:length(files)
+             x(row).file{m}=obj.samples{files(m)};
+             x(row).mzoffset(m)=obj.mz(i,adduct,files(m))-obj.mztarget(i,adduct);
+             x(row).elution(m)=obj.time(i,adduct,files(m));
+             x(row).ioncount(m)=obj.ic(i,adduct,files(m));
+           end
+           x(row).falsenegs=sum(obj.normic(i,adduct,~obj.contains(i,:))>0.1);
+           row=row+1;
+         end
         end
-       end
       end
       x=struct2table(x);
     end
