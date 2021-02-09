@@ -1134,18 +1134,29 @@ classdef Compounds < handle
     % Check sensitivity by file relative to ref file
       obj.normic=obj.ic;
 
-      h1=[];h2=[];
-      sens=[];
-      for i=1:length(obj.files)
-        sel=all(obj.contains(:,[i,ref]),2);
-        if any(sel)
-          sens(i)=nanmedian(reshape(obj.ic(sel,:,i)./obj.ic(sel,:,ref),[],1));
-        else
-          sens(i)=1;
+      sens=ones(size(obj.files));
+      for pass=1:10
+        ratio=nan(length(obj.files));
+        for i=1:length(obj.files)
+          for j=1:length(obj.files)
+            sel=all(obj.contains(:,[i,j]),2);
+            if sum(sel)>=3
+              ratio(i,j)=nanmedian(reshape(obj.ic(sel,:,i)./obj.ic(sel,:,j),[],1))*sens(j)/sens(i);
+            end
+          end
+        end
+        sens=nanmedian(ratio,2)'.*sens;
         end
       end
+
+      if nargin>1 && isfinite(ref)
+        sens=sens/sens(ref);
+      end
+
       ti=['File Sensitivity'];
       setfig(ti);clf;
+      tiledlayout('flow');
+      nexttile;
       bar(sens);
       obj.fsens=sens;
       set(gca,'YScale','log');
@@ -1154,7 +1165,11 @@ classdef Compounds < handle
       set(gca,'XTickLabelRotation',90);
       ylabel('Sensitivity');
       title(ti);
-
+      nexttile;
+      boxplot(sens,obj.moles);
+      xlabel('Moles injected');
+      ylabel('Sensitivity');
+      
       for k=1:length(obj.ADDUCTS)
         % Check sensitivity by target
         for i=1:length(obj.names)
