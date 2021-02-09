@@ -54,6 +54,56 @@ classdef Compounds < handle
       obj.ADDUCTS=struct('name',{'M+H','M+Na','M+K'},'mass',{1.007276,22.989218,38.963158});
     end
 
+    function q=copypart(obj,varargin)
+    % Create a new object containing only the selected parts
+      defaults=struct('fsel',1:length(obj.files),'csel',1:length(obj.names),'asel',1:length(obj.ADDUCTS));
+      args=processargs(defaults,varargin);
+
+      if islogical(args.fsel)
+        assert(length(args.fsel)==length(obj.files));
+        args.fsel=find(args.fsel);
+      else
+        assert(all(args.fsel>=1 & args.fsel<=length(obj.files)));
+      end
+      if islogical(args.csel)
+        assert(length(args.csel)==length(obj.names));
+        args.csel=find(args.csel);
+      else
+        assert(all(args.csel>=1 & args.csel<=length(obj.names)));
+      end
+      if islogical(args.asel)
+        assert(length(args.asel)==length(obj.ADDUCTS));
+        args.asel=find(args.asel);
+      else
+        assert(all(args.asel>=1 & args.asel<=length(obj.ADDUCTS)));
+      end
+      q=Compounds(obj.MZFUZZ, obj.TIMEFUZZ);
+      q.names=obj.names(args.csel);
+      q.mass=obj.mass(args.csel);
+      q.samples=obj.samples(args.fsel);
+      q.files=obj.files(args.fsel);
+      q.maps=obj.maps(args.fsel);
+      q.moles=obj.moles(args.fsel);
+      q.group=obj.group(args.fsel);
+      q.contains=obj.contains(args.csel,args.fsel);
+      q.mz=obj.mz(args.csel,args.asel,args.fsel);
+      q.time=obj.time(args.csel,args.asel,args.fsel);
+      q.meantime=obj.meantime(args.csel);
+      q.timewindow=obj.timewindow(args.csel,:);
+      q.ic=obj.ic(args.csel,args.asel,args.fsel);
+      q.normic=obj.normic(args.csel,args.asel,args.fsel);
+      q.multihits=obj.multihits(args.csel,args.asel,args.fsel);
+      q.allfeatures=obj.allfeatures(args.fsel);
+      q.reffeatures=obj.reffeatures(args.fsel);
+      q.featureindex=obj.featureindex(args.csel,args.asel,args.fsel);
+      q.tsens=obj.tsens(args.csel,args.asel);
+      q.fsens=obj.fsens(args.fsel);
+      q.astats=obj.astats(args.csel);
+      q.sdf=SDF();
+      q.sdf.sdf=obj.sdf.sdf(args.csel);
+      q.ADDUCTS=obj.ADDUCTS(args.asel);
+    end
+    
     function ind=find(obj,name)
     % Find given name
     % Try both format stored in names (e.g. 'CDIV0051-B07') and short format (e.g. '51B07')
