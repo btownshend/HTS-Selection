@@ -7,7 +7,6 @@ matlab/lib/dump.csv
 matlab/scripts/html/compositions.pdf
 data/matfiles/mzdata.mat
 data/matfiles/compounds-20200226-2255.mat
-results/report-20200226-2255.csv
 data/Hits/hits.csv
 data/Hits/fold.csv
 matlab/scripts/ops.csv
@@ -37,7 +36,6 @@ python/pytorch/.idea/pytorch.iml
 python/pytorch/.idea/vcs.xml
 data/matfiles/compounds.mat
 python/openms
-results/report-202008241747.csv
 matlab/QTOF-20201002/build
 matlab/QTOF-20201002/build2
 matlab/QTOF-20201002/build3
@@ -50,3 +48,7 @@ matlab/QTOF-20210131/HOLD*
 matlab/QTOF-20210131/findallhits.txt
 matlab/QTOF-20210131/test.csv
 matlab/QTOF-20210131/ident.csv
+results/report-*.numbers
+matlab/QTOF-20210131/runlog.txt
+matlab/QTOF-20210131/savelog.txt
+results/report-*.csv
