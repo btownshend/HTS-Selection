@@ -3,8 +3,6 @@
 
 datadir='../../data/';
 matdir=[datadir,'matfiles/'];
-resultsdir='../../results/';
-
 if ~exist('s7sdf','var')
   load([matdir,'s7sdf.mat']);
 end
@@ -13,10 +11,8 @@ if ~exist('s7vecs','var')
   load([matdir,'s7vecs.mat']);
 end
 
-mztol=.0005;
-
 if ~exist('qsetup','var')
-  qsetup=Compounds(mztol,40/60);
+  qsetup=Compounds(.0005,40/60);
   % qsetup.ADDUCTS=qsetup.ADDUCTS(1);   % Only M+H for now
   qsetup.addCompoundsFromSDF(s7sdf);
 end
@@ -152,23 +148,6 @@ for i=1:size(data,1)
   if ismember(mzdata{i}.path,qsetup.files)
     fprintf('Skipping reload of %s\n', mzdata{i}.name);
     continue;
-  end
-
-  % Build chromatograms if needed
-  if false
-  if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'deconvolve'))
-    if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'buildchromatogram'))
-      fprintf('Building chromatograms for %s...',mzdata{i}.name);
-      mzdata{i}.targetedFeatureDetect(allmz, 'mztol',mztol,'names',names);
-      fprintf('%d done\n',length(mzdata{i}.featurelists(end).features));
-    end
-    fprintf('Deconvolving chromatograms for %s...',mzdata{i}.name);
-    mzdata{i}.deconvolve();
-    fprintf('%d done\n',length(mzdata{i}.featurelists(end).features));
-    %    fprintf('Finding isotopes for %s...',mzdata{i}.name);
-    %    mzdata{i}.findisotopes();
-    %    fprintf('done\n');
-  end
   end
 
   n=strsplit(data(i).name,'-');

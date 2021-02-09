@@ -62,6 +62,7 @@ qsetup.checksensitivity(ref);
 qsetup.summary();
 
 ds=datestr(now,'YYYYmmDDHHMM');
+resultsdir='../../results/';
 writetable(report,[resultsdir,sprintf('report-%s.csv',ds)]);
 fprintf('Saving compounds...');
 save(sprintf('%s/qsetup-%s.mat',matdir,ds),'qsetup');
