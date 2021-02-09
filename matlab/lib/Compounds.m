@@ -896,7 +896,7 @@ classdef Compounds < handle
         for j=1:length(ugroups)
          files=find(strcmp(obj.group,ugroups{j})& obj.contains(i,:));
          if ~isempty(files)
-           if ~isempty(obj.astats) && ~isempty(obj.astats(i).adduct)
+           if ~isempty(obj.astats) && i<=length(obj.astats) && ~isempty(obj.astats(i).adduct)
              adduct=obj.astats(i).adduct;  % Same adduct as used to assign it
            else
              [~,adduct]=max(obj.tsens(i,:));   % Use highest adduct
@@ -1147,7 +1147,6 @@ classdef Compounds < handle
           end
         end
         sens=nanmedian(ratio,2)'.*sens;
-        end
       end
 
       if nargin>1 && isfinite(ref)
@@ -1434,7 +1433,7 @@ classdef Compounds < handle
       end
       if isempty(args.adduct)
         % Check which adduct was used to label, if any
-        if ~isempty(obj.astats) && ~isempty(obj.astats(ind).adduct)
+        if ~isempty(obj.astats) && ind<=length(obj.astats) && ~isempty(obj.astats(ind).adduct)
           args.adduct=obj.astats(ind).adduct;
         else
           % Show all adducts
@@ -1450,7 +1449,7 @@ classdef Compounds < handle
       meanic=nanmean(obj.ic(ind,k,obj.contains(ind,:)));
       minic=nanmin(obj.normic(ind,k,obj.contains(ind,:)));
       fprintf('%s[%s] (%d): m/z=%8.4f t=%.2f [%.2f-%.2f] sens=%.0f',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.timewindow(ind,:),obj.tsens(ind,k));
-      if ~isempty(obj.astats) && ~isempty(obj.astats(ind).run) && obj.astats(ind).adduct==args.adduct
+      if ~isempty(obj.astats) && ind<=length(obj.astats) && ~isempty(obj.astats(ind).run) && obj.astats(ind).adduct==args.adduct
         s=obj.astats(ind);
         fprintf(', FP=%d, FN=%d, hits=%dg,%dL,%dH, miss=%ds,%dw',s.FP,s.FN,s.hitgood,s.hitlow,s.hithigh,s.missstrong,s.missweak);
       end
