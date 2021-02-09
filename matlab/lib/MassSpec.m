@@ -195,6 +195,54 @@ classdef MassSpec < handle
       end
     end
     
+    function adjcompare(obj,varargin)
+    % Compare m/z of adjacent peaks to get insight into resolving power
+    % Expect that m/z difference will be proportional to 1/sqrt(ic) for single peaks
+      defaults=struct('mzrange',[281,460],'mztol',0.01,'timerange',[-inf,inf],'minic1',1000,'minic2',200,'maxpoints',50000,'nbox',10);
+      args=processargs(defaults,varargin);
+      compares=[];
+      for i=1:length(obj.peaks)-1
+        p1=obj.peaks{i};
+        p2=obj.peaks{i+1};
+        p1=p1(p1(:,2)>=args.minic1 & p1(:,1)>=args.mzrange(1) & p1(:,1)<=args.mzrange(2),:);
+        p2=p2(p2(:,2)>=args.minic2 & p2(:,1)>=args.mzrange(1) & p2(:,1)<=args.mzrange(2),:);
+        pdiff=p1(:,1)-p2(:,1)';
+        [j,k]=find(abs(pdiff)<args.mztol);
+        compares=[compares;[repmat(i,length(j),1),p1(j,:),p2(k,:)]];
+      end
+      fprintf('Have %d comparison points\n', size(compares,1));
+      setfig('adjcompare');clf;
+      tiledlayout('flow');
+
+      % Scatter plot
+      nexttile;
+      x=compares(:,5); y=abs(compares(:,4)-compares(:,2));
+      if length(x)>args.maxpoints
+        sel=randsample(length(x),args.maxpoints);
+      else
+        sel=1:size(compares,1);
+      end
+      loglog(x(sel),y(sel),'.');
+      % Median filter
+      [x,ord]=sort(x);
+      y=y(ord);
+      hold on;
+      plot(x,movmedian(y,length(y)/100));
+      ax=axis;      ax(2)=1e6; ax(3)=1e-5;      axis(ax);
+      xlabel('Ion Count 2');
+      ylabel('\delta m/z')
+
+      % Resolving power
+      nexttile;
+      rp=compares(:,4)./abs(compares(:,4)-compares(:,2));
+      rp=rp./sqrt(compares(:,5));
+      rp=rp(ord);
+      semilogx(x,movmedian(rp,length(rp)/100));
+      ax=axis;      ax(2)=1e6;      axis(ax);
+      xlabel('Ion Count 2');
+      ylabel('Resolving power')
+    end
+    
     function pks=allpeaks(obj,varargin)
     % Get peaks list summed across all elution times and merged with mztol
       defaults=struct('mztol',0.01,'timerange',[],'minic',1000,'mz',[]);
