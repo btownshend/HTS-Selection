@@ -6,14 +6,20 @@ for i=1:length(qsetup.ADDUCTS)
     names{end+1}=[qsetup.names{j},'[',qsetup.ADDUCTS(i).name,']'];
   end
 end
+fprintf('Have %d target m/z\n', length(allmz));
 
+% Use an mztol here based on resolving power; that gives us all the peaks that might include the desired peaks
+% Assume an average mass of 300 and resolving power of 20000
+fdmztol=300/2000;
 
 % Build chromatograms if needed
 for i=1:length(mzdata)
-  if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'deconvolve'))
-    if isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'buildchromatogram'))
-      fprintf('Building chromatograms for %s against %d m/z...',mzdata{i}.name,length(allmz));
-      mzdata{i}.targetedFeatureDetect(allmz, 'mztol',mztol,'names',names);
+  force=length(mzdata{i}.featurelists)>=2 && mzdata{i}.featurelists(end-1).params.mztol~=fdmztol;
+  if force|| isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'deconvolve'))
+    tic
+    if force || isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'buildchromatogram'))
+      fprintf('Building chromatograms for %s against %d m/z with mztol=%f...',mzdata{i}.name,length(allmz),fdmztol);
+      mzdata{i}.targetedFeatureDetect(allmz, 'mztol',fdmztol,'names',names);
       fprintf('%d done\n',length(mzdata{i}.featurelists(end).features));
     end
     fprintf('Deconvolving chromatograms for %s...',mzdata{i}.name);
@@ -28,6 +34,7 @@ for i=1:length(mzdata)
     save(matpath,'mztmp');
     fprintf('done\n');
     clear mztmp;
+    toc
   end
 
   fl=mzdata{i}.featurelists(end);
