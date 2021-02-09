@@ -1016,7 +1016,7 @@ classdef Compounds < handle
     
     function checkmzoffset(obj,varargin)
     % Check whether mzoffset used when reading mass spec files should be changed
-      defaults=struct('files',1:length(obj.files));
+      defaults=struct('files',1:length(obj.files),'icplot',false);
       args=processargs(defaults,varargin);
 
       fprintf('checkmzoffset()\n');
@@ -1037,34 +1037,44 @@ classdef Compounds < handle
         for ii=1:length(args.files)
           i=args.files(ii);
           if strcmp(dirs{i},udirs{j})
-            x=obj.mztarget;y=obj.mz(:,:,i);
+            x=obj.mztarget;y=obj.mz(:,:,i);ic=obj.ic(:,:,i);
             x(~obj.contains(:,i),:)=nan;   % Only ones that it is supposed to contain
             npts=sum(isfinite(y(:)) & isfinite(x(:)));
             if npts<10
               fprintf('Only %d data points for %s ... skipping\n', npts, obj.files{i});
               continue;
             end
-            err=nanmedian(y(:)-x(:));
-            fit=robustfit(x(:),y(:));
-            fprintf('%-20.20s  %5.1f [%5.1f, %5.1f] N=%d\n',obj.samples{i}, err*1e4,1e4*(fit(1)+(fit(2)-1)*rng),npts);
-            h(end+1)=plot(x(:),1e4*(y(:)-x(:)),'o');
-            hold on;
-            plot(rng,1e4*(fit(1)+(fit(2)-1)*rng),'-','Color',get(h(end),'Color'));
+            if args.icplot
+              h(end+1)=semilogx(ic(:),1e4*(y(:)-x(:)),'.b','MarkerSize',1);
+              hold on;
+            else
+              err=nanmedian(y(:)-x(:));
+              fit=robustfit(x(:),y(:));
+              fprintf('%-20.20s  %5.1f [%5.1f, %5.1f] N=%d\n',obj.samples{i}, err*1e4,1e4*(fit(1)+(fit(2)-1)*rng),npts);
+              h(end+1)=plot(x(:),1e4*(y(:)-x(:)),'o');
+              hold on;
+              plot(rng,1e4*(fit(1)+(fit(2)-1)*rng),'-','Color',get(h(end),'Color'));
+            end
             leg{end+1}=obj.samples{i};
             allx=[allx;x(:)];
             ally=[ally;y(:)];
           end
         end
-        sel=strcmp(dirs,udirs{j});
-        fit=robustfit(allx,ally);
-        [~,dirname]=fileparts(udirs{j});
-        fprintf('%-20.20s  %5.1f [%5.1f, %5.1f] over %s\n', '', nanmedian(allx-ally)*1e4, 1e4*(fit(1)+(fit(2)-1)*rng),dirname);
-        h(end+1)=plot(rng,1e4*(fit(1)+(fit(2)-1)*rng),'k','linewidth',2);
-        plot(rng,1e4*(fit(1)+(fit(2)-1)*rng+obj.MZFUZZ),'k:');
-        plot(rng,1e4*(fit(1)+(fit(2)-1)*rng-obj.MZFUZZ),'k:');
-        leg{end+1}='All';
-        legend(h,leg,'location','best');
-        xlabel('True M/Z');
+        if args.icplot
+          xlabel('Ion Count');
+        else
+          sel=strcmp(dirs,udirs{j});
+          fit=robustfit(allx,ally);
+          [~,dirname]=fileparts(udirs{j});
+          fprintf('%-20.20s  %5.1f [%5.1f, %5.1f] over %s\n', '', nanmedian(allx-ally)*1e4, 1e4*(fit(1)+(fit(2)-1)*rng),dirname);
+          h(end+1)=plot(rng,1e4*(fit(1)+(fit(2)-1)*rng),'k','linewidth',2);
+          plot(rng,1e4*(fit(1)+(fit(2)-1)*rng+obj.MZFUZZ),'k:');
+          plot(rng,1e4*(fit(1)+(fit(2)-1)*rng-obj.MZFUZZ),'k:');
+          leg{end+1}='All';
+          legend(h,leg,'location','best');
+          xlabel('True M/Z');
+        end
+          
         ylabel('File-True M/Z *1e4');
         title(udirs{j});
       end
