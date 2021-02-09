@@ -169,7 +169,7 @@ classdef FeatureList < handle
       if ~isempty(args.timerange) & ~isempty(sel)
         trange=vertcat(obj.features(sel).timerange);
         % Keep any whose window overlaps the requested window
-        sel=sel(~(trange(:,2)>args.timerange(2) | trange(:,1)<args.timerange(1)));
+        sel=sel(~(trange(:,1)>args.timerange(2) | trange(:,2)<args.timerange(1)));
       end
       fl.features=obj.features(sel);
     end
@@ -227,6 +227,11 @@ classdef FeatureList < handle
         end
       end
       legend(leg,'Location','best');
+      ax=axis;
+      if ax(1)<args.timerange(1) || ax(2)>args.timerange(2)
+        ax(1:2)=args.timerange;
+        axis(ax);
+      end
     end
     
     function fl=deconvolve(obj,varargin)
