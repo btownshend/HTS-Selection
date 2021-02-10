@@ -424,6 +424,8 @@ classdef Compounds < handle
       if length(obj.files)>0
         obj.mz(nindex,:,:)=nan;
         obj.time(nindex,:,:)=nan;
+        obj.timewindow(nindex,:)=nan;
+        obj.astats(nindex)=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{});
         obj.meantime(nindex)=nan;
         obj.ic(nindex,:,:)=nan;
         obj.normic(nindex,:,:)=nan;
@@ -431,6 +433,7 @@ classdef Compounds < handle
       else
         obj.mz=nan(nindex,length(obj.ADDUCTS), 0);
         obj.time=nan(nindex,length(obj.ADDUCTS), 0);
+        obj.timewindow=nan(nindex,0);
         obj.meantime=nan(nindex,1);
         obj.ic=nan(nindex,length(obj.ADDUCTS), 0);
         obj.normic=nan(nindex,length(obj.ADDUCTS), 0);
