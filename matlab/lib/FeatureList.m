@@ -242,6 +242,9 @@ classdef FeatureList < handle
       if args.debug
         fprintf('Deconvolving %d features...',length(obj.features));
       end
+      feats=Feature();
+      feats(length(obj.features))=Feature();
+      nfeats=0;
       for i=1:length(obj.features)
         if args.debug && mod(i,100)==0
           fprintf('%d...',i);
@@ -292,12 +295,17 @@ classdef FeatureList < handle
           elseif f.fwhh > args.maxwidth
             rejects.width=rejects.width+1;
           else
-            fl.append(f);
+            nfeats=nfeats+1;
+            if nfeats>length(feats)
+              feats(length(feats)*2)=Feature();
+            end
+            feats(nfeats)=f;
             %obj.featuresd=[obj.featuresd,struct('mz',mz,'time',pks(j,1),'intensity',pks(j,2),'mzrange',obj.features(i).mzrange,'pfwhh',pfwhh(j,:),'pfext',pext(j,:), 'peaks',rawpeaks,'area',area)];
             rejects.accept=rejects.accept+1;
           end
         end
       end
+      fl.features=feats(1:nfeats);
       if args.debug
         fprintf('%d\n',length(obj.features));
       end
