@@ -586,6 +586,10 @@ classdef MassSpec < handle
         fprintf('Extracting features for %d masses...',size(mzrange,1));
       end
       
+      feats=Feature();
+      feats(size(mzrange,1))=Feature();
+      nfeats=0;
+
       for i=1:size(mzrange,1)
         if args.debug && mod(i,500)==1
           fprintf('%d...',i);
@@ -631,8 +635,13 @@ classdef MassSpec < handle
         p=p(first:last,:);
         p(:,3)=obj.time(p(:,3)); % Convert from scan to time
         feature=Feature(p,fname);
-        fl.append(feature);
+        nfeats=nfeats+1;
+        if nfeats>length(feats)
+          feats(length(feats)*2)=Feature();
+        end
+        feats(nfeats)=feature;
       end
+      fl.features=feats(1:nfeats);
       if args.debug
         fprintf('done\n');
       end
