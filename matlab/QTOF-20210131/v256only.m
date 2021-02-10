@@ -22,6 +22,8 @@ v256.TIMEFUZZ=0.2;
 minhits=2;
 trace=[];
 
+v256.findfeatures();   % Should already exist from qsetup
+
 % First run to be able to set fsens
 v256.fsens(:)=1;
 v256.assignTimes('clear',true,'normicrange',[0.1,10],'trace',trace,'minhits',minhits);
