@@ -656,23 +656,23 @@ classdef Compounds < handle
                 if sum(hitgood)<args.minhits || nFP>args.maxFP || nFN > args.maxFN
                   continue;
                 end
-                if length(sel)>length(bestset)
-                  bestset=sel;
+                if length(selexpected)>length(bestset) || (length(selexpected)==length(bestset) && nFP<astats.FP)
+                  bestset=selexpected;
                   bestwindow=timewindow;
-                  astats=struct('run',arun,'args',args,'adduct',k,'sel',srcfile(sel),'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN);
+                  astats=struct('run',arun,'args',args,'adduct',k,'sel',srcfile(selexpected),'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN);
                   nbest=1;
                   if ismember(i,args.trace)
-                    fprintf('best set: %s\n', sprintf('%d ',sel));
+                    fprintf('best set: %s\n', sprintf('%d ',selexpected));
                   end
-                elseif length(bestset)==length(sel) && any(~ismember(sel,bestset))
+                elseif length(bestset)==length(selexpected) && any(~ismember(selexpected,bestset))
                   % Different set
                   if ismember(i,args.trace)
-                    fprintf('disjoint set: %s\n', sprintf('%d ',sel));
+                    fprintf('disjoint set: %s\n', sprintf('%d ',selexpected));
                   end
                   nbest=nbest+1;
                 else
                   if ismember(i,args.trace)
-                    fprintf('ignored set: %s\n', sprintf('%d ',sel));
+                    fprintf('ignored set: %s\n', sprintf('%d ',selexpected));
                   end
                 end
               end
