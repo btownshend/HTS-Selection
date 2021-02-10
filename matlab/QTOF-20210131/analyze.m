@@ -75,8 +75,17 @@ qsetup.summary();
 ds=datestr(now,'YYYYmmDDHHMM');
 resultsdir='../../results/';
 writetable(report,[resultsdir,sprintf('report-%s.csv',ds)]);
+
 fprintf('Saving compounds...');
+allfeatures=qsetup.allfeatures;
+reffeatures=qsetup.reffeatures;
+qsetup.allfeatures=[];
+qsetup.reffeatures=[];
 save(sprintf('%s/qsetup-%s.mat',matdir,ds),'qsetup');
+save(sprintf('%s/qsetup-allfeatures-%s.mat',matdir,ds),'allfeatures');
+save(sprintf('%s/qsetup-reffeatures-%s.mat',matdir,ds),'reffeatures');
+qsetup.allfeatures=allfeatures;
+qsetup.reffeatures=reffeatures;
 fprintf('done\n');
 
 for i=1:length(qsetup.ADDUCTS)
