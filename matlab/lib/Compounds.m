@@ -820,19 +820,20 @@ classdef Compounds < handle
       for j=1:length(args.sample)
         findex=args.sample(j);
         map=obj.maps{findex};
-        
+        mzlist=[obj.reffeatures(findex).features.mz];
+        iclist=[obj.reffeatures(findex).features.intensity];
         % Attempt to locate each one uniquely
         maxic=[];   % Maximum IC per target
         fprintf('%s...',obj.samples{findex});
         for i=1:length(obj.mass)
-          if mod(i,100)==1
+          if mod(i,1000)==1
             fprintf('%d...',i);
           end
           for k=1:length(obj.ADDUCTS)
             % Use features
-            [flmz,findices]=obj.reffeatures(findex).getbymz(obj.mztarget(i,k),'mztol',args.mztol);
+            findices=find(abs(mzlist-obj.mztarget(i,k))<args.mztol);
             obj.multihits{i,k,findex}=findices;
-            maxic(i,k)=max([0,flmz.features.intensity]);
+            maxic(i,k)=max([0,iclist(findices)]);
           end
         end
         fprintf('done.\n');
