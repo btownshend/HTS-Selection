@@ -10,7 +10,10 @@ fprintf('Have %d target m/z\n', length(allmz));
 
 % Use an mztol here based on resolving power; that gives us all the peaks that might include the desired peaks
 % Assume an average mass of 300 and resolving power of 20000
-fdmztol=300/2000;
+%fdmztol=300/2000;
+% Actually, mztol just needs to be wide enough to capture the peak after averaging over all the ions
+% For that 2e-3 should be good (in fact slightly more than 5e-4 is probably enough, depending on the acquisition calibration)
+fdmztol=2e-3;
 
 % Build chromatograms if needed
 for i=1:length(mzdata)
@@ -19,7 +22,7 @@ for i=1:length(mzdata)
     tic
     if force || isempty(mzdata{i}.featurelists) || ~any(strcmp({mzdata{i}.featurelists.src},'buildchromatogram'))
       fprintf('Building chromatograms for %s against %d m/z with mztol=%f...',mzdata{i}.name,length(allmz),fdmztol);
-      mzdata{i}.targetedFeatureDetect(allmz, 'mztol',fdmztol,'names',names);
+      mzdata{i}.targetedFeatureDetect(allmz, 'mztol',fdmztol,'names',names,'debug',true);
       fprintf('%d done\n',length(mzdata{i}.featurelists(end).features));
     end
     fprintf('Deconvolving chromatograms for %s...',mzdata{i}.name);
@@ -49,9 +52,10 @@ timetol=0.2;
 usefiles=1:length(qsetup.samples);
 usefiles=setdiff(usefiles,1:9);   % Skip pre/sn ones
 minhits=2;
-qsetup.assignTimes('clear',true,'timetol',timetol,'mztol',mztol,'trace',trace,'usefiles',usefiles,'minhits',minhits);
+
+qsetup.assignTimes('clear',true,'timetol',timetol,'mztol',fdmztol,'trace',trace,'usefiles',usefiles,'minhits',minhits);
 qsetup.checksensitivity(ref);
-qsetup.assignTimes('clear',false,'timetol',timetol,'mztol',mztol,'trace',trace,'usefiles',usefiles,'minhits',minhits);
+qsetup.assignTimes('clear',false,'timetol',timetol,'mztol',fdmztol,'trace',trace,'usefiles',usefiles,'minhits',minhits);
 qsetup.assignTimes('clear',false,'timetol',timetol,'normicrange',[0.5,4.5],'trace',trace,'usefiles',usefiles,'minhits',minhits);
 qsetup.assignTimes('clear',false,'timetol',timetol,'maxFP',1,'trace',trace,'usefiles',usefiles,'minhits',minhits);
 qsetup.assignTimes('clear',false,'timetol',timetol,'maxFN',1,'trace',trace,'usefiles',usefiles,'minhits',minhits);
