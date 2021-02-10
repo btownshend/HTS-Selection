@@ -620,7 +620,7 @@ classdef MassSpec < handle
             [~,ia]=max(psel(:,2));
             p(end+1,:)=[psel(ia,1),sum(psel(:,2)),j];
           else
-            p(end+1,:)=[mean(mzrange(i,:)),0,j];
+            p(end+1,:)=[mzmid(i),0,j];
           end
         end
         if isempty(p)
