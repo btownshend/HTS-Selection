@@ -47,7 +47,15 @@ writetable(report,'/tmp/report.csv','QuoteStrings',true);
 system(sprintf('sed -e "s/NaN//g" /tmp/report.csv > %s',[resultsdir,sprintf('report-%s.csv',ds)]));
 
 fprintf('Saving compounds...');
+allfeatures=v256.allfeatures;
+reffeatures=v256.reffeatures;
+v256.allfeatures=[];
+v256.reffeatures=[];
 save(sprintf('%s/v256-%s.mat',matdir,ds),'v256');
+save(sprintf('%s/v256-allfeatures-%s.mat',matdir,ds),'allfeatures');
+save(sprintf('%s/v256-reffeatures-%s.mat',matdir,ds),'reffeatures');
+v256.allfeatures=allfeatures;
+v256.reffeatures=reffeatures;
+
 fprintf('done\n');
 
-save('v256.mat','v256');
