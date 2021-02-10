@@ -19,7 +19,7 @@ end
     
 v256=qsetup.copypart('fsel',fsel);
 timetol=0.2;
-mztol=.0005;
+mztol=.0005*4;
 minhits=2;
 trace=[];
 
