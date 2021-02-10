@@ -709,7 +709,7 @@ classdef Compounds < handle
               fi=fi(sel);
               if ~isempty(fi)
                 if length(fi)>1
-                  % More than one feature in time window; use closest to mean time (perhaps should use peak height?)
+                  % More than one feature in time window; use one with highest peak height
                   if args.debug || ismember(i,args.trace)
                     fprintf('Have %d ambiguous features for %s[%s] in %s\n', length(fi), obj.names{i},obj.ADDUCTS(k).name,obj.samples{j});
                   end
