@@ -810,7 +810,7 @@ classdef Compounds < handle
     end
     
     function findfeatures(obj,varargin)
-      defaults=struct('mztol',obj.MZFUZZ,'sample',1:length(obj.samples),'compounds',1:length(obj.mass));
+      defaults=struct('mztol',obj.MZFUZZ,'sample',1:length(obj.samples));
       args=processargs(defaults,varargin);
 
       obj.remapfeatures();
@@ -821,11 +821,10 @@ classdef Compounds < handle
         % Attempt to locate each one uniquely
         maxic=[];   % Maximum IC per target
         fprintf('%s...',obj.samples{findex});
-        for ii=1:length(obj.mass)
-          if mod(ii,100)==1
-            fprintf('%d...',ii);
+        for i=1:length(obj.mass)
+          if mod(i,100)==1
+            fprintf('%d...',i);
           end
-          i=args.compounds(ii);
           for k=1:length(obj.ADDUCTS)
             % Use features
             [flmz,findices]=obj.reffeatures(findex).getbymz(obj.mztarget(i,k),'mztol',args.mztol);
