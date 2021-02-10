@@ -62,6 +62,7 @@ qsetup.assignTimes('clear',false,'timetol',timetol,'maxFN',1,'trace',trace,'usef
 qsetup.assignTimes('clear',false,'timetol',timetol,'maxFN',1,'maxFP',1,'trace',trace,'usefiles',usefiles,'minhits',minhits);
 qsetup.checksensitivity(ref);
 qsetup.assignTimes('clear',false,'timetol',timetol,'maxFN',2,'maxFP',2,'trace',trace,'usefiles',usefiles,'minhits',minhits);
+qsetup.checksensitivity(ref);
 
 
 report=qsetup.report();
