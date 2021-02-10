@@ -1,3 +1,5 @@
+ds=datestr(now,'YYYYmmDDHHMM');
+diary(['v256only-',ds,'.log']);
 fsel=[];
 for col=1:8
   for row='A':'H'
@@ -41,7 +43,6 @@ v256.checksensitivity(); % Final
 v256.platesummary;
 
 report=v256.report();
-ds=datestr(now,'YYYYmmDDHHMM');
 resultsdir='../../results/';
 writetable(report,'/tmp/report.csv','QuoteStrings',true);
 system(sprintf('sed -e "s/NaN//g" /tmp/report.csv > %s',[resultsdir,sprintf('report-%s.csv',ds)]));
@@ -58,4 +59,6 @@ v256.allfeatures=allfeatures;
 v256.reffeatures=reffeatures;
 
 fprintf('done\n');
+diary off
+
 
