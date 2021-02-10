@@ -747,6 +747,10 @@ classdef Compounds < handle
     
     function remapfeatures(obj)
     % Create remapped version of file features into reference space
+      if length(obj.allfeatures)==length(obj.reffeatures)
+        fprintf('Feature lists already remapped\n');
+        return;
+      end
       fprintf('Remapping %d feature lists...',length(obj.allfeatures));
       for i=1:length(obj.allfeatures)
         if length(obj.reffeatures)<i || isempty(obj.reffeatures(i)) || length(obj.reffeatures(i).features)~=length(obj.allfeatures(i).features)
