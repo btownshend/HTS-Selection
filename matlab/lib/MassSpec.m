@@ -195,6 +195,37 @@ classdef MassSpec < handle
       end
     end
     
+    function checkmzsep(obj,varargin)
+    % Check the m/z separation of peaks as acquired (from peaks)
+      defaults=struct('nbin',20);
+      args=processargs(defaults,varargin);
+
+      pks=vertcat(obj.peaks{:});
+      dp=diff(pks(:,1));
+      mz=pks(1:end-1,1);
+      mz=mz(dp>0);
+      dp=dp(dp>0);
+      [mz,ord]=sort(mz);
+      dp=dp(ord);
+      edges=prctile(mz,(0:args.nbin)*100/args.nbin);
+      bins=discretize(mz,edges);
+      mzmean=[];dpmin=[];
+      for i=1:max(bins)
+        mzmean(i)=mean(mz(bins==i));
+        dpmin(i)=min(dp(bins==i));
+      end
+      ti=sprintf('checkmzsep - %s',obj.name);
+      setfig(ti);clf;
+      plot(mzmean,dpmin);
+      xlabel('m/z');
+      ylabel('minimum separation');
+      yyaxis right
+      plot(mzmean,mzmean./dpmin);
+      ylabel('mz/sep');
+      title(ti);
+      legend(obj.path,'mz/sep (~RP)','Location','best');
+    end
+    
     function adjcompare(obj,varargin)
     % Compare m/z of adjacent peaks to get insight into resolving power
     % Expect that m/z difference will be proportional to 1/sqrt(ic) for single peaks
