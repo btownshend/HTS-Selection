@@ -546,6 +546,11 @@ classdef Compounds < handle
         obj.featureindex=nan(length(obj.names),length(obj.ADDUCTS),length(obj.samples));
         obj.astats=obj.astats([]);
       end
+      used=cell(size(obj.files));
+      for j=1:length(obj.files)
+        used{j}=obj.featureindex(:,:,j);
+        used{j}=used{j}(isfinite(used{j}(:)));
+      end
       for k=1:length(obj.ADDUCTS)
         % Try assignment for each adduct; only work on ones that haven't been assigned using a prior adduct
         fprintf('[%s]\n',obj.ADDUCTS(k).name);
@@ -561,9 +566,9 @@ classdef Compounds < handle
             end
             mhits=obj.multihits{i,k,j};
             if ~isempty(mhits)
-              used=obj.featureindex(:,:,j);
-              used=used(isfinite(used(:)));
-              featinds=mhits(~ismember(mhits,used));   % This is faster than using setdiff()
+              %used=obj.featureindex(:,:,j);
+              %used=used(isfinite(used(:)));
+              featinds=mhits(~ismember(mhits,used{j}));   % This is faster than using setdiff()
               if ~isempty(featinds)
                 feat=obj.reffeatures(j).features(featinds);
                 mzsel=abs([feat.mz]-mztarget)<=args.mztol & [feat.intensity]>=args.minic & [feat.isotope]<=1;
@@ -718,6 +723,7 @@ classdef Compounds < handle
                   fi=fi(mind);
                 end
                 obj.featureindex(i,kk,j)=fi;
+                used{j}(end+1)=fi;
                 feat=obj.reffeatures(j).features(fi);
                 obj.ic(i,kk,j)=feat.intensity;
                 obj.mz(i,kk,j)=feat.mz;
