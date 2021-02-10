@@ -15,30 +15,29 @@ for col=1:8
     end
   end
 end
-
-    
 v256=qsetup.copypart('fsel',fsel);
-timetol=0.2;
-mztol=.0005*4;
+v256.MZFUZZ=0.0012;
+v256.TIMEFUZZ=0.2;
+
 minhits=2;
 trace=[];
 
 % First run to be able to set fsens
 v256.fsens(:)=1;
-v256.assignTimes('clear',true,'timetol',timetol,'mztol',mztol,'normicrange',[0.1,10],'trace',trace,'minhits',minhits);
+v256.assignTimes('clear',true,'normicrange',[0.1,10],'trace',trace,'minhits',minhits);
 v256.checksensitivity();  % Initial fsens
 % Start over with good fsens
-v256.assignTimes('clear',true,'timetol',timetol,'mztol',mztol,'trace',trace,'minhits',minhits);
+v256.assignTimes('clear',true,'trace',trace,'minhits',minhits);
 fprintf('Allow 1 false negative\n');
-v256.assignTimes('clear',false,'timetol',timetol,'mztol',mztol,'trace',trace,'minhits',minhits,'maxFN',1);
+v256.assignTimes('clear',false,'trace',trace,'minhits',minhits,'maxFN',1);
 fprintf('Allow 3 false positives\n');
-v256.assignTimes('clear',false,'timetol',timetol,'maxFP',3,'mztol',mztol,'trace',trace,'minhits',minhits);
+v256.assignTimes('clear',false,'maxFP',3,'trace',trace,'minhits',minhits);
 fprintf('Allow 3 false positives and 1 false negative\n');
-v256.assignTimes('clear',false,'timetol',timetol,'maxFP',3,'maxFN',1,'mztol',mztol,'trace',trace,'minhits',minhits);
+v256.assignTimes('clear',false,'maxFP',3,'maxFN',1,'trace',trace,'minhits',minhits);
 fprintf('Increased time tol\n');
-v256.assignTimes('clear',false,'timetol',timetol*2,'maxFP',0,'maxFN',0,'mztol',mztol,'trace',trace,'minhits',minhits);
+v256.assignTimes('clear',false,'timetol',v256.TIMEFUZZ*2,'maxFP',0,'maxFN',0,'trace',trace,'minhits',minhits);
 fprintf('Increased normicrange\n');
-v256.assignTimes('clear',false,'timetol',timetol,'mztol',mztol,'normicrange',[0.2,5],'trace',trace,'minhits',minhits);
+v256.assignTimes('clear',false,'normicrange',[0.2,5],'trace',trace,'minhits',minhits);
 v256.checksensitivity(); % Final
 v256.platesummary;
 
