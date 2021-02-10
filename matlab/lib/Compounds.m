@@ -1383,6 +1383,9 @@ classdef Compounds < handle
 
       if isempty(args.adduct)
         args.adduct=obj.astats(ind).adduct;
+        if isempty(args.adduct)
+          args.adduct=1;
+        end
       end
       
       if args.zoom & isfinite(obj.meantime(ind))
