@@ -537,42 +537,47 @@ classdef MassSpec < handle
         assert(length(args.names)==length(mz));
         args.names=args.names(ord);
       end
+      % Merge identical mz
+      i=1;
+      ndup=0;
+      while i<length(mz)-1
+        if mz(i)==mz(i+1)
+          args.names{i}=[args.names{i},',',args.names{i+1}];
+          mz=mz([1:i,i+2:end]);
+          args.names=args.names([1:i,i+2:end]);
+          ndup=ndup+1;
+        else
+          i=i+1;
+        end
+      end
+      if ndup>0
+        fprintf('Removed %d/%d duplicate m/z\n', ndup,length(mz)+ndup);
+      end
       mzrange(:,1)=mz-args.mztol;
       mzrange(:,2)=mz+args.mztol;
       % Adjust overlaps
       if isempty(args.rt)
-        % Merge duplicate or overlapping m/z
-        ndup=0;
-        while true
-          dup=find(mzrange(1:end-1,2)>mzrange(2:end,1),1);
-          if isempty(dup)
-            break;
-          end
-          mzrange(dup,2)=mzrange(dup+1,2);
-          mzrange=mzrange([1:dup,dup+2:end],:);
-          if ~isempty(args.names)
-            args.names{dup}=strjoin(args.names([dup,dup+1]),',');
-            args.names=args.names([1:dup,dup+2:end]);
-          end
-          ndup=ndup+1;
-        end
-        if ndup>0
-          fprintf('Merged %d duplicate m/z\n', ndup);
-        end
+        % Separate overlapping m/z
+        overlaps=find(mzrange(1:end-1,2)>mzrange(2:end,1));
+        boundary=(mzrange(overlaps,2)+mzrange(overlaps+1,1))/2;
+        mzrange(overlaps,2)=boundary;
+        mzrange(overlaps+1,1)=boundary;
+        fprintf('Separated m/z range for %d/%d overlapping m/z\n', length(overlaps), length(mz));
       else
         % With RT given, need to handle overlaps -- TODO
         for i=1:length(mz)
           for j=i+1:length(mz)
-            if mz(j)-mz(i) < 2*args.mztol
+            if mzrange(j,2)<mzrange(i,1)
               break;   % Distinct m/z
             end
             if abs(args.rt(j)-args.rt(i)) < 2*args.timetol
-              fprintf('Overlap: %.4f@%.2f and %.4f@%.2f\n', mz(i), args.rt(i), mz(j), args.rt(j));
+              fprintf('Overlap: %.4f@%.2f and %.4f@%.2f NOT HANDLED\n', mz(i), args.rt(i), mz(j), args.rt(j));
             end
           end
         end
         
       end
+      mzmid=(mzrange(:,1)+mzrange(:,2))/2;
       
       % Buld EIC for each mass
       args.mz=mz;   % So it is added to params
