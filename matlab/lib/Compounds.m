@@ -1517,7 +1517,7 @@ classdef Compounds < handle
         if ~obj.contains(ind,j)
           continue;
         end
-        fprintf('%-15.15s %5.2f',obj.samples{j},obj.fsens(j));
+        fprintf('%2d %-15.15s %5.2f',j,obj.samples{j},obj.fsens(j));
 
         fi=obj.featureindex(ind,k,j);
         if isfinite(fi) && fi>0
