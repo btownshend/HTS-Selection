@@ -526,7 +526,7 @@ classdef Compounds < handle
     %   build list of observations across features (elution time,whether compound is expected) that are not already assigned
     %   find elution times which have <= given number of false negatives and falsepositives
     %   if unique, assign to compound;  if multiples display message
-      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[],'maxFN',0,'maxFP',0,'clear',true,'detectionThreshold',2000,'normicrange',[0.4,2.5],'usefiles',[]);
+      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[],'maxFN',0,'maxFP',0,'clear',true,'detectionThreshold',2000,'normicrange',[0.4,2.5],'usefiles',[],'allowambig',true);
       args=processargs(defaults,varargin);
 
       if args.clear || isempty(obj.astats)
@@ -661,18 +661,19 @@ classdef Compounds < handle
                 if sum(hitgood)<args.minhits || nFP>args.maxFP || nFN > args.maxFN
                   continue;
                 end
-                if length(selexpected)>length(bestset) || (length(selexpected)==length(bestset) && nFP<astats.FP)
+
+                if length(selexpected)>length(bestset) || (length(selexpected)==length(bestset) && (nFN<astats.FN || nFP<astats.FP || (args.allowambig && tsens>bestic)) )
                   bestset=selexpected;
                   bestwindow=timewindow;
                   astats=struct('run',arun,'args',args,'adduct',k,'sel',srcfile(selexpected),'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN);
                   nbest=1;
                   if ismember(i,args.trace)
-                    fprintf('best set: %s\n', sprintf('%d ',selexpected));
+                    fprintf('best set: FN=%d,FP=%d,tsens=%.0f:  %s\n', nFN, nFP, tsens, sprintf('%d ',selexpected));
                   end
                 elseif length(bestset)==length(selexpected) && any(~ismember(selexpected,bestset))
                   % Different set
                   if ismember(i,args.trace)
-                    fprintf('disjoint set: %s\n', sprintf('%d ',selexpected));
+                    fprintf('disjoint set: FN=%d,FP=%d,tsens=%.0f:  %s\n', nFN, nFP, tsens, sprintf('%d ',selexpected));
                   end
                   nbest=nbest+1;
                 else
@@ -688,7 +689,7 @@ classdef Compounds < handle
               fprintf('No hits for %s with FN<=%d and FP<=%d\n', obj.names{i}, args.maxFN, args.maxFP);
             end
             continue;
-          elseif nbest>1
+          elseif nbest>1 && ~args.allowambig
             if args.debug  || ismember(i,args.trace)
               fprintf('Have %d equivalent elution times for %s\n', nbest, obj.names{i});
             end   
