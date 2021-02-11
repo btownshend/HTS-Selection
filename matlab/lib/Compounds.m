@@ -545,7 +545,7 @@ classdef Compounds < handle
         arun=max([obj.astats.run])+1;
       end
       
-      fprintf('assignTimes:\n');
+      fprintf('assignTimes (run %d):\n',arun);
       if args.clear
         obj.ic(:)=nan;
         obj.normic(:)=nan;
