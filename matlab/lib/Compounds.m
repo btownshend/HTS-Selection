@@ -665,6 +665,7 @@ classdef Compounds < handle
                 if length(selexpected)>length(bestset) || (length(selexpected)==length(bestset) && (nFN<astats.FN || nFP<astats.FP || (args.allowambig && tsens>bestic)) )
                   bestset=selexpected;
                   bestwindow=timewindow;
+                  bestic=tsens;
                   astats=struct('run',arun,'args',args,'adduct',k,'sel',srcfile(selexpected),'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN);
                   nbest=1;
                   if ismember(i,args.trace)
