@@ -1491,7 +1491,7 @@ classdef Compounds < handle
     
     function res=isocheck(obj,mzdata,varargin)
     % Check isotope patterns using original MS files
-      defaults=struct('minic',1000,'minabundance',.001,'trace',[],'mztol',obj.MZFUZZ);
+      defaults=struct('minpeak',1000,'minisoic',600,'trace',[],'mztol',obj.MZFUZZ,'noiserel',0.2,'noiseabs',300,'minoutliers',3);
       args=processargs(defaults,varargin);
 
       res=[];
@@ -1499,63 +1499,125 @@ classdef Compounds < handle
         if isnan(obj.meantime(i))
           continue;
         end
-        isotopes=Chem.getisotopes(obj.sdf.getformula(i),'minabundance',args.minabundance);
+        isotopes=Chem.getisotopes(obj.sdf.getformula(i),'minabundance',args.minisoic/1e7);
         adduct=obj.astats(i).adduct;
         for m=1:length(isotopes)
           isotopes(m).mass=isotopes(m).mass+obj.ADDUCTS(adduct).mass;
         end
         ic=squeeze(obj.ic(i,adduct,:));
-        fsel=find(ic>=args.minic);
+        fsel=find(ic>=args.minpeak & obj.contains(i,:)');
         if isempty(fsel)
           continue;
         end
         if ismember(i,args.trace)
           ti=sprintf('isocheck-%s[%s]',obj.names{i},obj.ADDUCTS(adduct).name);
           setfig(ti);clf;
-          tiledlayout('flow');
+          tl=tiledlayout('flow');
+          title(tl,ti);
+          linked=[];
         end
+        fres=[];
         for p=1:length(fsel)
           j=fsel(p);
           rt=obj.time(i,adduct,j);
           [~,scan]=min(abs(mzdata{j}.time-rt));
           peaks=mzdata{j}.peaks{scan};
-          assert(abs(isotopes(1).mass == obj.mztarget(i,adduct))<1e-4);
           maxabund=max([isotopes.abundance]);
-          obs=[];
-          for k=1:length(isotopes)
-            if isotopes(k).abundance*ic(j) > args.minic
-              [~,ind]=min(abs(isotopes(k).mass-peaks(:,1)));
-              if abs(peaks(ind,1)-isotopes(k).mass)<args.mztol
-                obs(k)=peaks(ind,2)/ic(j)*maxabund/isotopes(k).abundance;
-              else
-                obs(k)=0;
-              end
+          assert(abs(isotopes(1).mass == obj.mztarget(i,adduct))<1e-4);  % Verify that we used the max abund monoisotopic mass
+          ictotal=ic(j)/maxabund;
+          % Only keep isotopes that are expected to have ic >= minisoic
+          keep=find([isotopes.abundance]*ictotal >= args.minisoic);
+          if length(keep)<2
+            % Nothing other than primary expected
+            continue;
+          end
+          isokeep=isotopes(keep);
+          for k=1:length(isokeep)
+            [~,ind]=min(abs(isokeep(k).mass-peaks(:,1)));
+            if abs(peaks(ind,1)-isokeep(k).mass)<args.mztol
+              pval=peaks(ind,2);
             else
-              obs(k)=nan;
+              pval=0;
             end
+            isokeep(k).peaks(k,:)=peaks(ind,:);
+            isokeep(k).obs=peaks(ind,2)/ictotal;
+            isokeep(k).outlier=peaks(ind,2)<(isokeep(k).abundance*ictotal*(1-args.noiserel)-args.noiseabs);
           end
-          obs=obs(1:find(isfinite(obs),1,'last'));
-          if length(obs)>1
-            res=[res,struct('compound',i,'isotopes',isotopes,'sample',j,'ic',ic(j),'obs',obs)];
-          end
+          fres=[fres,struct('sample',j,'ictotal',ictotal,'isotopes',isokeep,'noutlier',sum([isokeep.outlier]))];
           
           if ismember(i,args.trace)
-            fprintf('%s[%s] in %s, rt=%.2f, ic=%.2f\n', obj.names{i}, obj.ADDUCTS(adduct).name,obj.samples{j},rt,ic(j));
+            fprintf('%s[%s] in %s, rt=%.2f, ic=%.0f\n', obj.names{i}, obj.ADDUCTS(adduct).name,obj.samples{j},rt,ic(j));
             nexttile;
             semilogy(peaks(:,1),peaks(:,2),'o-');
             hold on;
-            plot([isotopes.mass],[isotopes.abundance]*ic(j)/isotopes(1).abundance,'x');
-            ax=axis; ax(1:2)=[min([isotopes.mass])-1,max([isotopes.mass])+1]; ax(4)=ic(j)*1.2; axis(ax);
+            plot([isokeep.mass],[isokeep.abundance]*ic(j)/isokeep(1).abundance,'x');
+            ax=axis; ax(1:2)=[min([isokeep.mass])-1,max([isokeep.mass])+1]; ax(4)=ic(j)*1.2; axis(ax);
             xlabel('m/z');
             ylabel('ion count');
             title(obj.samples{j});
+            linked(end+1)=gca;
           end
         end
+        if ~isempty(fres)
+          res=[res,struct('compound',i,'adduct',adduct,'samples',fres,'noutlier',sum([fres.noutlier]>0))];
+        end
         if ismember(i,args.trace)
-          suptitle(ti);
+          linkaxes(linked,'x');
         end
       end
-      keyboard;
+
+      % List outliers
+      fprintf('Outliers in at least %d files:\n',args.minoutliers);
+      for i=1:length(res)
+        if res(i).noutlier>=args.minoutliers
+          r=res(i);
+          fprintf('%4d %s[%s] %s %.5f noutliers=%d\n', r.compound, obj.names{r.compound}, obj.ADDUCTS(r.adduct).name,r.samples(1).isotopes(1).name, r.samples(1).isotopes(1).mass, r.noutlier);
+          for j=1:length(r.samples)
+            s=r.samples(j);
+            fprintf(' %2d %-10s %6.0f', s.sample, obj.samples{s.sample},s.ictotal)
+            for k=2:length(s.isotopes)
+              iso=s.isotopes(k);
+              fprintf(' %5.0f/%5.0f',[iso.obs,iso.abundance]*s.ictotal);
+              if iso.outlier
+                fprintf('*');
+              else
+                fprintf(' ');
+              end
+            end
+            fprintf('\n');
+          end
+        end
+      end
+      
+      % Plot observed vs. expected ion counts and outlier dependence
+      setfig('isocheck');clf;
+      data=[];
+      for i=1:length(res)
+        for k=1:length(res(i).samples)
+          r=res(i).samples(k);
+          for j=2:length(r.isotopes)
+            iso=r.isotopes(j);
+            data(end+1,:)=r.ictotal*[iso.abundance,iso.obs];
+          end
+        end
+      end
+      loglog(data(:,1),data(:,2),'.','MarkerSize',1);
+      thresh=data(:,1)*(1-args.noiserel)-args.noiseabs;   % Points below this are outliers
+      thresh(thresh<=0)=nan;
+      hold on;
+      outlier=data(:,2)<thresh;
+      loglog(data(outlier,1),data(outlier,2),'r.','MarkerSize',1);
+      
+      % Plot threshold
+      hold on;
+      ax=axis;
+      [~,ord]=sort(data(:,1));
+      plot(data(ord,1),thresh(ord),'r');
+      xlabel('Expected ion count');
+      ylabel('Observed ion count');
+      title(sprintf('isocheck noise=%f*ic+%f',args.noiserel,args.noiseabs));
+      
+      ax=axis; ax(3:4)=[100,1e6];axis(ax);
     end
     
     function getinfo(obj,name,varargin)
