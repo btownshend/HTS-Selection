@@ -1168,8 +1168,11 @@ classdef Compounds < handle
       end
     end
     
-    function checksensitivity(obj,ref)
+    function checksensitivity(obj,varargin)
     % Check sensitivity by file relative to ref file
+      defaults=struct('ref',[],'plot',false);
+      args=processargs(defaults,varargin);
+
       obj.normic=obj.ic;
 
       sens=ones(size(obj.files));
@@ -1186,45 +1189,51 @@ classdef Compounds < handle
         sens=nanmedian(ratio,2)'.*sens;
       end
 
-      if nargin>1 && isfinite(ref)
-        sens=sens/sens(ref);
+      if ~isempty(args.ref)
+        sens=sens/sens(args.ref);
       end
-
-      ti=['File Sensitivity'];
-      setfig(ti);clf;
-      tiledlayout('flow');
-      nexttile;
-      bar(sens);
       obj.fsens=sens;
-      set(gca,'YScale','log');
-      set(gca,'XTick',1:length(obj.samples));
-      set(gca,'XTickLabel',obj.samples);
-      set(gca,'XTickLabelRotation',90);
-      ylabel('Sensitivity');
-      title(ti);
-      nexttile;
-      boxplot(sens,obj.moles);
-      xlabel('Moles injected');
-      ylabel('Sensitivity');
+
+      if args.plot
+        ti=['File Sensitivity'];
+        setfig(ti);clf;
+        tiledlayout('flow');
+        nexttile;
+        bar(sens);
+        set(gca,'YScale','log');
+        set(gca,'XTick',1:length(obj.samples));
+        set(gca,'XTickLabel',obj.samples);
+        set(gca,'XTickLabelRotation',90);
+        ylabel('Sensitivity');
+        title(ti);
+        nexttile;
+        boxplot(sens,obj.moles);
+        xlabel('Moles injected');
+        ylabel('Sensitivity');
+      end
       
+      h2=[];
       for k=1:length(obj.ADDUCTS)
         % Check sensitivity by target
         for i=1:length(obj.names)
           sel=obj.contains(i,:);
           tsens(i)=nanmedian(squeeze(obj.ic(i,k,sel))./sens(sel)');
         end
-        ti=['Target Sensitivity - ',obj.ADDUCTS(k).name];
-        setfig(ti);clf;
-        bar(tsens);
-        h2(k)=gca;
-        set(gca,'YScale','log');
-        ticks=1:80:length(tsens);
-        set(gca,'XTick',ticks)
-        set(gca,'XTickLabel',obj.names(ticks));
-        set(gca,'XTickLabelRotation',90);
-        ylabel('Sensitivity (Ion count for ref file)');
-        title(ti);
-        ax(:,k)=axis;
+        if args.plot
+          ti=['Target Sensitivity - ',obj.ADDUCTS(k).name];
+          setfig(ti);clf;
+          bar(tsens);
+          h2(k)=gca;
+          set(gca,'YScale','log');
+          ticks=1:80:length(tsens);
+          set(gca,'XTick',ticks)
+          set(gca,'XTickLabel',obj.names(ticks));
+          set(gca,'XTickLabelRotation',90);
+          ylabel('Sensitivity (Ion count for ref file)');
+          title(ti);
+          ax(:,k)=axis;
+        end
+        
         for i=1:size(obj.normic,1)
           obj.normic(i,k,:)=obj.ic(i,k,:)/tsens(i);
         end
@@ -1233,44 +1242,46 @@ classdef Compounds < handle
         end
         obj.tsens(:,k)=tsens;
       end
-      linkaxes(h2);
+      if args.plot
+        linkaxes(h2);
 
-      % Show relative sensitivity of targets
-      setfig('Rel Target Sensitivity');clf;
-      rel=obj.tsens;
-      total=sum(rel,2);
-      for i=1:size(rel,2)
-        rel(:,i)=rel(:,i)./total;
-      end
-      bar(rel,'stacked');
-      set(gca,'XTick',ticks)
-      set(gca,'XTickLabel',obj.names(ticks));
-      set(gca,'XTickLabelRotation',90);
-      legend({obj.ADDUCTS.name});
-
-      % Cross-scatter of adduct sensitivities
-      setfig('Ion Count compare');clf;
-      t=tiledlayout('flow');
-      t.Title.String='Ion Count Compare';
-      h=[];
-      for k=2:length(obj.ADDUCTS)
-        nexttile;
-        h(end+1)=loglog(obj.tsens(:,1),obj.tsens(:,k),'.','MarkerSize',8);
-        hold on;
-        ax=axis;
-        plot(ax(1:2),ax(1:2),':');
-        xlabel(sprintf('Ion Count %s',obj.ADDUCTS(1).name));
-        ylabel(sprintf('Ion Count %s',obj.ADDUCTS(k).name));
-      end
+        % Show relative sensitivity of targets
+        setfig('Rel Target Sensitivity');clf;
+        rel=obj.tsens;
+        total=sum(rel,2);
+        for i=1:size(rel,2)
+          rel(:,i)=rel(:,i)./total;
+        end
+        bar(rel,'stacked');
+        set(gca,'XTick',ticks)
+        set(gca,'XTickLabel',obj.names(ticks));
+        set(gca,'XTickLabelRotation',90);
+        legend({obj.ADDUCTS.name});
+        
+        % Cross-scatter of adduct sensitivities
+        setfig('Ion Count compare');clf;
+        t=tiledlayout('flow');
+        t.Title.String='Ion Count Compare';
+        h=[];
+        for k=2:length(obj.ADDUCTS)
+          nexttile;
+          h(end+1)=loglog(obj.tsens(:,1),obj.tsens(:,k),'.','MarkerSize',8);
+          hold on;
+          ax=axis;
+          plot(ax(1:2),ax(1:2),':');
+          xlabel(sprintf('Ion Count %s',obj.ADDUCTS(1).name));
+          ylabel(sprintf('Ion Count %s',obj.ADDUCTS(k).name));
+        end
       
-      % Overall discrimination
-      setfig('Discrimination');clf;
-      sel=isfinite(obj.meantime);
-      boxplot(reshape(max(obj.normic(sel,:,:),[],2),1,[]),reshape(obj.contains(sel,:),1,[]))
-      set(gca,'YScale','log');
-      logticks(0,1);
-      ylabel('Normalized Ion Count');
-      set(gca,'XTickLabel',{'Unexpected','Expected'});
+        % Overall discrimination
+        setfig('Discrimination');clf;
+        sel=isfinite(obj.meantime);
+        boxplot(reshape(max(obj.normic(sel,:,:),[],2),1,[]),reshape(obj.contains(sel,:),1,[]))
+        set(gca,'YScale','log');
+        logticks(0,1);
+        ylabel('Normalized Ion Count');
+        set(gca,'XTickLabel',{'Unexpected','Expected'});
+      end
     end
     
     function checknormic(obj)
