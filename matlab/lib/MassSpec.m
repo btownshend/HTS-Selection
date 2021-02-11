@@ -537,17 +537,30 @@ classdef MassSpec < handle
         assert(length(args.names)==length(mz));
         args.names=args.names(ord);
       end
-      % Merge identical mz
+      % Merge identical (or close) mz (and RT if using)
       i=1;
       ndup=0;
+      labels=cellfun(@(z) {z},args.names,'Unif',false);
       while i<length(mz)-1
-        if mz(i)==mz(i+1)
-          args.names{i}=[args.names{i},',',args.names{i+1}];
-          mz=mz([1:i,i+2:end]);
-          args.names=args.names([1:i,i+2:end]);
-          ndup=ndup+1;
-        else
-          i=i+1;
+        for j=i+1:length(mz)
+          if abs(mz(i)-mz(j))>args.mztol/10
+            i=i+1;
+            break;
+          end
+          if isempty(args.rt)  || abs(args.rt(i)-args.rt(j))<args.timetol/2
+            labels{i}=horzcat(labels{i},labels{j});
+            mz(i)=mean(mz([i,j]));
+            mz=mz([1:j-1,j+1:end]);
+            if ~isempty(args.rt)
+              args.rt(i)=mean(args.rt([i,j]));
+              args.rt=args.rt([1:j-1,j+1:end]);
+            end
+            args.names=args.names([1:j-1,j+1:end]);
+            labels=labels([1:j-1,j+1:end]);
+            ndup=ndup+1;
+          else
+            i=i+1;
+          end
         end
       end
       if ndup>0
@@ -564,21 +577,46 @@ classdef MassSpec < handle
         mzrange(overlaps+1,1)=boundary;
         fprintf('Separated m/z range for %d/%d overlapping m/z\n', length(overlaps), length(mz));
       else
-        % With RT given, need to handle overlaps -- TODO
+        timerange(:,1)=args.rt-args.timetol;
+        timerange(:,2)=args.rt+args.timetol;
+        % With RT given, need to handle overlaps 
+
         for i=1:length(mz)
           for j=i+1:length(mz)
-            if mzrange(j,2)<mzrange(i,1)
-              break;   % Distinct m/z
-            end
-            if abs(args.rt(j)-args.rt(i)) < 2*args.timetol
-              fprintf('Overlap: %.4f@%.2f and %.4f@%.2f NOT HANDLED\n', mz(i), args.rt(i), mz(j), args.rt(j));
+            if mzrange(j,2)>mzrange(i,1) && mzrange(i,2)>mzrange(j,1)
+              if timerange(j,2)>timerange(i,1) && timerange(i,2)>timerange(j,1)
+                if (mz(j)-mz(i))/args.mztol > abs(args.rt(i)-args.rt(j))/args.timetol
+                  % Split by mz
+                  boundary=(mzrange(i,2)+mzrange(j,1))/2;
+                  mzrange(i,2)=boundary;
+                  mzrange(j,1)=boundary;
+                  mz([i,j])=mean(mzrange([i,j],:),2);
+                else
+                  % Split by time
+                  if timerange(i,1)<timerange(i,2)
+                    boundaryT=(timerange(i,2)+timerange(j,1))/2;
+                    timerange(i,2)=boundaryT;
+                    timerange(j,1)=boundaryT;
+                  else
+                    boundaryT=(timerange(j,2)+timerange(i,1))/2;
+                    timerange(j,2)=boundaryT;
+                    timerange(i,1)=boundaryT;
+                  end
+                  args.rt([i,j])=mean(timerange([i,j],:),2);
+                end
+                if args.debug
+                  fprintf('Overlap: %.4f@%.2f and %.4f@%.2f', mz(i), args.rt(i), mz(j), args.rt(j));
+                  fprintf(' -> [%.4f,%.4f]@[%.2f,%.2f] and [%.4f,%.4f]@[%.2f,%.2f]\n', mzrange(i,:),timerange(i,:),mzrange(j,:),timerange(j,:));
+                end
+              end
             end
           end
         end
         
       end
       mzmid=(mzrange(:,1)+mzrange(:,2))/2;
-      
+      fprintf('Have %d targets overlapping in time with mztol<%.4f\n',sum(mzrange(:,2)-mzrange(:,1)<args.mztol/2),args.mztol/4);
+      fprintf('Have %d targets overlapping in m/z with timetol<%.4f\n',sum(timerange(:,2)-timerange(:,1)<args.timetol/2),args.timetol/4);
       % Buld EIC for each mass
       args.mz=mz;   % So it is added to params
       fl=FeatureList([obj.name,' chromatograms'],'targetedFeatureDetect',args);
@@ -595,22 +633,18 @@ classdef MassSpec < handle
           fprintf('%d...',i);
         end
         
-        if ~isempty(args.rt)
-          timerange=args.rt(i)+[-1,1]*args.timetol;
-        end
-        
         if ~isempty(args.names)
           fname=args.names{i};
         elseif isempty(args.rt)
           fname=sprintf('%.4f-%.4f',mzrange(i,:));
         else
-          fname=sprintf('%.4f-%.4f@%.1f-%.1f',mzrange(i,:),timerange);
+          fname=sprintf('%.4f-%.4f@%.1f-%.1f',mzrange(i,:),timerange(i,:));
         end
           
         % New EIC feature
         p=[];
         for j=1:length(obj.time)
-          if ~isempty(args.rt) && (obj.time(j)<timerange(1) || obj.time(j)>timerange(2))
+          if ~isempty(args.rt) && (obj.time(j)<timerange(i,1) || obj.time(j)>timerange(i,2))
             continue;
           end
           peaks=obj.peaks{j};
@@ -635,6 +669,7 @@ classdef MassSpec < handle
         p=p(first:last,:);
         p(:,3)=obj.time(p(:,3)); % Convert from scan to time
         feature=Feature(p,fname);
+        feature.labels=labels{i};
         nfeats=nfeats+1;
         if nfeats>length(feats)
           feats(length(feats)*2)=Feature();
