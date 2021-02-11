@@ -536,7 +536,7 @@ classdef Compounds < handle
     %   build list of observations across features (elution time,whether compound is expected) that are not already assigned
     %   find elution times which have <= given number of false negatives and falsepositives
     %   if unique, assign to compound;  if multiples display message
-      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[],'maxFN',0,'maxFP',0,'clear',true,'detectionThreshold',2000,'normicrange',[0.4,2.5],'usefiles',[],'allowambig',true);
+      defaults=struct('debug',0,'timetol',obj.TIMEFUZZ,'minhits',3,'mztol',obj.MZFUZZ,'plot','','minic',1000,'trace',[],'maxFN',0,'maxFP',0,'clear',true,'detectionThreshold',2000,'normicrange',[0.4,2.5],'falsethresh',0.1,'usefiles',[],'allowambig',true);
       args=processargs(defaults,varargin);
 
       if args.clear || isempty(obj.astats)
@@ -626,13 +626,13 @@ classdef Compounds < handle
                 ratio=intensity(selexpected)./obj.fsens(srcfile(selexpected));
                 ratio=ratio(isfinite(ratio));   % Using nanmedian() is much slower
                 tsens=median(ratio);
-                expectedIC=zeros(size(obj.fsens));
-                expectedIC(expected)=tsens*obj.fsens(expected);
+                expectedIC=tsens*obj.fsens;
                 normic=zeros(size(obj.fsens));
                 normic(srcfile(sel))=intensity(sel)./expectedIC(srcfile(sel));
                 % Categorize each file as
                 %  trueneg - unexpected and not present
-                %  falsepos - unexpected but present
+                %  falsepos - unexpected but present and > falsethresh
+                %  falseweak - unexpected but present and < falsethresh
                 %  hitgood - expected and present and in correct normic range
                 %  hitlow - expected and present but low normic
                 %  hithigh - expected and present but high normic
@@ -640,9 +640,10 @@ classdef Compounds < handle
                 %  missstrong - expected (strongly) and not present
                 present=ismember(1:length(obj.samples),srcfile(sel));
                 trueneg=~present&~expected;
-                falsepos=present&~expected;
                 lowic=normic<args.normicrange(1);
                 highic=normic>args.normicrange(2);
+                falsepos=present&~expected&normic>=args.falsethresh;
+                falseweak=present&~expected&normic<args.falsethresh;
                 hit = present & expected;
                 hitlow=hit & lowic; 
                 hithigh=hit &highic;
@@ -651,8 +652,8 @@ classdef Compounds < handle
                 missstrong=miss&~(expectedIC<args.detectionThreshold);   % Include nan expectedIC here
                 missweak=miss&expectedIC<args.detectionThreshold;
 
-                assert(all(trueneg|falsepos|hitgood|hitlow|hithigh|missweak|missstrong));
-                assert(sum(trueneg)+sum(falsepos)+sum(hitgood)+sum(hitlow)+sum(hithigh)+sum(missweak)+sum(missstrong)==length(obj.samples));
+                assert(all(trueneg|falsepos|falseweak|hitgood|hitlow|hithigh|missweak|missstrong));
+                assert(sum(trueneg)+sum(falsepos)+sum(falseweak)+sum(hitgood)+sum(hitlow)+sum(hithigh)+sum(missweak)+sum(missstrong)==length(obj.samples));
                 nFP=sum(falsepos);
                 nFN=sum(missstrong|hitlow|hithigh);
                 if ismember(i,args.trace)
