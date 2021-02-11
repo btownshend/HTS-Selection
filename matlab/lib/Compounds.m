@@ -1488,6 +1488,75 @@ classdef Compounds < handle
       s=sprintf(' [%-4d %s %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k),'details',false,'fixedwidth',true),label);
     end
     
+    function res=isocheck(obj,mzdata,varargin)
+    % Check isotope patterns using original MS files
+      defaults=struct('minic',1000,'minabundance',.001,'trace',[],'mztol',obj.MZFUZZ);
+      args=processargs(defaults,varargin);
+
+      res=[];
+      for i=1:length(obj.names)
+        if isnan(obj.meantime(i))
+          continue;
+        end
+        isotopes=Chem.getisotopes(obj.sdf.getformula(i),'minabundance',args.minabundance);
+        adduct=obj.astats(i).adduct;
+        for m=1:length(isotopes)
+          isotopes(m).mass=isotopes(m).mass+obj.ADDUCTS(adduct).mass;
+        end
+        ic=squeeze(obj.ic(i,adduct,:));
+        fsel=find(ic>=args.minic);
+        if isempty(fsel)
+          continue;
+        end
+        if ismember(i,args.trace)
+          ti=sprintf('isocheck-%s[%s]',obj.names{i},obj.ADDUCTS(adduct).name);
+          setfig(ti);clf;
+          tiledlayout('flow');
+        end
+        for p=1:length(fsel)
+          j=fsel(p);
+          rt=obj.time(i,adduct,j);
+          [~,scan]=min(abs(mzdata{j}.time-rt));
+          peaks=mzdata{j}.peaks{scan};
+          assert(abs(isotopes(1).mass == obj.mztarget(i,adduct))<1e-4);
+          maxabund=max([isotopes.abundance]);
+          obs=[];
+          for k=1:length(isotopes)
+            if isotopes(k).abundance*ic(j) > args.minic
+              [~,ind]=min(abs(isotopes(k).mass-peaks(:,1)));
+              if abs(peaks(ind,1)-isotopes(k).mass)<args.mztol
+                obs(k)=peaks(ind,2)/ic(j)*maxabund/isotopes(k).abundance;
+              else
+                obs(k)=0;
+              end
+            else
+              obs(k)=nan;
+            end
+          end
+          obs=obs(1:find(isfinite(obs),1,'last'));
+          if length(obs)>1
+            res=[res,struct('compound',i,'isotopes',isotopes,'sample',j,'ic',ic(j),'obs',obs)];
+          end
+          
+          if ismember(i,args.trace)
+            fprintf('%s[%s] in %s, rt=%.2f, ic=%.2f\n', obj.names{i}, obj.ADDUCTS(adduct).name,obj.samples{j},rt,ic(j));
+            nexttile;
+            semilogy(peaks(:,1),peaks(:,2),'o-');
+            hold on;
+            plot([isotopes.mass],[isotopes.abundance]*ic(j)/isotopes(1).abundance,'x');
+            ax=axis; ax(1:2)=[min([isotopes.mass])-1,max([isotopes.mass])+1]; ax(4)=ic(j)*1.2; axis(ax);
+            xlabel('m/z');
+            ylabel('ion count');
+            title(obj.samples{j});
+          end
+        end
+        if ismember(i,args.trace)
+          suptitle(ti);
+        end
+      end
+      keyboard;
+    end
+    
     function getinfo(obj,name,varargin)
       defaults=struct('mzdata',[],'adduct',[],'falsethresh',0.1);
       args=processargs(defaults,varargin);
