@@ -91,7 +91,9 @@ classdef Feature < matlab.mixin.Copyable
       else
         s=[s,'   '];
       end
-      s=[s,'#',sprintf('%8s',obj.name)];
+      if args.details
+        s=[s,'#',sprintf('%8s',obj.name)];
+      end
       if ~isempty(obj.labels) && (length(obj.labels)>1 || ~strcmp(obj.labels{1},obj.name))
         if args.details
           s=[s,'#',strjoin(obj.labels,',')];
