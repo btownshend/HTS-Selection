@@ -160,6 +160,11 @@ classdef FeatureList < handle
       [~,ord]=sort([obj.features.time]);
       obj.features=obj.features(ord);
     end
+
+    function sortbyintensity(obj)
+      [~,ord]=sort([obj.features.intensity],'desc');
+      obj.features=obj.features(ord);
+    end
     
     function [fl,sel]=getbymz(obj,mz,varargin)
       defaults=struct('mztol',0.01,'timerange',[]);
