@@ -39,7 +39,7 @@ classdef Compounds < handle
       obj.samples={};
       obj.allfeatures=FeatureList.empty;
       obj.reffeatures=FeatureList.empty;
-      obj.astats=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{});
+      obj.astats=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{},'fpsel',{});
       obj.sdf=SDF();
       if nargin<1
         obj.MZFUZZ=0.006;
@@ -435,7 +435,7 @@ classdef Compounds < handle
         obj.mz(nindex,:,:)=nan;
         obj.time(nindex,:,:)=nan;
         obj.timewindow(nindex,:)=nan;
-        obj.astats(nindex)=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{});
+        obj.astats(nindex)=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{},'fpsel',{});
         obj.meantime(nindex)=nan;
         obj.ic(nindex,:,:)=nan;
         obj.normic(nindex,:,:)=nan;
@@ -676,7 +676,7 @@ classdef Compounds < handle
                   bestset=selexpected;
                   bestwindow=timewindow;
                   bestic=tsens;
-                  astats=struct('run',arun,'args',args,'adduct',k,'sel',srcfile(selexpected),'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN);
+                  astats=struct('run',arun,'args',args,'adduct',k,'sel',srcfile(selexpected),'hitgood',sum(hitgood),'hitlow',sum(hitlow),'hithigh',sum(hithigh),'missstrong',sum(missstrong),'missweak',sum(missweak),'FP',nFP,'FN',nFN,'fpsel',srcfile(setdiff(sel,selexpected)));
                   nbest=1;
                   if ismember(i,args.trace)
                     fprintf('best set: FN=%d,FP=%d,tsens=%.0f:  %s\n', nFN, nFP, tsens, sprintf('%d ',selexpected));
