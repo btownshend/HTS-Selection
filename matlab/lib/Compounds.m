@@ -1559,7 +1559,7 @@ classdef Compounds < handle
     end
     
     function getinfo(obj,name,varargin)
-      defaults=struct('mzdata',[],'adduct',[],'falsethresh',0.1);
+      defaults=struct('mzdata',[],'adduct',[],'falsethresh',[]);
       args=processargs(defaults,varargin);
 
       if ischar(name)
@@ -1642,23 +1642,37 @@ classdef Compounds < handle
       end
       if isfinite(meanic) && isfinite(obj.meantime(ind))
         % False positives
+        if isempty(args.falsethresh)
+          % Use the same value that was used during assignTimes
+          args.falsethresh=obj.astats(ind).args.falsethresh;
+        end
         firstfalse=true;
         for j=1:length(obj.files)
           fi=obj.featureindex(ind,k,j);
-          if isfinite(fi) && ~obj.contains(ind,j) && obj.normic(ind,k,j)>=args.falsethresh
-            if firstfalse
-              fprintf('False positives with normIC >= %.3f:\n',args.falsethresh);
+          if isfinite(fi) && ~obj.contains(ind,j)
+            if isnan(obj.normic(ind,k,j))
+              fprintf('Normalized IC not set, run checksensitivity to get false positives\n');
               firstfalse=false;
+              break;
             end
-            fprintf(' %-14.14s %5.2f%s\n',obj.samples{j},obj.fsens(j),obj.featstring(ind,j,k,fi));
-            if ~isempty(args.mzdata)
-              nexttile;
-              obj.plotscan(ind,args.mzdata{j},'adduct',args.adduct);
-              ti=get(gca,'Title');
-              ti.String=[ti.String,'[Unexp]'];
-              set(gca,'Title',ti);
+            if obj.normic(ind,k,j)>=args.falsethresh
+              if firstfalse
+                fprintf('False positives with normIC >= %.3f:\n',args.falsethresh);
+                firstfalse=false;
+              end
+              fprintf(' %2d %-14.14s %5.2f%s\n',j,obj.samples{j},obj.fsens(j),obj.featstring(ind,j,k,fi));
+              if ~isempty(args.mzdata)
+                nexttile;
+                obj.plotscan(ind,args.mzdata{j},'adduct',args.adduct);
+                ti=get(gca,'Title');
+                ti.String=[ti.String,'[Unexp]'];
+                set(gca,'Title',ti);
+              end
             end
           end
+        end
+        if firstfalse
+          fprintf('No false positives with normIC >= %.3f\n', args.falsethresh);
         end
       end
     end
