@@ -42,7 +42,7 @@ classdef Chem < handle
     
     function c=getisotopes(f,varargin)
     % Get list of isotopes for given formula (a struct), returning a struct of name,mass,abundance (relative to original)
-      defaults=struct('minabundance',1e-4,'plot',false);
+      defaults=struct('minabundance',1e-4,'fine',false,'plot',false);
       args=processargs(defaults,varargin);
 
       if ischar(f)
@@ -145,6 +145,31 @@ classdef Chem < handle
         end
       end
       assert(abs(sum([c.abundance])-1)<.02);
+
+      % If this is a coarse pattern, merge peaks for same integer difference
+      if ~args.fine
+        % Merge isotopes that are too close to resolve
+        [~,ord]=sort([c.mass]);
+        c=c(ord);
+        i=1;
+        while i<length(c)
+          if c(i+1).mass-c(i).mass < 0.01
+            abund=[c([i,i+1]).abundance];
+            total=sum(abund);
+            meanmass=(c(i).mass*sum(c(i).abundance)+c(i+1).mass*sum(c(i+1).abundance))/total;
+            if sum(c(i+1).abundance)>sum(c(i).abundance)
+              c=c([1:i-1,i+1:end]);
+            else
+              c=c([1:i,i+2:end]);
+            end
+            c(i).abundance=total;
+            c(i).mass=meanmass;
+          else
+            i=i+1;
+          end
+        end
+      end
+      
       [~,ord]=sort([c.abundance],'desc');
       c=c(ord);
       
