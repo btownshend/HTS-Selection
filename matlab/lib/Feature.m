@@ -80,7 +80,7 @@ classdef Feature < matlab.mixin.Copyable
         s=sprintf('%s#(%5.2f)',s,obj.time-args.timetarget);
       end
       if args.details
-        s=sprintf('%s[%4.2f-%4.2f]',s,obj.timerange);
+        s=sprintf('%s[%5.2f-%5.2f]',s,obj.timerange);
       end
       s=sprintf('%s#ic=%6.0f',s,obj.intensity);
       if ~isempty(args.intensitytarget) && isfinite(args.intensitytarget)
@@ -91,7 +91,8 @@ classdef Feature < matlab.mixin.Copyable
       else
         s=[s,'   '];
       end
-      if ~isempty(obj.labels)
+      s=[s,'#',sprintf('%8s',obj.name)];
+      if ~isempty(obj.labels) && (length(obj.labels)>1 || ~strcmp(obj.labels{1},obj.name))
         if args.details
           s=[s,'#',strjoin(obj.labels,',')];
         else
