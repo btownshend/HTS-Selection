@@ -400,11 +400,11 @@ classdef MassSpec < handle
         pfwhh=pfwhh(keep,:);
       end
       assert(all(isfinite(maxmz)));
-      desc=sprintf('m/z=%.4f+=%.3f',mztarget,args.mztol);
+      desc=sprintf('m/z=%.4f+-%.4f',mztarget,args.mztol);
       if ~isempty(args.elutetime)
-        desc=[desc,sprintf(' T=%.1f+=%.1f',args.elutetime,args.timetol)];
+        desc=[desc,sprintf(' T=%.1f+-%.1f',args.elutetime,args.timetol)];
       elseif ~isempty(args.ignoreelutetimes)
-        desc=[desc,sprintf(' T!=[%s]+=%.1f',sprintf('%.1f,',args.ignoreelutetimes),args.timetol)];
+        desc=[desc,sprintf(' T!=[%s]+-%.1f',sprintf('%.1f,',args.ignoreelutetimes),args.timetol)];
       end
 
       res=struct('mztarget',mztarget,'desc',desc,'findargs',args,'mz',maxmz,'time',maxtime,'ic',maxic,'pfwhh',pfwhh);
