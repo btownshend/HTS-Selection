@@ -157,49 +157,59 @@ classdef Compounds < handle
       end
     end
     
-    function allid=checkComposition(obj,ms,varargin)  % TODO - test
+    function fl=checkComposition(obj,ms,varargin)  % TODO - test
     % Check composition in mass spec file using current set of compounds
-      defaults=struct('debug',false,'map',[],'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'remap',false);  
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'noise',500);
       args=processargs(defaults,varargin);
-      if args.remap
-        args.map=obj.computeMap(ms);
-      elseif isempty(args.map)
-        fprintf('Warning: Using default map');
-        args.map=struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]);
-      end
-      allid=[];
-      for k=1:length(obj.ADDUCTS)
-        id=[];
-        for i=1:length(obj.names)
-          id=[id,struct('name',obj.names(i),'adduct',obj.ADDUCTS(k).name,'mztarget',obj.mztarget(i,k),'desc','','findargs','','mz',nan,'time',nan,'ic',nan,'relic',nan,'filemz',nan,'filetime',nan)];
-          if isfinite(obj.meantime(i))
-            % Only look for compounds with a known elution time
-            aliases=find(abs(obj.meantime-obj.meantime(i))<args.timetol & any(abs(obj.mztarget(i,k)-obj.mztarget)<args.mztol,2));
-            mztargetMS=interp1(args.map.mz(:,1),args.map.mz(:,2),obj.mztarget(i,k),'linear','extrap');
-            timetarget=interp1(args.map.time(:,1),args.map.time(:,2),obj.meantime(i),'linear','extrap');
-            idtmp=ms.findcompound(mztargetMS,'elutetime',timetarget,'timetol',args.timetol,'mztol',args.mztol,'debug',args.debug,'peakratio',0);
-            id(end).findargs=idtmp.findargs;
-            if ~isempty(idtmp.ic)
-              id(end).ic=sum(idtmp.ic);
-              id(end).filetime=mean(idtmp.time);
-              id(end).filemz=mean(idtmp.mz);
-              id(end).mz=interp1(args.map.mz(:,2),args.map.mz(:,1),id(end).filemz,'linear','extrap');
-              id(end).time=interp1(args.map.time(:,2),args.map.time(:,1),id(end).filetime,'linear','extrap');
-              if isfield(idtmp,'fwhh')
-                id(end).fwhh=interp1(args.map.time(:,2),args.map.time(:,1),[min(idtmp.fwhh(:,1)),max(idtmp(fwhh(:,2)))]);
-              end
-            end
-            if length(aliases)>1 && sum(id(end).ic)>0
-              if args.debug
-                fprintf('Alias at compounds %s with ion count = %.0f\n', sprintf('%d,',aliases),sum(id(end).ic));
-              end
-              id(end).ic=nan;   % Can't use it
-            end
-            id(end).relic=id(i).ic/obj.tsens(i,k);
-          end
+      sel=find(isfinite(obj.meantime));
+      adduct=[obj.astats(sel).adduct];
+      mztarget=arrayfun(@(z) obj.mztarget(sel(z),adduct(z)),1:length(sel));
+      fl=ms.targetedFeatureDetect(mztarget,'rt',obj.meantime(sel),'mztol',args.mztol,'timetol',args.timetol,'names',obj.names(sel),'noise',args.noise,'debug',args.debug);
+      for i=1:length(fl.features)
+        f=fl.features(i);
+        if length(f.labels)==1
+          ind=find(strcmp(f.labels{1},obj.names(sel)));
+          assert(length(ind)==1);
+          normic=f.intensity/obj.tsens(sel(ind),adduct(ind));
+        else
+          normic=nan;
         end
-        allid=[allid,id'];
+        f.extra=struct('normic',normic);
       end
+    end
+    
+    function plotComposition(obj,ms,varargin)
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'noise',500);  
+      args=processargs(defaults,varargin);
+
+      fl=obj.checkComposition(ms,'debug',args.debug,'timetol',args.timetol,'mztol',args.mztol,'noise',args.noise);  
+      data=[];
+      uplates=unique({obj.sdf.sdf.BATCH_PLATE});
+      colname={};
+      for i=1:length(fl.features)
+        f=fl.features(i);
+        nm=f.name;
+        plate=str2num(nm(1:end-3));
+        pnum=find(strcmp(sprintf('CDIV%04d',plate),uplates));
+        assert(length(pnum==1));
+        row=nm(end-2)-'A'+1;
+        col=str2num(nm(end-1:end));
+        cnum=(row-1)+(col-2)*8+1;
+        data(pnum,cnum)=f.extra.normic;
+        colname{cnum}=sprintf('%c%02d',row-1+'A',col);
+      end
+      data(end+1,:)=nan;
+      data(:,end+1)=nan;
+      ti=['Composition ',fl.name];
+      setfig(ti);clf;
+      pcolor(log10(data));
+      colorbar;
+      set(gca,'XTick',(1:8:length(colname))+0.5);
+      set(gca,'XTickLabel',colname(1:8:end));
+      set(gca,'XTickLabelRotation',90);
+      set(gca,'YTick',(1:4:length(uplates))+0.5);
+      set(gca,'YTickLabel',uplates(1:4:end));
+      title(ti);
     end
     
     function labelFeatures(obj,fl,varargin)
@@ -243,7 +253,7 @@ classdef Compounds < handle
       end
     end
     
-    function [matic,id,refid]=plotComposition(obj,ms,varargin)   % TODO - fix
+    function [matic,id,refid]=plotCompositionOld(obj,ms,varargin)   % TODO - fix
       defaults=struct('debug',false,'thresh',0.02,'ref',[],'adduct',1,'map',[],'timetol',obj.TIMEFUZZ,'mztol',obj.MZFUZZ,'refmap',[]);  
       args=processargs(defaults,varargin);
 
