@@ -166,6 +166,14 @@ classdef FeatureList < handle
       obj.features=obj.features(ord);
     end
     
+    function list(obj,varargin)
+      defaults=struct('maxlist',20);
+      args=processargs(defaults,varargin);
+      for i=1:min(length(obj.features),args.maxlist)
+        fprintf('%s\n',obj.features(i).tostring('fixedwidth',true));
+      end
+    end
+    
     function [fl,sel]=getbymz(obj,mz,varargin)
       defaults=struct('mztol',0.01,'timerange',[]);
       args=processargs(defaults,varargin);
