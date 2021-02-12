@@ -1668,25 +1668,6 @@ classdef Compounds < handle
         fprintf(', FP=%d, FN=%d, hits=%dg,%dL,%dH, miss=%ds,%dw',s.FP,s.FN,s.hitgood,s.hitlow,s.hithigh,s.missstrong,s.missweak);
       end
       fprintf('\n');
-      aliases=[];
-      label=true;
-      for k1=1:length(obj.ADDUCTS)
-        aliases=setdiff(find(abs(obj.mass+obj.ADDUCTS(k1).mass-(obj.mass(ind)+obj.ADDUCTS(k).mass))<obj.MZFUZZ*2),ind);
-        if length(aliases)>0
-          if label
-            fprintf('Aliases:\n');
-            label=false;
-          end
-          for ii=1:length(aliases)
-            i=aliases(ii);
-            imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
-            fprintf('\t%-6.6s[%-4.4s]: m/z=%8.4f (d=%4.0f) t=%.2f (d=%.2f) meanic=%.0f\n',...
-                    obj.names{i},obj.ADDUCTS(k1).name, obj.mass(i)+obj.ADDUCTS(k1).mass,...
-                    (obj.mass(i)+obj.ADDUCTS(k1).mass-(obj.mass(ind)+obj.ADDUCTS(k).mass))*1e4,...
-                    obj.meantime(i),obj.meantime(i)-obj.meantime(ind),imeanic);
-          end
-        end
-      end
       if ~isempty(args.mzdata)
         setfig([obj.names{ind},'-',obj.ADDUCTS(args.adduct).name]);
         t=tiledlayout('flow');
@@ -1752,6 +1733,26 @@ classdef Compounds < handle
         end
         if firstfalse
           fprintf('No false positives with normIC >= %.3f\n', args.falsethresh);
+        end
+      end
+      % Aliases
+      aliases=[];
+      label=true;
+      for k1=1:length(obj.ADDUCTS)
+        aliases=setdiff(find(abs(obj.mass+obj.ADDUCTS(k1).mass-(obj.mass(ind)+obj.ADDUCTS(k).mass))<obj.MZFUZZ*2),ind);
+        if length(aliases)>0
+          if label
+            fprintf('Aliases:\n');
+            label=false;
+          end
+          for ii=1:length(aliases)
+            i=aliases(ii);
+            imeanic=nanmean(obj.ic(i,obj.contains(i,:)));
+            fprintf('\t%-6.6s[%-4.4s]: m/z=%8.4f (d=%4.0f) t=%.2f (d=%.2f) meanic=%.0f\n',...
+                    obj.names{i},obj.ADDUCTS(k1).name, obj.mass(i)+obj.ADDUCTS(k1).mass,...
+                    (obj.mass(i)+obj.ADDUCTS(k1).mass-(obj.mass(ind)+obj.ADDUCTS(k).mass))*1e4,...
+                    obj.meantime(i),obj.meantime(i)-obj.meantime(ind),imeanic);
+          end
         end
       end
     end
