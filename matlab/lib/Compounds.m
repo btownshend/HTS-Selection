@@ -767,6 +767,23 @@ classdef Compounds < handle
       end
     end
     
+    function assignSummary(obj)
+    % Display information about assignments
+      for run=1:max([obj.astats.run])
+        fprintf('Run %d',run);
+        for adduct=1:length(obj.ADDUCTS)
+          n(run,adduct)=sum([obj.astats.run]==run & [obj.astats.adduct]==adduct);
+          fprintf(' [%s]=%4d',obj.ADDUCTS(adduct).name, n(run,adduct));
+        end
+        fprintf(' Total=%4d\n',sum(n(run,:)));
+      end
+      fprintf('All: ');
+      for adduct=1:length(obj.ADDUCTS)
+        fprintf(' [%s]=%4d',obj.ADDUCTS(adduct).name, sum(n(:,adduct)));
+      end
+      fprintf(' Total=%4d\n',sum(n(:)));
+    end
+    
     function remapfeatures(obj)
     % Create remapped version of file features into reference space
       if length(obj.allfeatures)==length(obj.reffeatures)
