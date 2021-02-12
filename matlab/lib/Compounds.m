@@ -1503,7 +1503,7 @@ classdef Compounds < handle
       else
         label=obj.names{a};
       end
-      s=sprintf(' [%-4d %s %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k),'details',false,'fixedwidth',true),label);
+      s=sprintf(' [%-5d %s %s]',fi,obj.reffeatures(j).features(fi).tostring('mztarget',obj.mztarget(ind,k),'timetarget',obj.time(ind,k),'intensitytarget',obj.fsens(j)*obj.tsens(ind,k),'details',false,'fixedwidth',true),label);
     end
     
     function res=isocheck(obj,mzdata,varargin)
