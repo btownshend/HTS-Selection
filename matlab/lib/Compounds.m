@@ -1524,6 +1524,36 @@ classdef Compounds < handle
       title(sprintf('Compound Map (%d distinguishable/%d identified)',ngood,sum(isfinite(obj.meantime))));
     end
     
+    function ploticreplicates(obj,varargin)
+    % Compare ion count from each file with average from others
+      defaults=struct('fsel',1:length(obj.samples));
+      args=processargs(defaults,varargin);
+
+      data=nan(length(obj.mass),length(obj.samples));
+      for i=1:length(obj.mass)
+        if isfinite(obj.meantime(i))
+          adduct=obj.astats(i).adduct;
+          data(i,:)=squeeze(obj.ic(i,adduct,:))./obj.fsens';
+        end
+      end
+      data(~obj.contains)=nan;   % Ony consider ones where the target is supposed to be present
+      setfig('IC Replicates');clf;
+      for jj=1:length(args.fsel)
+        j=args.fsel(jj);
+        icexp=nanmean(data(:,[1:j-1,j+1:end]),2)*obj.fsens(j);
+        loglog(icexp,data(:,j),'.b');
+        hold on;
+        bad=abs(log10(data(:,j)./icexp))>log10(20);
+        if sum(bad)>0
+          loglog(icexp(bad),data(bad,j),'.r');
+          fprintf('File %d, %d bad: %s\n', j, sum(bad),sprintf('%d ',find(bad)));
+        end
+      end
+      xlabel('Expected ion count based on all other files');
+      ylabel('Normalized ion count from single file');
+      title('Ion Count Replicates');
+    end
+      
     function ploteics(obj,name,varargin)
     % Plot EIC's for given compound using provided ms cell array aligned with obj.samples
       defaults=struct('mzdata',[],'adduct',[],'falsethresh',0.1,'minic',400,'zoom',true,'mztol',obj.MZFUZZ,'timerange',[-inf,inf]);
