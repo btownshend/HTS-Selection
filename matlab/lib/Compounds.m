@@ -92,13 +92,23 @@ classdef Compounds < handle
       q.timewindow=obj.timewindow(args.csel,:);
       q.ic=obj.ic(args.csel,args.asel,args.fsel);
       q.normic=obj.normic(args.csel,args.asel,args.fsel);
-      q.multihits=obj.multihits(args.csel,args.asel,args.fsel);
-      q.allfeatures=obj.allfeatures(args.fsel);
-      q.reffeatures=obj.reffeatures(args.fsel);
-      q.featureindex=obj.featureindex(args.csel,args.asel,args.fsel);
+      if ~isempty(obj.multihits)
+        q.multihits=obj.multihits(args.csel,args.asel,args.fsel);
+      end
+      if ~isempty(obj.allfeatures)
+        q.allfeatures=obj.allfeatures(args.fsel);
+      end
+      if ~isempty(obj.reffeatures)
+        q.reffeatures=obj.reffeatures(args.fsel);
+      end
+      if ~isempty(obj.featureindex)
+        q.featureindex=obj.featureindex(args.csel,args.asel,args.fsel);
+      end
       q.tsens=obj.tsens(args.csel,args.asel);
       q.fsens=obj.fsens(args.fsel);
-      q.astats=obj.astats(args.csel);
+      if ~isempty(obj.astats)
+        q.astats=obj.astats(args.csel);
+      end
       q.sdf=SDF();
       q.sdf.sdf=obj.sdf.sdf(args.csel);
       q.ADDUCTS=obj.ADDUCTS(args.asel);
