@@ -1538,6 +1538,8 @@ classdef Compounds < handle
       end
       data(~obj.contains)=nan;   % Ony consider ones where the target is supposed to be present
       setfig('IC Replicates');clf;
+      fprintf('Conditions with >%.0fx error:\n', args.outlierthresh);
+      all=[];
       for jj=1:length(args.fsel)
         j=args.fsel(jj);
         icexp=nanmean(data(:,[1:j-1,j+1:end]),2)*obj.fsens(j);
