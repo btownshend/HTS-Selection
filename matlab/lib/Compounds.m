@@ -1123,77 +1123,171 @@ classdef Compounds < handle
       end
     end
     
-    function map=checktime(obj,ref,varargin)
+    function [allmap,filemap]=checktime(obj,varargin)
     % Check all multiple hits of ref against each other
-      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'refrange',[500,2500]/60,'files',1:length(obj.files));
+      defaults=struct('debug',false,'timetol',obj.TIMEFUZZ,'minic',1e4,'ref',[],'refrange',[5,30],'files',1:length(obj.files),'assign','','current',true);
       args=processargs(defaults,varargin);
 
-      args.files=union(args.files,ref);
-      fprintf('checktime(%d,''timetol'',%.2f)\n',ref,args.timetol);
-      t = nan(size(obj.mz));
-      ic = nan(size(obj.mz));
+      if ~ismember(args.assign,{'','dir','file'})
+        error('assign value of ''%s'' is not one of '''',''dir'', or ''file''',args.assign);
+      end
+      if ~isempty(args.assign) && args.current && any(cellfun(@(z) any(z.time(:,1)~=z.time(:,2)) ,obj.maps))
+        error('maps already non-identity and requested to reassign -- need to set current to false');
+      end
+      if args.current && isempty(obj.reffeatures)
+        error('Need to run remapfeatures');
+      end
+      args.files=union(args.files,args.ref);
+      t = nan(length(obj.mass),length(obj.samples));
+      ic = t;
       for i=1:length(obj.names)
-       for k=1:length(obj.ADDUCTS)
-        for j=args.files
-          if obj.contains(i,j)
-            t(i,k,j)=obj.time(i,k,j);
-            ic(i,k,j)=obj.ic(i,k,j);
+        if isfinite(obj.meantime(i))
+          k=obj.astats(i).adduct;
+          for jj=1:length(args.files)
+            j=args.files(jj);
+            if obj.contains(i,j) && obj.ic(i,k,j)>=args.minic
+              fi=obj.featureindex(i,k,j);
+              if args.current
+                t(i,j)=obj.reffeatures(j).features(fi).time;
+              else
+                t(i,j)=obj.allfeatures(j).features(fi).time;
+              end
+            end
           end
         end
-       end
       end
+      % Setup linear matrix equation to solve for linear time mapping
+      nf=length(obj.samples);
+      A=zeros(0,2*nf);
+      for i=1:length(obj.names)
+        for j1=1:size(t,2)
+          if isnan(t(i,j1))
+            continue;
+          end
+          for j2=j1+1:size(t,2)
+            if isnan(t(i,j2))
+              continue;
+            end
+            A(end+1,[j1,j1+nf,j2,j2+nf])=[t(i,j1),1,-t(i,j2),-1];
+          end
+        end
+      end
+      b=zeros(size(A,1),1);
+      % Add equations for refs
+      if isempty(args.ref)
+        % No ref, add equation such that mean slope,intercept is 1,0
+        wt=1e6;   % High enough to be sure this dominates
+        A(end+1,1:nf)=wt; b(end+1)=nf*wt;
+        A(end+1,nf+1:end)=wt; b(end+1)=0;
+      else
+        for jj=1:length(args.ref)
+          j=args.ref(jj);
+          A(end+1,j)=1e6; b(end+1)=1e6;
+          A(end+1,j+nf)=1; b(end+1)=0;
+        end
+      end
+      asel=find(any(A));
+      A=A(:,asel);   % Only columns that we used
+      nf=length(asel)/2;
+      fprintf('Solving %d equations in %d unknowns with %d refs\n', size(A),length(args.ref));
+      x=A\b;
+
+      % m,k are slope intercept;  nan for files not in args.files
+      m=nan(length(obj.samples),1);
+      k=nan(length(obj.samples),1);
+      m(asel(1:nf))=x(1:nf);
+      k(asel(1:nf))=x(nf+1:end);
+      % Compute tadj (times corrected by linear map)
+      tadj=nan(size(t));
+      for i=1:length(m)
+        tadj(:,i)=t(:,i)*m(i)+k(i);
+      end
+      
+      % Group by source folder (Mass Spec run)
       dirs={};
-      for i=args.files
+      for ii=1:length(args.files)
+        i=args.files(ii);
         dirs{i}=fileparts(obj.files{i});
       end
       udirs=unique(dirs(args.files));
-
-      tref=t(:,:,ref);tref=tref(:);
-      tsel=tref>=args.refrange(1) & tref<=args.refrange(2);
-      trefs=sort(tref);
+      
+      % Overall map for files
+      nd=length(udirs);
+      AT=zeros(size(A,1),2*nd);
+      for i=1:nd
+        sel=find(strcmp(dirs,udirs{i}));
+        AT(:,i)=nansum(A(:,sel),2);
+        AT(:,i+nd)=nansum(A(:,sel+nf),2);
+      end
+      xT=AT\b;
+      mT=xT(1:nd);
+      kT=xT(nd+1:end);
+      
       setfig('checktime');clf;
-      tiledlayout('flow');
-      map=[];
+      layout=tiledlayout('flow');
+      if args.current
+        atype='showing additional mapping needed';
+      else
+        atype='cumulative mapping';
+      end
+        
+      title(layout,sprintf('Time Alignment N=%d, %s', size(A,1), atype));
+      allmap=[];filemap=[];
+      
+      allgca=[];
       for j=1:length(udirs);
         nexttile;
+        allgca(end+1)=gca;
         h=[];leg={};
-        for i=args.files
-          if i==ref
-            continue;
-          end
+        mapT=[args.refrange;(args.refrange-kT(j))/mT(j)]';
+        filemap=[filemap,struct('dir',udirs{j},'map',mapT)];
+
+        for ii=1:length(args.files)
+          i=args.files(ii);
           if strcmp(dirs{i},udirs{j})
-            t2=t(:,:,i);t2=t2(:);
-            if sum(isfinite(t2(tsel)))<4
+            t1=nanmean(tadj(:,[1:i-1,i+1:end]),2);   % Using all others with slope adjustment
+            t2=t(:,i);   % This one, unadjusted so we can see the original errors
+            pred=tadj(:,i);   % Adjusted
+            if sum(isfinite(t2))<4
               continue;
             end
-            fit=piecewise(tref(tsel),t2(tsel),args.timetol,2);
-            pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
-            fprintf('%-20.20s  [%s]\n',obj.samples{i}, sprintf('(%.2f@%.2f) ',fit'));
-            h(end+1)=plot(tref,t2-tref,'o');
+            h(end+1)=plot(t1,t2-t1,'.');   % Error from average of all of the other adjusted ones
             hold on;
-            plot(trefs,pred-trefs,'-','Color',get(h(end),'Color'));
+            map=[args.refrange;(args.refrange-k(i))/m(i)]';   % map(1,:) is ref, map(2,:) is file values
+            fprintf('%-20.20s  [%s] %.3ft+%6.3f\n',obj.samples{i}, sprintf('%f->%.2f ',map'),m(i),k(i));
+            plot(map(:,1),map(:,2)-map(:,1),'-','Color',get(h(end),'Color'));
             leg{end+1}=obj.samples{i};
+            allmap=[allmap,struct('file',obj.files{i},'map',map)];
+            if strcmp(args.assign,'file')
+              obj.maps{i}.time=map;
+            elseif strcmp(args.assign,'dir')
+              obj.maps{i}.time=mapT;
+            end
           end
         end
-        sel=strcmp(dirs,udirs{j});
-        tmed=nanmedian(t(:,:,sel),3);
-        fit=piecewise(tref(tsel),tmed(tsel),args.timetol,2);
+
+        % Plot directory-wide map
         [~,dirname]=fileparts(udirs{j});
-        fprintf('%-20.20s  [%s] over %s\n\n', '', sprintf('(%.2f@%.2f) ',fit'),dirname);
-        pred=interp1(fit(:,1),fit(:,2),trefs,'linear','extrap');
-        h(end+1)=plot(trefs,pred-trefs,'k','linewidth',2);
+        fprintf('%-20.20s  [%s] %.3ft+%6.3f over %s\n\n', '', sprintf('%f->%.2f ',mapT'),mT(j), kT(j), dirname);
+        h(end+1)=plot(mapT(:,1),mapT(:,2)-mapT(:,1),'k','linewidth',2);
         leg{end+1}='All';
-        plot(trefs,pred-trefs+obj.TIMEFUZZ,'k:','linewidth',1);
-        plot(trefs,pred-trefs-obj.TIMEFUZZ,'k:','linewidth',1);
+
+        % Complete plot setup
+        plot(args.refrange,obj.TIMEFUZZ*[1,1],'k:','linewidth',1,'HandleVisibility','off');
+        plot(args.refrange,-obj.TIMEFUZZ*[1,1],'k:','linewidth',1,'HandleVisibility','off');
         ax=axis;
-        ax(3)=min(pred-trefs-obj.TIMEFUZZ*2);
-        ax(4)=max(pred-trefs+obj.TIMEFUZZ*2);
+        ax(3)=nanmin(t(:)-tadj(:)-obj.TIMEFUZZ*2);
+        ax(4)=nanmax(t(:)-tadj(:)+obj.TIMEFUZZ*2);
         axis(ax);
         legend(h,leg,'location','best');
         xlabel('Reference time');
         ylabel('File-Ref time');
         title(udirs{j});
-        map=[map,struct('dir',udirs{j},'map',fit)];
+      end
+      linkaxes(allgca);
+      if ~strcmp(args.assign,'')
+        fprintf('Time maps were reset; clearing reffeatures -- need to rerun findfeatures');
+        obj.reffeatures=FeatureList.empty;
       end
     end
     
