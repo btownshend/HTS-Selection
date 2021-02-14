@@ -1526,7 +1526,7 @@ classdef Compounds < handle
     
     function ploticreplicates(obj,varargin)
     % Compare ion count from each file with average from others
-      defaults=struct('fsel',1:length(obj.samples));
+      defaults=struct('fsel',1:length(obj.samples),'outlierthresh',20);
       args=processargs(defaults,varargin);
 
       data=nan(length(obj.mass),length(obj.samples));
@@ -1541,14 +1541,20 @@ classdef Compounds < handle
       for jj=1:length(args.fsel)
         j=args.fsel(jj);
         icexp=nanmean(data(:,[1:j-1,j+1:end]),2)*obj.fsens(j);
-        loglog(icexp,data(:,j),'.b');
+        loglog(icexp,data(:,j),'.b','MarkerSize',1);
+        all=[all;icexp,data(:,j)];
         hold on;
-        bad=abs(log10(data(:,j)./icexp))>log10(20);
+        bad=abs(log10(data(:,j)./icexp))>log10(args.outlierthresh);
         if sum(bad)>0
           loglog(icexp(bad),data(bad,j),'.r');
-          fprintf('File %d, %d bad: %s\n', j, sum(bad),sprintf('%d ',find(bad)));
+          fprintf('Sample %2d %s: %s\n', j, obj.samples{j}, sprintf('%4d ',find(bad)));
         end
       end
+      avgerr=exp(nanmean(abs(log(all(:,1)./all(:,2)))));
+      fprintf('Error sigma = %.2fx\n', avgerr);
+      hold on;
+      ax=axis;
+      plot(ax(1:2),ax(1:2),'r:');
       xlabel('Expected ion count based on all other files');
       ylabel('Normalized ion count from single file');
       title('Ion Count Replicates');
