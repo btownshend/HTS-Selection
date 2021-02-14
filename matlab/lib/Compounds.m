@@ -1264,7 +1264,7 @@ classdef Compounds < handle
             h(end+1)=plot(t1,t2-t1,'.');   % Error from average of all of the other adjusted ones
             hold on;
             map=[args.refrange;(args.refrange-k(i))/m(i)]';   % map(1,:) is ref, map(2,:) is file values
-            fprintf('%-20.20s  [%s] %.3ft+%6.3f\n',obj.samples{i}, sprintf('%f->%.2f ',map'),m(i),k(i));
+            fprintf('%-20.20s  [%s] %.3ft+%6.3f\n',obj.samples{i}, sprintf('%.2f->%.2f ',map'),m(i),k(i));
             plot(map(:,1),map(:,2)-map(:,1),'-','Color',get(h(end),'Color'));
             leg{end+1}=obj.samples{i};
             allmap=[allmap,struct('file',obj.files{i},'map',map)];
@@ -1278,7 +1278,7 @@ classdef Compounds < handle
 
         % Plot directory-wide map
         [~,dirname]=fileparts(udirs{j});
-        fprintf('%-20.20s  [%s] %.3ft+%6.3f over %s\n\n', '', sprintf('%f->%.2f ',mapT'),mT(j), kT(j), dirname);
+        fprintf('%-20.20s  [%s] %.3ft+%6.3f over %s\n\n', '', sprintf('%.2f->%.2f ',mapT'),mT(j), kT(j), dirname);
         h(end+1)=plot(mapT(:,1),mapT(:,2)-mapT(:,1),'k','linewidth',2);
         leg{end+1}='All';
 
