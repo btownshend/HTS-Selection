@@ -63,6 +63,8 @@ allfeatures=v256.allfeatures;
 reffeatures=v256.reffeatures;
 v256.allfeatures=[];
 v256.reffeatures=[];
+datadir='../../data/';
+matdir=[datadir,'matfiles/'];
 save(sprintf('%s/v256-%s.mat',matdir,ds),'v256');
 save(sprintf('%s/v256-allfeatures-%s.mat',matdir,ds),'allfeatures');
 save(sprintf('%s/v256-reffeatures-%s.mat',matdir,ds),'reffeatures');
