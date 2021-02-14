@@ -1,29 +1,34 @@
 ds=datestr(now,'YYYYmmDDHHMM');
 diary(['v256only-',ds,'.log']);
-fsel=[];
-for col=1:8
-  for row='A':'H'
-    if col==8 && row>='E'
-      break;
-    end
-    vname=sprintf('V256A-%c%d',row,col);
-    ind=find(strcmp(qsetup.samples,vname));
-    if isempty(ind)
-      fprintf('Missing vector: %s\n', vname);
-    else
-      fsel(end+1)=ind;
+if ~exist('v256','var')
+  fsel=[];
+  for col=1:8
+    for row='A':'H'
+      if col==8 && row>='E'
+        break;
+      end
+      vname=sprintf('V256A-%c%d',row,col);
+      ind=find(strcmp(qsetup.samples,vname));
+      if isempty(ind)
+        fprintf('Missing vector: %s\n', vname);
+      else
+        fsel(end+1)=ind;
+      end
     end
   end
+  % Run loadmzdata and analyze first
+  v256=qsetup.copypart('fsel',fsel);
+  v256.MZFUZZ=0.0012;
+  v256.TIMEFUZZ=0.2;
 end
-v256=qsetup.copypart('fsel',fsel);
-v256.MZFUZZ=0.0012;
-v256.TIMEFUZZ=0.2;
 
 minhits=2;
 maxfp=4;
 trace=[];
 
-v256.findfeatures();   % Should already exist from qsetup
+if isempty(v256.multihits)
+  v256.findfeatures();   % Should already exist from qsetup
+end
 
 % First run to be able to set fsens
 v256.fsens(:)=1;
@@ -40,9 +45,9 @@ v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'trace',trace,'minhits',m
 fprintf('Increased time tol\n');
 v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'timetol',v256.TIMEFUZZ*2,'trace',trace,'minhits',minhits);
 fprintf('Increased mztol\n');
-v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'mztol',2e-3,'trace',trace,'minhits',minhits);
+v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'mztol',v256.MZFUZZ*2,'trace',trace,'minhits',minhits);
 fprintf('Decreased mztol\n');
-v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'mztol',5e-4,'trace',trace,'minhits',minhits);
+v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'mztol',v256.MZFUZZ/2,'trace',trace,'minhits',minhits);
 fprintf('Increased normicrange\n');
 v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'normicrange',[0.2,5],'trace',trace,'minhits',minhits);
 v256.checksensitivity(); % Final
