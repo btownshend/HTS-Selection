@@ -1650,10 +1650,21 @@ classdef Compounds < handle
         if isnan(obj.meantime(i))
           continue;
         end
-        isotopes=Chem.getisotopes(obj.sdf.getformula(i),'minabundance',args.minisoic/1e7);
         adduct=obj.astats(i).adduct;
+        formula=obj.sdf.getformula(i);
+        if strcmp(obj.ADDUCTS(adduct).name,'M+K')
+          % Potassium has a significant ion
+          formula(end+1)='K';
+        end
+        isotopes=Chem.getisotopes(formula,'minabundance',args.minisoic/1e7);
+        EMASS=0.00054858;
         for m=1:length(isotopes)
-          isotopes(m).mass=isotopes(m).mass+obj.ADDUCTS(adduct).mass;
+          if strcmp(obj.ADDUCTS(adduct).name,'M+K')
+            % Already have the potassium in the formula, just remove an electron mass
+            isotopes(m).mass=isotopes(m).mass-EMASS;
+          else
+            isotopes(m).mass=isotopes(m).mass+obj.ADDUCTS(adduct).mass;
+          end
         end
         ic=squeeze(obj.ic(i,adduct,:));
         fsel=find(ic>=args.minpeak & obj.contains(i,:)');
@@ -1683,18 +1694,30 @@ classdef Compounds < handle
             continue;
           end
           isokeep=isotopes(keep);
+          offset=0;   % Correct for shifts in monoisotopic mass
           for k=1:length(isokeep)
-            [~,ind]=min(abs(isokeep(k).mass-peaks(:,1)));
-            if abs(peaks(ind,1)-isokeep(k).mass)<args.mztol
+            [~,ind]=min(abs(peaks(:,1)-isokeep(k).mass-offset));
+            if abs(peaks(ind,1)-isokeep(k).mass-offset)<args.mztol
               pval=peaks(ind,2);
             else
               pval=0;
             end
-            isokeep(k).peaks(k,:)=peaks(ind,:);
-            isokeep(k).obs=peaks(ind,2)/ictotal;
+            isokeep(k).obsmass=peaks(ind,1);
+            isokeep(k).obsic=peaks(ind,2);
+            isokeep(k).obs=pval/ictotal;
             isokeep(k).outlier=peaks(ind,2)<(isokeep(k).abundance*ictotal*(1-args.noiserel)-args.noiseabs);
+            if k==1
+              offset=isokeep(k).obsmass-isokeep(k).mass;
+            end
+            if k==3 && isokeep(k).obs/isokeep(k).abundance<0.8 && ictotal*isokeep(k).abundance>1e5 && pval>0
+              fprintf('Low abundance isotope 3 at compound %d, samp %d\n', i,j);
+            end
+            if k>1 && pval==0 && ictotal*isokeep(k).abundance>1e5
+              fprintf('Missing peak at compound %d, samp %d, iso %d: closest peak is %.4f away (offset=%.4f)\n', i, j, k, isokeep(k).obsmass-isokeep(k).mass-offset,offset);
+              keyboard;
+            end
           end
-          fres=[fres,struct('sample',j,'ictotal',ictotal,'isotopes',isokeep,'noutlier',sum([isokeep.outlier]))];
+          fres=[fres,struct('sample',j,'ictotal',ictotal,'isotopes',isokeep,'offset',offset,'noutlier',sum([isokeep.outlier]))];
           
           if ismember(i,args.trace)
             fprintf('%s[%s] in %s, rt=%.2f, ic=%.0f\n', obj.names{i}, obj.ADDUCTS(adduct).name,obj.samples{j},rt,ic(j));
@@ -1705,7 +1728,7 @@ classdef Compounds < handle
             ax=axis; ax(1:2)=[min([isokeep.mass])-1,max([isokeep.mass])+1]; ax(4)=ic(j)*1.2; axis(ax);
             xlabel('m/z');
             ylabel('ion count');
-            title(obj.samples{j});
+            title(sprintf('%s - %s',obj.samples{j},isokeep(1).name));
             linked(end+1)=gca;
           end
         end
@@ -1769,6 +1792,87 @@ classdef Compounds < handle
       title(sprintf('isocheck noise=%f*ic+%f',args.noiserel,args.noiseabs));
       
       ax=axis; ax(3:4)=[100,1e6];axis(ax);
+
+      % Plot observed vs. expected ion counts for 3rd isotope of compounds with Sulfur
+      setfig('isocheck-Sulfur');clf;
+      tiledlayout('flow');
+      data=[];
+      for i=1:length(res)
+        hassulfur=any(res(i).samples(1).isotopes(1).name(end)=='S');
+        for k=1:length(res(i).samples)
+          r=res(i).samples(k);
+          if length(r.isotopes)>=3
+            iso=r.isotopes(3);
+            data(end+1,:)=[r.ictotal*[iso.abundance,iso.obs],hassulfur];
+          end
+        end
+      end
+      has=data(:,3)~=0;
+      nexttile;
+      loglog(data(has,1),data(has,2),'.','MarkerSize',1);
+      hold on;
+      ax=axis; 
+      plot(ax(1:2),ax(1:2),'r:');
+      xlabel('Expected ion count');
+      ylabel('Observed ion count');
+      title(sprintf('isocheck Sulfur#3 only'));
+      nexttile;
+      sel=data(:,1)>2e4 & has;
+      pdfplot(data(sel,2)./data(sel,1));
+      hold on;
+      sel=data(:,1)>2e4 & ~has;
+      pdfplot(data(sel,2)./data(sel,1));
+      legend('Has Sulfur','No Sulfur');
+      xlabel('Obs/Expected');
+      set(gca,'XScale','log');
+      ax=axis;ax(2)=2;axis(ax);
+      
+      % Plot mass differential
+      setfig('isocheck-mass');clf;
+      tiledlayout('flow');
+      data=[];
+      for i=1:length(res)
+        for j=1:length(res(i).samples)
+          r=res(i).samples(j);
+          iso1=r.isotopes(1);
+          for k=2:length(r.isotopes)
+            iso=r.isotopes(k);
+            data(end+1,:)=[k,iso.obsic,iso.mass,iso.obsmass,iso1.obsmass-iso1.mass];
+          end
+        end
+      end
+      leg={};
+      nexttile;
+      for k=2:max(data(:,1))
+        sel=data(:,1)==k;
+        semilogx(data(sel,2),data(sel,4)-data(sel,3)-data(sel,5),'.','MarkerSize',1);
+        leg{end+1}=sprintf('Isotope %d',k);
+        hold on;
+      end
+      set(gca,'XScale','log');
+      ax=axis;
+      semilogx(ax(1:2),args.mztol*[1,1],'r:');
+      semilogx(ax(1:2),-args.mztol*[1,1],'r:');
+      ax(3:4)=args.mztol*[-1,1]*1.5;
+      axis(ax);
+      xlabel('Ion Count');
+      ylabel('Mass Error');
+      legend(leg);
+      title('Mass Error');
+
+      nexttile;
+      leg={};
+      dmz=data(:,4)-data(:,3)-data(:,5);
+      for k=2:max(data(:,1))
+        sel=data(:,1)==k & data(:,2)>10000 & abs(dmz)<=args.mztol;
+        if sum(sel)>100
+          pdfplot(dmz(sel));
+          hold on;
+          leg{end+1}=sprintf('Isotope %d',k);
+        end
+      end
+      legend(leg);
+      
     end
     
     function getinfo(obj,name,varargin)
