@@ -1505,6 +1505,8 @@ classdef Compounds < handle
       end
       plot(mean(mz,2),obj.meantime,'.b');
       hold on;
+      mzmissing=obj.mass(isnan(obj.meantime));
+      plot(mzmissing,-2+2*rand(size(mzmissing)),'.r','MarkerSize',1);
       ngood=0;
       for i=1:size(etime,1)
         if isnan(obj.meantime(i))
