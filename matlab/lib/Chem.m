@@ -42,7 +42,7 @@ classdef Chem < handle
     
     function c=getisotopes(f,varargin)
     % Get list of isotopes for given formula (a struct), returning a struct of name,mass,abundance (relative to original)
-      defaults=struct('minabundance',1e-4,'fine',false,'plot',false);
+      defaults=struct('minabundance',1e-4,'fine',false,'plot',false,'resolvingpower',20000);
       args=processargs(defaults,varargin);
 
       if ischar(f)
@@ -65,9 +65,11 @@ classdef Chem < handle
                 29,'Si',4.685,28.97649
                 30,'Si',3.092,29.97376
                 31,'P',100,30.9737619986
-                32,'S',95.029,31.97207
+                32,'S',95.029+(1-.7)*4.218,31.97207
+      %                32,'S',95.029,31.97207
                 33,'S',0.754,32.97146
-                34,'S',4.218,33.96786
+                34,'S',4.218*.7,33.96786   % Use 0.7x of published abundance to match our observed data
+      %         34,'S',4.218,33.96786
                 35,'Cl',75.76,34.96885
                 37,'Cl',24.24,36.96590
                 79,'Br',50.69,78.9183
@@ -148,14 +150,13 @@ classdef Chem < handle
       end
       assert(abs(sum([c.abundance])-1)<.02);
 
-      % If this is a coarse pattern, merge peaks for same integer difference
       if ~args.fine
-        % Merge isotopes that are too close to resolve
+        % If this is a coarse pattern, merge peaks that are too close to resolve
         [~,ord]=sort([c.mass]);
         c=c(ord);
         i=1;
         while i<length(c)
-          if c(i+1).mass-c(i).mass < 0.01
+          if c(i+1).mass-c(i).mass < c(i).mass/args.resolvingpower
             abund=[c([i,i+1]).abundance];
             total=sum(abund);
             meanmass=(c(i).mass*sum(c(i).abundance)+c(i+1).mass*sum(c(i+1).abundance))/total;
