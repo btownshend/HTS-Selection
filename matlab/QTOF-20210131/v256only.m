@@ -1,14 +1,15 @@
 ds=datestr(now,'YYYYmmDDHHMM');
 diary(['v256only-',ds,'.log']);
-if ~exist('v256','var')
+if ~exist('fsel','var')
   fsel=[];
+  mznames=cellfun(@(z) z.name, mzdata,'Unif',false);
   for col=1:8
     for row='A':'H'
       if col==8 && row>='E'
         break;
       end
       vname=sprintf('V256A-%c%d',row,col);
-      ind=find(strcmp(qsetup.samples,vname));
+      ind=find(strcmp(mznames,vname));
       if isempty(ind)
         fprintf('Missing vector: %s\n', vname);
       else
@@ -16,6 +17,9 @@ if ~exist('v256','var')
       end
     end
   end
+end
+
+if ~exist('v256','var')
   % Run loadmzdata and analyze first
   v256=qsetup.copypart('fsel',fsel);
   v256.MZFUZZ=0.0012;
