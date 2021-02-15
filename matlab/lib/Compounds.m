@@ -1650,7 +1650,8 @@ classdef Compounds < handle
     
     function res=isocheck(obj,mzdata,varargin)
     % Check isotope patterns using original MS files
-      defaults=struct('minpeak',1000,'minisoic',600,'trace',[],'mztol',obj.MZFUZZ,'noiserel',0.2,'noiseabs',300,'minoutliers',3);
+    % rp is resolving power -- used to flag missing peaks where no other peaks are within mz/rp
+      defaults=struct('minpeak',1000,'minisoic',600,'trace',[],'mztol',obj.MZFUZZ,'rp',20000,'noiserel',0.2,'noiseabs',300,'outlierfrac',0.9);
       args=processargs(defaults,varargin);
 
       res=[];
@@ -1689,7 +1690,8 @@ classdef Compounds < handle
         fres=[];
         for p=1:length(fsel)
           j=fsel(p);
-          rt=obj.time(i,adduct,j);
+          reftime=obj.time(i,adduct,j);
+          rt=interp1(obj.maps{j}.time(:,1),obj.maps{j}.time(:,2),obj.time(i,adduct,j),'linear','extrap');
           [~,scan]=min(abs(mzdata{j}.time-rt));
           peaks=mzdata{j}.peaks{scan};
           maxabund=max([isotopes.abundance]);
@@ -1704,25 +1706,25 @@ classdef Compounds < handle
           isokeep=isotopes(keep);
           offset=0;   % Correct for shifts in monoisotopic mass
           for k=1:length(isokeep)
-            [~,ind]=min(abs(peaks(:,1)-isokeep(k).mass-offset));
-            if abs(peaks(ind,1)-isokeep(k).mass-offset)<args.mztol
+            [pkdist,ind]=min(abs(peaks(:,1)-isokeep(k).mass-offset));
+            if pkdist<args.mztol
               pval=peaks(ind,2);
             else
+              expect=ictotal*isokeep(k).abundance;
+              if pkdist>isokeep(k).mass/args.rp && expect>1e4
+                fprintf('Missing peak at compound %d, samp %d, iso %d: expected %.0f, closest peak (%.0f=%.0fx) is %.3f away\n', i, j, k, expect,peaks(ind,2),peaks(ind,2)/expect, peaks(ind,1)-isokeep(k).mass-offset);
+              end
               pval=0;
             end
             isokeep(k).obsmass=peaks(ind,1);
             isokeep(k).obsic=peaks(ind,2);
             isokeep(k).obs=pval/ictotal;
-            isokeep(k).outlier=peaks(ind,2)<(isokeep(k).abundance*ictotal*(1-args.noiserel)-args.noiseabs);
+            isokeep(k).outlier=pval<(isokeep(k).abundance*ictotal*(1-args.noiserel)-args.noiseabs);
             if k==1
               offset=isokeep(k).obsmass-isokeep(k).mass;
             end
             if k==3 && isokeep(k).obs/isokeep(k).abundance<0.8 && ictotal*isokeep(k).abundance>1e5 && pval>0
               fprintf('Low abundance isotope 3 at compound %d, samp %d\n', i,j);
-            end
-            if k>1 && pval==0 && ictotal*isokeep(k).abundance>1e5
-              fprintf('Missing peak at compound %d, samp %d, iso %d: closest peak is %.4f away (offset=%.4f)\n', i, j, k, isokeep(k).obsmass-isokeep(k).mass-offset,offset);
-              keyboard;
             end
           end
           fres=[fres,struct('sample',j,'ictotal',ictotal,'isotopes',isokeep,'offset',offset,'noutlier',sum([isokeep.outlier]))];
@@ -1749,26 +1751,31 @@ classdef Compounds < handle
       end
 
       % List outliers
-      fprintf('Outliers in at least %d files:\n',args.minoutliers);
-      for i=1:length(res)
-        if res(i).noutlier>=args.minoutliers
-          r=res(i);
-          fprintf('%4d %s[%s] %s %.5f noutliers=%d\n', r.compound, obj.names{r.compound}, obj.ADDUCTS(r.adduct).name,r.samples(1).isotopes(1).name, r.samples(1).isotopes(1).mass, r.noutlier);
-          for j=1:length(r.samples)
-            s=r.samples(j);
-            fprintf(' %2d %-10s %6.0f', s.sample, obj.samples{s.sample},s.ictotal)
-            for k=2:length(s.isotopes)
-              iso=s.isotopes(k);
-              fprintf(' %5.0f/%5.0f',[iso.obs,iso.abundance]*s.ictotal);
-              if iso.outlier
-                fprintf('*');
-              else
-                fprintf(' ');
+     outlierfrac=arrayfun(@(z) z.noutlier/length(z.samples), res);
+      if any(outlierfrac>=args.outlierfrac)
+        fprintf('Outliers in at least %.0f%% of files:\n',args.outlierfrac*100);
+        for i=1:length(res)
+          if outlierfrac(i)>=args.outlierfrac
+            r=res(i);
+            fprintf('%4d %s[%s] %s %.5f noutliers=%d\n', r.compound, obj.names{r.compound}, obj.ADDUCTS(r.adduct).name,r.samples(1).isotopes(1).name, r.samples(1).isotopes(1).mass, r.noutlier);
+            for j=1:length(r.samples)
+              s=r.samples(j);
+              fprintf(' %2d %-10s %6.0f', s.sample, obj.samples{s.sample},s.ictotal)
+              for k=2:length(s.isotopes)
+                iso=s.isotopes(k);
+                fprintf(' %5.0f/%5.0f',[iso.obs,iso.abundance]*s.ictotal);
+                if iso.outlier
+                  fprintf('*');
+                else
+                  fprintf(' ');
+                end
               end
+              fprintf('\n');
             end
-            fprintf('\n');
           end
         end
+      else
+        fprintf('No compounds with outliers in at least %.0f%% of the files\n',args.outlierfrac*100);
       end
       
       % Plot observed vs. expected ion counts and outlier dependence
@@ -1879,6 +1886,7 @@ classdef Compounds < handle
           leg{end+1}=sprintf('Isotope %d',k);
         end
       end
+      xlabel('Mass Error');
       legend(leg);
       
     end
