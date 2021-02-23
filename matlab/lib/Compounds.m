@@ -1,8 +1,10 @@
 % Data structure to hold information about compounds located in mass spec runs
 classdef Compounds < handle
   properties
+    compound; % compound(i) - pk of compound i in compounds database
     names;   % names{i} - Name of compound i (e.g.'51B07')
-    mass;    % mass(i) - monoisotpic mass of compounds i
+    mass;    % mass(i) - monoisotpic mass of compound i
+    formula; % formula{i} - molecular formula of compound i
     samples;   % samples{j} - Name of sample (mass spec file)
     files;   % files{j} - Mass spec filename j
     maps;    % maps{j} - Piecewise linear maps for converting between references (col 1) and file values (col2) in file j
@@ -23,7 +25,6 @@ classdef Compounds < handle
     tsens;    % tsens(i,k) is the relative sensitivity to target i with adduct k
     fsens;    % fsens(j) is the relative sensitivity for file j
     astats;   % astats(i) - struct showing setup for assigning elution time to compound i
-    sdf;      % SDF data
     MZFUZZ;   % global mztol
     TIMEFUZZ; % global timetol
     ADDUCTS;  % adducts to use
@@ -40,7 +41,6 @@ classdef Compounds < handle
       obj.allfeatures=FeatureList.empty;
       obj.reffeatures=FeatureList.empty;
       obj.astats=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{},'fpsel',{});
-      obj.sdf=SDF();
       if nargin<1
         obj.MZFUZZ=0.006;
       else
@@ -109,8 +109,6 @@ classdef Compounds < handle
       if ~isempty(obj.astats)
         q.astats=obj.astats(args.csel);
       end
-      q.sdf=SDF();
-      q.sdf.sdf=obj.sdf.sdf(args.csel);
       q.ADDUCTS=obj.ADDUCTS(args.asel);
     end
     
@@ -194,7 +192,7 @@ classdef Compounds < handle
 
       fl=obj.checkComposition(ms,'debug',args.debug,'timetol',args.timetol,'mztol',args.mztol,'noise',args.noise);  
       data=[];
-      uplates=unique({obj.sdf.sdf.BATCH_PLATE});
+      uplates=unique(cellfun(@(z) z(1:end-3),f.name,'Unif',false));
       colname={};
       for i=1:length(fl.features)
         f=fl.features(i);
@@ -430,16 +428,17 @@ classdef Compounds < handle
       set(h,'Interpreter','none');
     end
       
-    function addCompound(obj,name,mass)
+    function addCompound(obj,compound,name,mass,formula)
     % Add a compound
-      if any(strcmp(obj.names,name))
-        error('%ss already added', name);
+      if any(strcmp(obj.names,name)) || (isfinite(compound) && ismember(compound,obj.compound))
+        error('%s (%d) already added', name, compound);
       end
 
       obj.names{end+1}=name;
-      %obj.sdf.sdf(end+1)=struct();
       nindex=length(obj.names);
+      obj.compound(nindex)=compound;
       obj.mass(nindex)=mass;
+      obj.formula(nindex)=formula;
       obj.tsens(nindex,1:length(obj.ADDUCTS))=nan;
       if length(obj.files)>0
         obj.mz(nindex,:,:)=nan;
@@ -464,11 +463,10 @@ classdef Compounds < handle
     function addCompoundsFromSDF(obj,sdf)
     % Add all the compounds in the given SDF file using a name formed from the PLATE and WELL
       assert(isempty(obj.names));   % Otherwise, can't set obj.sdf to correspond
-      obj.sdf=sdf;
       for i=1:length(sdf.sdf)
         s=sdf.sdf(i);
         name=sprintf('%d%s',str2num(s.BATCH_PLATE(5:end)),s.BATCH_WELL);
-        obj.addCompound(name,s.MostAbundantMass);  % May be different from monoisotopic mass
+        obj.addCompound(nan, name,s.MostAbundantMass,s.getformula());  % May be different from monoisotopic mass
         index=strcmp(obj.names,name);
       end
     end
@@ -811,7 +809,7 @@ classdef Compounds < handle
     end
     
     function addMS(obj,ms,varargin)
-    % Add the unique peaks for compounds in given SDF from a particular M/S run
+    % Add the unique peaks for compounds from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
     % or scan all elution times if the no prior data (keep only if a unique peak is determined)
       defaults=struct('group','','contains',{{}},'map',struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]),'sample',[]);
@@ -989,7 +987,7 @@ classdef Compounds < handle
     
     function platesummary(obj)
     % Summarize stats by original CDIV plate
-      plate={obj.sdf.sdf.BATCH_PLATE};
+      plate=cellfun(@(z) z(1:end-3),obj.names,'Unif',false);
       uplate=unique(plate);
       for i=1:length(uplate)
         sel=strcmp(plate,uplate{i});
@@ -1662,7 +1660,7 @@ classdef Compounds < handle
           continue;
         end
         adduct=obj.astats(i).adduct;
-        formula=obj.sdf.getformula(i);
+        formula=obj.formula{i};
         if strcmp(obj.ADDUCTS(adduct).name,'M+K')
           % Potassium has a significant ion
           formula(end+1)='K';
@@ -2158,10 +2156,6 @@ classdef Compounds < handle
       
     end
     
-    function f=getformula(obj,i)
-      f=obj.sdf.getformula(i);
-    end
-
     function export(obj,filename,varargin)
     % Export via CSV (can be used as import to mzmine)
     % Each row has fields:  ID, m/z, retention time, identity, formula, tsens
@@ -2189,14 +2183,14 @@ classdef Compounds < handle
               bestadduct=j;
             end
           end
-          fprintf(fd,'%d,%.4f,%.2f,%s[%s],%s,%f\n', i, obj.mass(i)+obj.ADDUCTS(bestadduct).mass,t/60.0,obj.names{i},obj.ADDUCTS(bestadduct).name,obj.getformula(i),obj.tsens(i,bestadduct));
+          fprintf(fd,'%d,%.4f,%.2f,%s[%s],%s,%f\n', i, obj.mass(i)+obj.ADDUCTS(bestadduct).mass,t/60.0,obj.names{i},obj.ADDUCTS(bestadduct).name,obj.formula{i},obj.tsens(i,bestadduct));
         else
           for j=1:length(args.adducts)
             t=obj.meantime(i);
             if isnan(t) || args.notimes
               t=0;
             end
-            fprintf(fd,'%d,%.4f,%.2f,%s[%s],%s\n', i, obj.mass(i)+obj.ADDUCTS(j).mass,t/60.0,obj.names{i},obj.ADDUCTS(j).name,obj.getformula(i));
+            fprintf(fd,'%d,%.4f,%.2f,%s[%s],%s\n', i, obj.mass(i)+obj.ADDUCTS(j).mass,t/60.0,obj.names{i},obj.ADDUCTS(j).name,obj.formula{i});
           end
         end
       end
