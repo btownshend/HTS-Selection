@@ -842,11 +842,11 @@ classdef Compounds < handle
       fprintf('done\n');
     end
     
-    function addMS(obj,ms,varargin)
+    function addMS(obj,ms,mixture,varargin)
     % Add the unique peaks for compounds from a particular M/S run
     % Use prior analyses to figure out the expected elution time for each compound
     % or scan all elution times if the no prior data (keep only if a unique peak is determined)
-      defaults=struct('group','','contains',{{}},'map',struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]),'sample',[]);
+      defaults=struct('group','','map',struct('mz',[0 0; 1 1 ],'time',[0 0; 1 1 ]),'sample',[]);
       % mzmap(i,2) - piecewise linear map for M/Z; mzmap(:,1) is true M/Z, mzmap(:,2) is for values in ms file
       % timemap(i,2) - piecewise linear map for elution times; timemap(:,1) is "standard" elution time
       args=processargs(defaults,varargin);
@@ -863,20 +863,24 @@ classdef Compounds < handle
       if ~isempty(args.group)
         obj.group{findex}=args.group;
       end
-      if isempty(args.contains)
-        obj.contains(:,findex)=true;
-      elseif islogical(args.contains)
-        assert(length(args.contains)==size(obj.contains,1));
-        obj.contains(:,findex)=args.contains;
-      elseif strcmp(args.contains{1},'NONE')
+      if strcmp(mixture,'DMSO')
         obj.contains(:,findex)=false;
       else
-        badnames=setdiff(args.contains,obj.names);
-        if ~isempty(badnames)
-          fprintf('addMS: contains list has %d nonexistent compound names\n',length(badnames));
+        % Use mixture arg to lookup contents in database
+        mixid=mysql(sprintf('SELECT m.mixture FROM compounds.mixtures m WHERE m.name=''%s''',mixture));
+        if isempty(mixid)
+          error('Mixture %s not found in database', mixture);
         end
-        obj.contains(:,findex)=ismember(obj.names,args.contains);
+        contains=mysql(sprintf('SELECT compound FROM compounds.contents c WHERE c.mixture=%d',mixid));
+        if isempty(contains)
+          error('Mixture %s (%d) has no contents',mixture,mixid);
+        end
+        obj.contains(:,findex)=ismember(obj.compound,contains);
+        if sum(obj.contains(:,findex)) ~= length(contains)
+          error('Mixture %s with %d compounds only matched against %d loaded compounds',mixture,sum(contains),sum(obj.contains(:,findex)));
+        end
       end
+
       if ~isempty(ms.featurelists)
         fl=ms.featurelists(end);
         obj.allfeatures(findex)=fl;
