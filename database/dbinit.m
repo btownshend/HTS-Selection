@@ -184,11 +184,28 @@ for i=1:length(s7vecs.v256names)
   nins=mysql(contents)
 end
 
-  
+return;
+
 % Subsequently repaired some formula/masses based on PubChem records:
-%update compounds set formula='C18H21N2O3S2+',monoisotopicMass=377.09936 where compound=465;  46G04
-%update compounds set formula='C11H9NO2S',monoisotopicMass=219.0354  where compound=862; 87F11
-%update compounds set formula='C15H16NO3S2+',monoisotopicMass=322.057161  where compound=1448; 167A07
-%update compounds set formula='C11H16NO3S3+',monoisotopicMass=306.029232   where compound=1497; 167F06
-%update compounds set formula='C11H16NO3S3+',monoisotopicMass=306.029232   where compound=1507; 167G06
-%update compounds set formula='C11H15ClNO3S2+',monoisotopicMass=308.018188   where compound=1517;  167H06
+update compounds set formula='C18H21N2O3S2+',monoisotopicMass=377.09936 where compound=465;  46G04
+update compounds set formula='C11H9NO2S',monoisotopicMass=219.0354  where compound=862; 87F11
+update compounds set formula='C15H16NO3S2+',monoisotopicMass=322.057161  where compound=1448; 167A07
+update compounds set formula='C11H16NO3S3+',monoisotopicMass=306.029232   where compound=1497; 167F06
+update compounds set formula='C11H16NO3S3+',monoisotopicMass=306.029232   where compound=1507; 167G06
+update compounds set formula='C11H15ClNO3S2+',monoisotopicMass=308.018188   where compound=1517;  167H06
+
+
+update mixtures
+set name=concat(left(name,4),right(left(name,8),3),'-',right(name,3))  
+where name like'CDIQ-%'
+and length(name)=11;
+
+update mixtures
+set name=concat(left(name,4),'0',right(left(name,7),2),'-',right(name,3))  
+where name like'CDIQ-%'
+and length(name)=10;
+
+update mixtures
+set name=concat(left(name,4),'00',right(left(name,6),1),'-',right(name,3))  
+where name like'CDIQ-%'
+and length(name)=9;
