@@ -31,6 +31,10 @@ classdef Compounds < handle
   end
   
   properties(Constant)
+    dbhost='35.203.151.202';
+    dbuser='ngsreadonly';
+    dbpassword='';
+    database='compounds';
   end
   
   methods
@@ -468,6 +472,36 @@ classdef Compounds < handle
         name=sprintf('%d%s',str2num(s.BATCH_PLATE(5:end)),s.BATCH_WELL);
         obj.addCompound(nan, name,s.MostAbundantMass,s.getformula());  % May be different from monoisotopic mass
         index=strcmp(obj.names,name);
+      end
+    end
+
+    function dbopen(data)
+    % Open a database connection using given user, close all other connections
+      if mysql('status')==0
+        res=mysql('select USER();');
+        sp=split(res{1},'@');
+        if strcmp(sp{1},data.dbuser)
+          mysql('use',data.database);
+          return;
+        end
+      end
+      mysql('closeall');
+      mysql('open',data.dbhost,data.dbuser,data.dbpassword);
+      mysql('use',data.database);
+    end
+
+    function addCompoundsFromDB(obj,ids)
+    % Add the compounds in the given list of db pks (or all if none set)
+      obj.dbopen();
+      cmd='SELECT compound,name,monoisotopicMass,formula FROM compounds.compounds';
+      if nargin>=2
+        idlist=sprintf('%d,',ids);
+        idlist=idlist(1:end-1);  % Remove trailing comm
+        cmd=sprintf('%s WHERE compound IN (%s)',idlist);
+      end
+      [compound,name,mass,formula]=mysql(cmd);
+      for i=1:length(compound)
+        obj.addCompound(compound(i),name{i},mass(i),formula{i});
       end
     end
     
