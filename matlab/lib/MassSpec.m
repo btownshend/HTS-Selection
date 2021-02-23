@@ -1,21 +1,18 @@
+% Class to hold a mass spec run
 classdef MassSpec < handle
   properties
     path;    % Full path
     name;    % Short name for this file
     moles;   % Nominal number of moles (per compound) loaded
     peaks;  % Peaks from mzxml2peaks;  peaks{i}(k,1:2) is [mz,ic] for elution i, at peak k 
-    time;   % Time of elutions (in minutes)
+    time;   % Time of elutions (in minutes), corresponds to peaks
     mzrange;   % Range [low,high] of m/z to plot/consider
     featurelists;   % Array of feature lists
-    mzxml;
+    mzxml;	% Original mzxml record loaded (optional)
   end
   
   properties(Transient)
     resamp;   % struct (mz,y,n) of uniformly sampled data
-  end
-  
-  properties(Constant)
-    mzres=0.01;
   end
   
   methods(Static)
@@ -150,25 +147,31 @@ classdef MassSpec < handle
     end
     
     
-    function resample(obj)
-      n=round(diff(obj.mzrange)/obj.mzres+1);
+    function resample(obj,mzres)
+      if nargin<2
+        error('Missing mzres arg');
+      end
+      n=round(diff(obj.mzrange)/mzres+1);
       fprintf('Resampling peaks...');
-      [mz,y]=msppresample(obj.peaks,n,'Range',obj.mzrange,'FWHH',obj.mzres);
+      [mz,y]=msppresample(obj.peaks,n,'Range',obj.mzrange,'FWHH',mzres);
       fprintf('done\n');
-      obj.resamp=struct('mz',mz,'y',y,'n',n);
+      obj.resamp=struct('mz',mz,'y',y,'n',n,'mzres',mzres);
     end
 
-    function heatmap(obj,markers)
-      if isempty(obj.resamp)
-        obj.resample();
+    function heatmap(obj,markers,mzres)
+      if nargin<3
+        error('Missing mzres arg');
+      end
+      if isempty(obj.resamp) || obj.resamp.mzres!=mzres
+        obj.resample(mzres);
       end
       if nargin<2
         markers=[];
       end
       if isempty(markers)
-        msheatmap(obj.resamp.mz,obj.time,log(obj.resamp.y),'resolution',obj.mzres);
+        msheatmap(obj.resamp.mz,obj.time,log(obj.resamp.y),'resolution',mzres);
       else
-        msheatmap(obj.resamp.mz,obj.time,log(obj.resamp.y),'resolution',obj.mzres,'markers',markers);
+        msheatmap(obj.resamp.mz,obj.time,log(obj.resamp.y),'resolution',mzres,'markers',markers);
       end
     end
 
