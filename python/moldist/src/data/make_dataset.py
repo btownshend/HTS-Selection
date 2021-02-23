@@ -1,7 +1,7 @@
 import os
 
 from rdkit.Chem import AllChem
-import pubchempy as pc
+
 
 def load():
     # Read in the CDIV molecules
