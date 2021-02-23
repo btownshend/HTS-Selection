@@ -1,6 +1,6 @@
 numpy
-matplotlib
 scikit-learn
 rdkit
 python-dotenv
-scikit-plot
+pubchempy
+setuptools
