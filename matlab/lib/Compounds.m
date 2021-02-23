@@ -39,9 +39,12 @@ classdef Compounds < handle
   
   methods
     function obj=Compounds(mzfuzz,timefuzz)
+      obj.names={};
+      obj.formula={};
       obj.multihits={};
       obj.contains=false(0,0);
       obj.samples={};
+      obj.files={};
       obj.allfeatures=FeatureList.empty;
       obj.reffeatures=FeatureList.empty;
       obj.astats=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{},'fpsel',{});
@@ -82,8 +85,10 @@ classdef Compounds < handle
         assert(all(args.asel>=1 & args.asel<=length(obj.ADDUCTS)));
       end
       q=Compounds(obj.MZFUZZ, obj.TIMEFUZZ);
+      q.compound=obj.compound(args.csel);
       q.names=obj.names(args.csel);
       q.mass=obj.mass(args.csel);
+      q.formula=obj.formula(args.csel);
       q.samples=obj.samples(args.fsel);
       q.files=obj.files(args.fsel);
       q.maps=obj.maps(args.fsel);
@@ -442,7 +447,7 @@ classdef Compounds < handle
       nindex=length(obj.names);
       obj.compound(nindex)=compound;
       obj.mass(nindex)=mass;
-      obj.formula(nindex)=formula;
+      obj.formula{nindex}=formula;
       obj.tsens(nindex,1:length(obj.ADDUCTS))=nan;
       if length(obj.files)>0
         obj.mz(nindex,:,:)=nan;
