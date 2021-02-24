@@ -14,7 +14,7 @@ if ~exist('s7vecs','var')
 end
 
 if ~exist('s7compounds','var')
-  s7compounds=Compounds();
+  s7compounds=MSCompounds();
   s7compounds.addCompoundsFromSDF(s7sdf);
 end
 

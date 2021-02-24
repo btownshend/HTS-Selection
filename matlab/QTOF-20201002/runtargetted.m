@@ -14,7 +14,7 @@ if ~exist('s7vecs','var')
 end
 
 if ~exist('qtc','var')
-  qtc=Compounds();
+  qtc=MSCompounds();
   qtc.addCompoundsFromSDF(s7sdf);
 end
 

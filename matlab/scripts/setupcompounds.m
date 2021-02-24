@@ -69,7 +69,7 @@ if ~exist('mzdata','var')
 end
 
 if ~exist('compounds','var')
-  compounds=Compounds();
+  compounds=MSCompounds();
   compounds.addCompoundsFromSDF(sdf);
   %  compounds.addCompoundsFromSDF(sdf.filter(sdf.find(1,[],2)));
 end

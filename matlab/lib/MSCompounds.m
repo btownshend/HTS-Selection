@@ -1,5 +1,5 @@
 % Data structure to hold information about compounds located in mass spec runs
-classdef Compounds < handle
+classdef MSCompounds < handle
   properties
     compound; % compound(i) - pk of compound i in compounds database
     names;   % names{i} - Name of compound i (e.g.'51B07')
@@ -38,7 +38,7 @@ classdef Compounds < handle
   end
   
   methods
-    function obj=Compounds(mzfuzz,timefuzz)
+    function obj=MSCompounds(mzfuzz,timefuzz)
       obj.names={};
       obj.formula={};
       obj.multihits={};
@@ -84,7 +84,7 @@ classdef Compounds < handle
       else
         assert(all(args.asel>=1 & args.asel<=length(obj.ADDUCTS)));
       end
-      q=Compounds(obj.MZFUZZ, obj.TIMEFUZZ);
+      q=MSCompounds(obj.MZFUZZ, obj.TIMEFUZZ);
       q.compound=obj.compound(args.csel);
       q.names=obj.names(args.csel);
       q.mass=obj.mass(args.csel);
@@ -890,7 +890,7 @@ classdef Compounds < handle
         fl=ms.featurelists(end);
         obj.allfeatures(findex)=fl;
       else
-        fprintf('Warning: not setting Compounds.featurelists\n');
+        fprintf('Warning: not setting MSCompounds.featurelists\n');
       end
       if length(obj.reffeatures)>=findex
         % Clear it

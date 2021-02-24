@@ -9,7 +9,7 @@ if ~exist('s7vecs','var')
 end
 
 if ~exist('qsetup','var')
-  qsetup=Compounds(.0005,40/60);
+  qsetup=MSCompounds(.0005,40/60);
   % qsetup.ADDUCTS=qsetup.ADDUCTS(1);   % Only M+H for now
   %qsetup.addCompoundsFromSDF(s7sdf);
   qsetup.addCompoundsFromDB();

@@ -16,7 +16,7 @@ end
 mztol=.0005;
 
 if ~exist('qsetup','var')
-  qsetup=Compounds(mztol,40/60);
+  qsetup=MSCompounds(mztol,40/60);
   qsetup.ADDUCTS=qsetup.ADDUCTS(1);   % Only M+H for now
   qsetup.addCompoundsFromSDF(s7sdf);
 end
