@@ -162,7 +162,7 @@ classdef MassSpec < handle
       if nargin<3
         error('Missing mzres arg');
       end
-      if isempty(obj.resamp) || obj.resamp.mzres!=mzres
+      if isempty(obj.resamp) || obj.resamp.mzres~=mzres
         obj.resample(mzres);
       end
       if nargin<2
@@ -619,7 +619,9 @@ classdef MassSpec < handle
       end
       mzmid=(mzrange(:,1)+mzrange(:,2))/2;
       fprintf('Have %d targets overlapping in time with mztol<%.4f\n',sum(mzrange(:,2)-mzrange(:,1)<args.mztol/2),args.mztol/4);
-      fprintf('Have %d targets overlapping in m/z with timetol<%.4f\n',sum(timerange(:,2)-timerange(:,1)<args.timetol/2),args.timetol/4);
+      if ~isempty(args.rt)
+        fprintf('Have %d targets overlapping in m/z with timetol<%.4f\n',sum(timerange(:,2)-timerange(:,1)<args.timetol/2),args.timetol/4);
+      end
       % Buld EIC for each mass
       args.mz=mz;   % So it is added to params
       fl=FeatureList([obj.name,' chromatograms'],'targetedFeatureDetect',args);
