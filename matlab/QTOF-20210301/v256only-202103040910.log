@@ -1,0 +1,151 @@
+assignTimes (run 1):
+[M+H]
+Have times for 987 compounds
+[M+Na]
+Have times for 1399 compounds
+[M+K]
+Have times for 1554 compounds
+assignTimes (run 1):
+[M+H]
+Have times for 701 compounds
+[M+Na]
+Have times for 1037 compounds
+[M+K]
+Have times for 1196 compounds
+Allow 4 false positives
+assignTimes (run 2):
+[M+H]
+Have times for 1555 compounds
+[M+Na]
+Have times for 1734 compounds
+[M+K]
+Have times for 1812 compounds
+Allow 1 false negative
+assignTimes (run 3):
+[M+H]
+Have times for 2745 compounds
+[M+Na]
+Have times for 3042 compounds
+[M+K]
+Have times for 3133 compounds
+Allow 4 false positives and 1 false negative
+assignTimes (run 4):
+[M+H]
+Have times for 3371 compounds
+[M+Na]
+Have times for 3480 compounds
+[M+K]
+Have times for 3507 compounds
+Increased time tol
+assignTimes (run 5):
+[M+H]
+Have times for 3558 compounds
+[M+Na]
+Have times for 3581 compounds
+[M+K]
+Have times for 3595 compounds
+Increased mztol
+assignTimes (run 6):
+[M+H]
+Have times for 3596 compounds
+[M+Na]
+Have times for 3596 compounds
+[M+K]
+Have times for 3596 compounds
+Decreased mztol
+assignTimes (run 7):
+[M+H]
+Have times for 3596 compounds
+[M+Na]
+Have times for 3596 compounds
+[M+K]
+Have times for 3596 compounds
+Increased normicrange
+assignTimes (run 7):
+[M+H]
+Have times for 3685 compounds
+[M+Na]
+Have times for 3735 compounds
+[M+K]
+Have times for 3750 compounds
+125: 55 found, 62542 sens
+126: 47 found, 36242 sens
+127: 44 found, 44855 sens
+128: 69 found, 37179 sens
+165: 63 found, 36452 sens
+166: 58 found, 31650 sens
+167: 39 found, 36420 sens
+168: 43 found, 70216 sens
+205: 62 found, 37776 sens
+206: 53 found, 94586 sens
+207: 53 found, 42279 sens
+208: 49 found, 35815 sens
+245: 61 found, 102092 sens
+246: 61 found, 127192 sens
+247: 48 found, 23157 sens
+248: 55 found, 60227 sens
+285: 58 found, 138302 sens
+286: 68 found, 114166 sens
+287: 58 found, 27846 sens
+288: 50 found, 62401 sens
+325: 72 found, 69807 sens
+326: 61 found, 72085 sens
+327: 62 found, 48459 sens
+328: 68 found, 60950 sens
+365: 64 found, 41679 sens
+366: 58 found, 68174 sens
+367: 64 found, 30374 sens
+368: 79 found, 54390 sens
+405: 72 found, 82994 sens
+406: 65 found, 76866 sens
+407: 70 found, 70388 sens
+408: 65 found, 47986 sens
+445: 73 found, 75180 sens
+446: 63 found, 85778 sens
+447: 70 found, 119983 sens
+448: 70 found, 80631 sens
+45: 45 found, 35415 sens
+46: 54 found, 33305 sens
+47: 55 found, 28652 sens
+48: 54 found, 36387 sens
+485: 74 found, 68757 sens
+486: 67 found, 67551 sens
+487: 74 found, 116533 sens
+488: 54 found, 87968 sens
+5: 47 found, 23383 sens
+525: 69 found, 82259 sens
+526: 73 found, 90092 sens
+527: 67 found, 78856 sens
+528: 67 found, 76115 sens
+565: 8 found, 2864 sens
+566: 45 found, 11450 sens
+567: 30 found, 9176 sens
+568: 60 found, 67745 sens
+6: 52 found, 37378 sens
+605: 68 found, 94888 sens
+606: 70 found, 54195 sens
+607: 71 found, 108790 sens
+608: 65 found, 59332 sens
+7: 48 found, 28439 sens
+8: 48 found, 18139 sens
+85: 48 found, 32384 sens
+86: 52 found, 51956 sens
+87: 64 found, 59031 sens
+88: 51 found, 56871 sens
+D: 0 found, NaN sens
+Wa: 0 found, NaN sens
+Saving compounds...{Error using <a href="matlab:matlab.internal.language.introspective.errorDocCallback('save')" style="font-weight:bold">save</a>
+Error closing file /Users/bst/Dropbox/SynBio/HTS-Selection/data/matfiles/v256-allfeatures-202103040910.mat.
+The file may be corrupt.
+
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('v256only', '/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/QTOF-20210301/v256only.m', 73)" style="font-weight:bold">v256only</a> (<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/QTOF-20210301/v256only.m',73,0)">line 73</a>)
+save(sprintf('%s/v256-allfeatures-%s.mat',matdir,ds),'allfeatures');
+} 
+<a href="matlab: opentoline('/Users/bst/Dropbox/SynBio/HTS-Selection/matlab/QTOF-20210301/v256only.m',73,1)">73  </a>save(sprintf('%s/v256-allfeatures-%s.mat',matdir,ds),'allfeatures');
+dbquit
+v256.allfeatures=allfeatures;
+v256.reffeatures=reffeatures;
+
+fprintf('done\n');
+done
+diary off
