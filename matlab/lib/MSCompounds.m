@@ -676,6 +676,7 @@ classdef MSCompounds < handle
                 expectedIC=tsens*obj.fsens;
                 normic=zeros(size(obj.fsens));
                 normic(srcfile(sel))=intensity(sel)./expectedIC(srcfile(sel));
+                assert(all(isfinite(normic)));
                 % Categorize each file as
                 %  trueneg - unexpected and not present
                 %  falsepos - unexpected but present and > falsethresh
