@@ -545,7 +545,8 @@ classdef MassSpec < handle
       ndup=0;
       labels=cellfun(@(z) {z},args.names,'Unif',false);
       while i<length(mz)-1
-        for j=i+1:length(mz)
+        j=i+1;
+        while j<=length(mz)
           if abs(mz(i)-mz(j))>args.mztol/10
             i=i+1;
             break;
@@ -564,6 +565,7 @@ classdef MassSpec < handle
           else
             i=i+1;
           end
+          j=j+1;
         end
       end
       if ndup>0
