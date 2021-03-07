@@ -47,10 +47,14 @@ matlab/QTOF-20201002/findallhits.txt
 matlab/QTOF-20210131/HOLD*
 matlab/QTOF-20210131/findallhits.txt
 matlab/QTOF-20210131/test.csv
-matlab/QTOF-20210131/ident.csv
+ident.csv
 results/report-*.numbers
 matlab/QTOF-20210131/runlog.txt
 matlab/QTOF-20210131/savelog.txt
 results/report-*.csv
-matlab/QTOF-20210131/v256only-*.log
+v256only-*.log
 database/Compounds.mwb.bak
+matlab/QTOF-20210301/newrun-*.log
+matlab/QTOF-20210301/ident_singles.csv
+matlab/QTOF-20210301/findallhits.txt
+matlab/QTOF-20210131/v256tests.txt
