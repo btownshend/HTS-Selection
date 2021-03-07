@@ -35,7 +35,7 @@ classdef Feature < matlab.mixin.Copyable
       obj.time=peaks(maxpeak,3);
       obj.intensity=peaks(maxpeak,2);
       obj.area=sum(peaks(:,2));
-      obj.peaks=peaks;
+      obj.peaks=single(peaks);   % Minimize memory usage
       obj.mzrange=[nanmin(peaks(:,1)),nanmax(peaks(:,1))];
       obj.timerange=[min(peaks(:,3)),max(peaks(:,3))];
       p50a=peaks(find(peaks(:,2)>=obj.intensity/2,1),3);
@@ -62,6 +62,16 @@ classdef Feature < matlab.mixin.Copyable
       obj.labels={};
     end
 
+    function ch=compact(obj)
+    % Reduce memory usage
+      if isa(obj.peaks,'double')
+        obj.peaks=single(obj.peaks);
+        ch=true;
+      else
+        ch=false;
+      end
+    end
+    
     function s=tostring(obj,varargin)
       defaults=struct('mztarget',[],'timetarget',[],'intensitytarget',[],'fixedwidth',false, 'details',true);
       args=processargs(defaults,varargin);

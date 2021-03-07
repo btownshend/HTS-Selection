@@ -111,6 +111,17 @@ classdef FeatureList < handle
       end
     end
     
+    function compact(obj)
+    % Reduce memory usage
+      fprintf('Compacting %d features...',length(obj.features));
+      nch=0;
+      for i=1:length(obj.features)
+        nch=nch+obj.features(i).compact();
+      end
+      fprintf('done.  Changed %d features\n', nch);
+    end
+    
+    
     function r=maptoref(obj,map)
     % Map m/z, time in feature list from 'file' values to 'ref' values 
     % This interpolates using map.mz(:,1) as ref, map.mz(:,2) as file
