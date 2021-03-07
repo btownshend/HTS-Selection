@@ -917,7 +917,7 @@ classdef MassSpec < handle
             end
             if length(fli.features)>0
               fi=fli.features(1);
-              assert(fi.time==f.time);
+              assert(abs(fi.time-f.time)<.01);
               assert(fi.npeaks==1);
               if args.debug
                 fprintf(' d=%3.0f',(fi.mz-mzi)*1e4);
