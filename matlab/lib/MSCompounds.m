@@ -973,14 +973,18 @@ classdef MSCompounds < handle
     % Build table on data by compound
     % Each row is a single compound
     % Data by group
-      defaults=struct('sort',false);
+      defaults=struct('sort',false,'bygroup',false);
       args=processargs(defaults,varargin);
 
       if any(isfinite(obj.meantime) & ~any(isfinite(obj.tsens),2))
         error('Run checksensitivity before report');
       end
       
-      ugroups=unique(obj.group,'sorted');
+      if args.bygroup
+        ugroups=unique(obj.group,'sorted');
+      else
+        ugroups={'all'};
+      end
       if args.sort
         [~,ord]=sort(obj.names);
       else
@@ -990,7 +994,11 @@ classdef MSCompounds < handle
       for ii=1:length(obj.names)
         i=ord(ii);
         for j=1:length(ugroups)
-         files=find(strcmp(obj.group,ugroups{j})& obj.contains(i,:));
+         if args.bygroup
+           files=find(strcmp(obj.group,ugroups{j})& obj.contains(i,:));
+         else
+           files=find(obj.contains(i,:));
+         end
          if ~isempty(files)
            if ~isempty(obj.astats) && i<=length(obj.astats) && ~isempty(obj.astats(i).adduct)
              adduct=obj.astats(i).adduct;  % Same adduct as used to assign it
