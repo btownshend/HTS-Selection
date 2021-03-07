@@ -201,14 +201,13 @@ classdef MSCompounds < handle
 
       fl=obj.checkComposition(ms,'debug',args.debug,'timetol',args.timetol,'mztol',args.mztol,'noise',args.noise);  
       data=[];
-      uplates=unique(cellfun(@(z) z(1:end-3),f.name,'Unif',false));
+      plate=arrayfun(@(z) str2num(z.name(1:end-3)),fl.features);
+      uplates=unique(plate);
       colname={};
       for i=1:length(fl.features)
         f=fl.features(i);
         nm=f.name;
-        plate=str2num(nm(1:end-3));
-        pnum=find(strcmp(sprintf('CDIV%04d',plate),uplates));
-        assert(length(pnum==1));
+        pnum=find(plate(i)==uplates);
         row=nm(end-2)-'A'+1;
         col=str2num(nm(end-1:end));
         cnum=(row-1)+(col-2)*8+1;
