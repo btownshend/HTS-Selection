@@ -580,7 +580,9 @@ classdef MassSpec < handle
         boundary=(mzrange(overlaps,2)+mzrange(overlaps+1,1))/2;
         mzrange(overlaps,2)=boundary;
         mzrange(overlaps+1,1)=boundary;
-        fprintf('Separated m/z range for %d/%d overlapping m/z\n', length(overlaps), length(mz));
+        if length(overlaps)>0
+          fprintf('Separated m/z range for %d/%d overlapping m/z\n', length(overlaps), length(mz));
+        end
       else
         timerange(:,1)=args.rt-args.timetol;
         timerange(:,2)=args.rt+args.timetol;
@@ -620,9 +622,15 @@ classdef MassSpec < handle
         
       end
       mzmid=(mzrange(:,1)+mzrange(:,2))/2;
-      fprintf('Have %d targets overlapping in time with mztol<%.4f\n',sum(mzrange(:,2)-mzrange(:,1)<args.mztol/2),args.mztol/4);
+      nover=sum(mzrange(:,2)-mzrange(:,1)<args.mztol/2);
+      if nover>0
+        fprintf('Have %d targets overlapping in time with mztol<%.4f\n',nover,args.mztol/4);
+      end
       if ~isempty(args.rt)
-        fprintf('Have %d targets overlapping in m/z with timetol<%.4f\n',sum(timerange(:,2)-timerange(:,1)<args.timetol/2),args.timetol/4);
+        nover=sum(timerange(:,2)-timerange(:,1)<args.timetol/2);
+        if nover>0
+          fprintf('Have %d targets overlapping in m/z with timetol<%.4f\n',nover,args.timetol/4);
+        end
       end
       % Buld EIC for each mass
       args.mz=mz;   % So it is added to params
@@ -875,6 +883,10 @@ classdef MassSpec < handle
           fprintf('\n%s[%s] m/z=%.4f\n', isotopes(1).name, a.name,isotopes(1).mass+a.mass);
         end
         fl=obj.targetedFeatureDetect(mz,'names',{a.name},'mztol',args.mztol,'noise',args.noise,'timetol',args.timetol);
+        if isempty(fl.features)
+          fprintf('No features found\n');
+          return;
+        end
         fld=fl.deconvolve('noise',500,'oversegmentationfilter',args.timetol);
         for j=1:length(fld.features)
           f=fld.features(j);
