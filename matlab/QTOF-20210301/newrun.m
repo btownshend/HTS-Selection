@@ -3,7 +3,7 @@ debug=true;
 ds=datestr(now,'YYYYmmDDHHMM');
 diary(['newrun-',ds,'.log']);
 
-onlyc=3:1002;
+onlyc=3:5122;
 adducts=struct('name',{'M+H','M+Na','M+K','M+NH4','M+DMSO+H'},...
                'mass',{1.007276,22.989218,38.963158,18.033823,79.02122});  
 % From https://fiehnlab.ucdavis.edu/staff/kind/metabolomics/ms-adduct-calculator/
@@ -92,14 +92,19 @@ end
 v256.findfeatures();   
 
 minhits=2;
-maxfp=4;
+maxfp=2;
 trace=[];
 
 % First run to be able to set fsens
 v256.fsens(:)=1;
-v256.assignTimes('clear',true,'normicrange',[0.1,10],'trace',trace,'minhits',minhits);
+v256.assignTimes('clear',true,'normicrange',[0.1,10],'trace',trace,'minhits',minhits,'timetol',v256.TIMEFUZZ*4);
 v256.checksensitivity();  % Initial fsens
-% Start over with good fsens
+% Start over with good fsens, but wide time range
+v256.assignTimes('clear',true,'trace',trace,'minhits',minhits,'timetol',v256.TIMEFUZZ*4);
+% Update times
+v256.checktime('assign','dir','current',false);
+v256.findfeatures();   
+% Start over with good fsens, normal time range
 v256.assignTimes('clear',true,'trace',trace,'minhits',minhits);
 fprintf('Allow %d false positives\n',maxfp);
 v256.assignTimes('clear',false,'maxFP',maxfp,'trace',trace,'minhits',minhits);
@@ -107,8 +112,8 @@ fprintf('Allow 1 false negative\n');
 v256.assignTimes('clear',false,'trace',trace,'minhits',minhits,'maxFN',1);
 fprintf('Allow %d false positives and 1 false negative\n',maxfp);
 v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'trace',trace,'minhits',minhits);
-fprintf('Increased time tol\n');
-v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'timetol',v256.TIMEFUZZ*2,'trace',trace,'minhits',minhits);
+%fprintf('Increased time tol\n');
+%v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'timetol',v256.TIMEFUZZ*2,'trace',trace,'minhits',minhits);
 fprintf('Increased mztol\n');
 v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'mztol',v256.MZFUZZ*2,'trace',trace,'minhits',minhits);
 fprintf('Decreased mztol\n');
