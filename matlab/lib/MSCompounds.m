@@ -856,6 +856,9 @@ classdef MSCompounds < handle
       % timemap(i,2) - piecewise linear map for elution times; timemap(:,1) is "standard" elution time
       args=processargs(defaults,varargin);
       
+      if ~isstruct(mixture)
+        error('addMS now takes a single mixture struct as the mixture arg');
+      end
       fprintf('Adding data from %s...',ms.name);
       findex=obj.lookupMS(ms);
       if ~isempty(args.sample)
@@ -868,23 +871,10 @@ classdef MSCompounds < handle
       if ~isempty(args.group)
         obj.group{findex}=args.group;
       end
-      if strcmp(mixture,'DMSO')
-        obj.contains(:,findex)=false;
-      else
-        % Use mixture arg to lookup contents in database
-        mixid=mysql(sprintf('SELECT m.mixture FROM compounds.mixtures m WHERE m.name=''%s''',mixture));
-        if isempty(mixid)
-          error('Mixture %s not found in database', mixture);
-        end
-        contains=mysql(sprintf('SELECT compound FROM compounds.contents c WHERE c.mixture=%d',mixid));
-        if isempty(contains)
-          error('Mixture %s (%d) has no contents',mixture,mixid);
-        end
-        obj.contains(:,findex)=ismember(obj.compound,contains);
-        if sum(obj.contains(:,findex)) ~= length(contains)
-          error('Mixture %s with %d compounds only matched against %d loaded compounds',mixture,sum(contains),sum(obj.contains(:,findex)));
-        end
+      if isempty(mixture.contents)
+        error('Mixture %s (%d) has no contents',mixture.name,mixture.mixture);
       end
+      obj.contains(:,findex)=ismember(obj.compound,mixture.contents);
 
       if ~isempty(ms.featurelists)
         fl=ms.featurelists(end);
