@@ -501,7 +501,7 @@ classdef MSCompounds < handle
       if nargin>=2
         idlist=sprintf('%d,',ids);
         idlist=idlist(1:end-1);  % Remove trailing comm
-        cmd=sprintf('%s WHERE compound IN (%s)',idlist);
+        cmd=sprintf('%s WHERE compound IN (%s)',cmd, idlist);
       end
       [compound,name,mass,formula]=mysql(cmd);
       for i=1:length(compound)
