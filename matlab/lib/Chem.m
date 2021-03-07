@@ -7,6 +7,7 @@ classdef Chem < handle
     % Convert to a struct
       assert(ischar(f));
       fs=struct();
+      f=f(f~='+' & f~='-');  % Remove charge
       upper=find(f>='A' & f<='Z');
       upper(end+1)=length(f)+1;
       for i=1:length(upper)-1
@@ -19,7 +20,11 @@ classdef Chem < handle
           npos=pos+1;
         end
         if npos<upper(i+1)
-          fs.(sym)=str2num(f(npos:upper(i+1)-1));
+          cnt=str2double(f(npos:upper(i+1)-1));
+          if isnan(cnt)
+            error('Error parsing formula: %s\n', f);
+          end
+          fs.(sym)=cnt;
         else
           fs.(sym)=1;
         end
