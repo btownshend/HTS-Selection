@@ -448,11 +448,11 @@ classdef MSCompounds < handle
       obj.mass(nindex)=mass;
       obj.formula{nindex}=formula;
       obj.tsens(nindex,1:length(obj.ADDUCTS))=nan;
+      obj.astats(nindex)=struct('run',{[]},'args',{[]},'adduct',{[]},'sel',{[]},'hitgood',{[]},'hitlow',{[]},'hithigh',{[]},'missstrong',{[]},'missweak',{[]},'FP',{[]},'FN',{[]},'fpsel',{[]});
       if length(obj.files)>0
         obj.mz(nindex,:,:)=nan;
         obj.time(nindex,:,:)=nan;
         obj.timewindow(nindex,:)=nan;
-        obj.astats(nindex)=struct('run',{},'args',{},'adduct',{},'sel',{},'hitgood',{},'hitlow',{},'hithigh',{},'missstrong',{},'missweak',{},'FP',{},'FN',{},'fpsel',{});
         obj.meantime(nindex)=nan;
         obj.ic(nindex,:,:)=nan;
         obj.normic(nindex,:,:)=nan;
@@ -600,7 +600,7 @@ classdef MSCompounds < handle
         obj.meantime(:)=nan;
         obj.timewindow(:,:)=nan;
         obj.featureindex=nan(length(obj.names),length(obj.ADDUCTS),length(obj.samples));
-        obj.astats=obj.astats([]);
+        obj.astats(:)=struct('run',{[]},'args',{[]},'adduct',{[]},'sel',{[]},'hitgood',{[]},'hitlow',{[]},'hithigh',{[]},'missstrong',{[]},'missweak',{[]},'FP',{[]},'FN',{[]},'fpsel',{[]})
       end
       used=cell(size(obj.files));
       for j=1:length(obj.files)
