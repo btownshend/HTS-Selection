@@ -1360,7 +1360,11 @@ classdef MSCompounds < handle
         end
         sens=nanmedian(ratio,2)'.*sens;
       end
-
+      if any(isnan(sens))
+        fprintf('Setting sensitivity of %d files without enough data to 1.0\n', sum(isnan(sens)));
+        sens(isnan(sens))=1;
+      end
+      
       if ~isempty(args.ref)
         sens=sens/sens(args.ref);
       end
