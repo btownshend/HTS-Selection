@@ -605,6 +605,7 @@ classdef MSCompounds < handle
       used=cell(size(obj.files));
       for j=1:length(obj.files)
         used{j}=obj.featureindex(:,:,j);
+        used{j}(~obj.contains(:,j),:)=nan;   % Don't mark unexpected hits as used
         used{j}=used{j}(isfinite(used{j}(:)));
       end
       for k=1:length(obj.ADDUCTS)
@@ -783,7 +784,10 @@ classdef MSCompounds < handle
                   fi=fi(mind);
                 end
                 obj.featureindex(i,kk,j)=fi;
-                used{j}(end+1)=fi;
+                if obj.contains(i,j)
+                  % Only set used if this feature should be present
+                  used{j}(end+1)=fi;
+                end
                 feat=obj.reffeatures(j).features(fi);
                 obj.ic(i,kk,j)=feat.intensity;
                 obj.mz(i,kk,j)=feat.mz;
