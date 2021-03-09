@@ -2151,7 +2151,7 @@ classdef MSCompounds < handle
       mztarget=mztarget(:,args.adduct);
       for i=1:args.nlist
         [ii,ij]=ind2sub(size(obj.contains),ord(i));
-        fprintf('%12.12s:%-7.7s IC=%8.0f(%8.3f)', obj.samples{ij}, obj.names{ii}, ic(ii,args.adduct,ij),normic(ord(i)));
+        fprintf('%12.12s(%3d) %-7.7s(%4d) IC=%8.0f(%8.3f) feature %d', obj.samples{ij}, ij, obj.names{ii}, ii, ic(ii,args.adduct,ij),normic(ord(i)),obj.featureindex(ii,args.adduct,ij));
         alias=find(obj.contains(:,ij) & abs(mztarget-mztarget(ii))<=obj.MZFUZZ & abs(obj.meantime-obj.meantime(ii))<=obj.TIMEFUZZ);
         if ~isempty(alias)
           fprintf(' Indistinguishable from ');
