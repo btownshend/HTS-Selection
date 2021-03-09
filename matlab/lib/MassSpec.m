@@ -624,7 +624,7 @@ classdef MassSpec < handle
       mzmid=(mzrange(:,1)+mzrange(:,2))/2;
       nover=sum(mzrange(:,2)-mzrange(:,1)<args.mztol/2);
       if nover>0
-        fprintf('Have %d targets overlapping in time with mztol<%.4f\n',nover,args.mztol/4);
+        fprintf('Have %d targets overlapping in time with mztol<%.4f/4\n',nover,args.mztol);
       end
       if ~isempty(args.rt)
         nover=sum(timerange(:,2)-timerange(:,1)<args.timetol/2);
