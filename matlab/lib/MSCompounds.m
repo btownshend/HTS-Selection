@@ -777,7 +777,7 @@ classdef MSCompounds < handle
                 if length(fi)>1
                   % More than one feature in time window; use one with highest peak height
                   if args.debug || ismember(i,args.trace)
-                    fprintf('Have %d ambiguous features for %s[%s] in %s\n', length(fi), obj.names{i},obj.ADDUCTS(k).name,obj.samples{j});
+                    fprintf('Have %d features in time window for %s[%s] in %s with intensities [%s]; using largest\n', length(fi), obj.names{i},obj.ADDUCTS(k).name,obj.samples{j},sprintf('%.0f ',[obj.reffeatures(j).features(fi).intensity]));
                   end
                   %[~,mind]=min(abs([obj.reffeatures(j).features(fi).time]-obj.meantime(i)));
                   [~,mind]=max([obj.reffeatures(j).features(fi).intensity]);
