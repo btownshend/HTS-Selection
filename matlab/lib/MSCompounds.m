@@ -720,7 +720,7 @@ classdef MSCompounds < handle
                   continue;
                 end
 
-                if length(selexpected)>length(bestset) || (length(selexpected)==length(bestset) && (nFN<astats.FN || nFP<astats.FP || (args.allowambig && tsens>bestic)) )
+                if length(selexpected)>length(bestset) || (length(selexpected)==length(bestset) && (nFN<astats.FN || (nFN==astats.FN && (nFP<astats.FP || (args.allowambig && nFP==astats.FP && tsens>bestic)))))
                   bestset=selexpected;
                   bestwindow=timewindow;
                   bestic=tsens;
