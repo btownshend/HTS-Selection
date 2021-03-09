@@ -1015,8 +1015,15 @@ classdef MSCompounds < handle
            x(row).mz=round(obj.mztarget(i,adduct),5);
            x(row).time=round(obj.meantime(i),2);
            x(row).sensitivity=round(obj.tsens(i,adduct));
-           x(row).FP=obj.astats(i).FP;
-           x(row).FN=obj.astats(i).FN;
+           if isempty(obj.astats(i).run)
+             x(row).FP=nan;
+             x(row).FN=nan;
+             x(row).arun=nan;
+           else
+             x(row).FP=obj.astats(i).FP;
+             x(row).FN=obj.astats(i).FN;
+             x(row).arun=obj.astats(i).run;
+           end
            for m=1:length(files)
              x(row).file{m}=obj.samples{files(m)};
              x(row).mzoffset(m)=round((obj.mz(i,adduct,files(m))-obj.mztarget(i,adduct))*1e5);
