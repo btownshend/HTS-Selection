@@ -1968,7 +1968,7 @@ classdef MSCompounds < handle
       fprintf('%s[%s] (%d): m/z=%8.4f t=%.2f [%.2f-%.2f] sens=%.0f',obj.names{ind},obj.ADDUCTS(k).name, ind, obj.mztarget(ind,k),obj.meantime(ind),obj.timewindow(ind,:),obj.tsens(ind,k));
       if ~isempty(obj.astats) && ind<=length(obj.astats) && ~isempty(obj.astats(ind).run) && obj.astats(ind).adduct==args.adduct
         s=obj.astats(ind);
-        fprintf(', FP=%d, FN=%d, hits=%dg,%dL,%dH, miss=%ds,%dw',s.FP,s.FN,s.hitgood,s.hitlow,s.hithigh,s.missstrong,s.missweak);
+        fprintf(', run=%d, FP=%d, FN=%d, hits=%dg,%dL,%dH, miss=%ds,%dw',s.run, s.FP,s.FN,s.hitgood,s.hitlow,s.hithigh,s.missstrong,s.missweak);
       end
       fprintf('\n');
       if ~isempty(args.mzdata)
