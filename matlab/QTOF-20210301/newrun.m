@@ -102,7 +102,7 @@ end
 v256.findfeatures();   
 
 minhits=2;
-maxfp=2;
+maxfp=1;
 trace=[];
 
 % First run to be able to set fsens
