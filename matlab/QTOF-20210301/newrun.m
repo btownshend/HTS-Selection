@@ -13,6 +13,12 @@ adducts=struct('name',{'M+H','M+Na','M+K','M+NH4','M+DMSO+H'},...
 cmd=sprintf('SELECT r.msrun, s.name, r.name, r.mixture, r.well, r.concentration, r.injection FROM massspec.msruns r, massspec.mssessions s WHERE r.mssession=s.mssession');
 [msrun,sessionname, runname,mixture,well,conc,inject]=mysql(cmd);
 msdata=struct('msrun',num2cell(msrun),'sessionname',sessionname,'runname',runname,'mixture',num2cell(mixture),'well',well,'conc',num2cell(conc),'inject',num2cell(inject));
+% Skip any from 2021.01.31 that were redone in 2021.03.01
+mix3=mixture(strcmp(sessionname,'2021.03.01'));
+skip=strcmp(sessionname,'2021.01.31') & ismember(mixture,mix3);
+fprintf('Have %d/%d runs in 2021.01.31 that were later redone -- ignoring them\n', sum(skip), sum(strcmp(sessionname,'2021.01.31')));
+msdata=msdata(~skip);
+%assert(length(unique([msdata.mixture]))==length(msdata));   % Every mixture is unique
 clear msrun sessionname runname mixture well conc inject
 
 compounds=Compounds();
