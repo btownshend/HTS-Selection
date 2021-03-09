@@ -770,6 +770,7 @@ classdef MSCompounds < handle
           for kk=1:length(obj.ADDUCTS)
             for j=1:length(obj.files)
               fi=obj.multihits{i,kk,j};
+              fi=setdiff(fi,used{j});
               time=[obj.reffeatures(j).features(fi).time];
               sel=find(time>=obj.timewindow(i,1) & time <= obj.timewindow(i,2));
               fi=fi(sel);
