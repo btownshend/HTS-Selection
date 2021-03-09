@@ -131,6 +131,13 @@ v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'mztol',v256.MZFUZZ/2,'tr
 fprintf('Increased normicrange\n');
 v256.assignTimes('clear',false,'maxFP',maxfp,'maxFN',1,'normicrange',[0.2,5],'trace',trace,'minhits',minhits);
 v256.checksensitivity(); % Final
+
+% Summarize run counts
+rnum=arrayfun(@(z) max([z.run,0]),v256.astats);
+setfig('AssignTimes');clf;
+hist(rnum,0:max(rnum));
+xlabel('AssignTimes Run');
+ylabel('Compounds');
 v256.platesummary;
 
 report=v256.report();
