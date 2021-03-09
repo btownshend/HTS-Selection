@@ -12,6 +12,9 @@ adducts=struct('name',{'M+H','M+Na','M+K','M+NH4','M+DMSO+H'},...
 % Find all relevant mass spec runs
 cmd=sprintf('SELECT r.msrun, s.name, r.name, r.mixture, r.well, r.concentration, r.injection FROM massspec.msruns r, massspec.mssessions s WHERE r.mssession=s.mssession ORDER BY rand()');
 [msrun,sessionname, runname,mixture,well,conc,inject]=mysql(cmd);
+msdata=struct('msrun',num2cell(msrun),'sessionname',sessionname,'runname',runname,'mixture',num2cell(mixture),'well',well,'conc',num2cell(conc),'inject',num2cell(inject));
+clear msrun sessionname runname mixture well conc inject
+
 compounds=Compounds();
 compounds.load();
 mixtures=Mixtures();
@@ -25,8 +28,9 @@ falsenegs=onlyc([2:end,1]);
 v256.addCompoundsFromDB(onlyc);
 
 etotal=0;
-for i=1:length(msrun)
-  mix=mixtures.get(mixture(i));
+for i=1:length(msdata)
+  d=msdata(i);
+  mix=mixtures.get(d.mixture);
   if length(mix.contents)~=256
     continue;
   end
@@ -35,8 +39,8 @@ for i=1:length(msrun)
   end
 
   tic
-  fprintf('Processing msrun %s (%d) with mixture %s (%d)\n', runname{i}, msrun(i), mix.name, mixture(i));
-  path=sprintf('../../data/MassSpec/%s/%s.mzXML',sessionname{i},well{i});
+  fprintf('Processing msrun %s (%d) with mixture %s (%d)\n', d.runname, d.msrun, mix.name, d.mixture);
+  path=sprintf('../../data/MassSpec/%s/%s.mzXML',d.sessionname,d.well);
   if ~exist(path,'file')
     error('File %s not found\n', path);
   end
@@ -47,7 +51,7 @@ for i=1:length(msrun)
   else
     % Load mass spec from mzXML file
     mzd=MassSpec(path);
-    mzd.moles=conc(i)*inject(i);
+    mzd.moles=d.conc*d.inject;
     mztmp=mzd;
     save(matfile,'mztmp');
     clear mztmp;
@@ -83,10 +87,10 @@ for i=1:length(msrun)
   mzd.deconvolve();
   fprintf('%d done\n',length(mzd.featurelists(end).features));
 
-  v256.addMS(mzd,mix,'group',sessionname{i},'sample',runname{i});
+  v256.addMS(mzd,mix,'group',d.sessionname,'sample',d.runname);
   elapsed=toc;
   etotal=etotal+elapsed;
-  fprintf('Processed %s in %.1f sec; %.0f sec to go\n', path, elapsed,etotal*(length(msrun)-i)/i);
+  fprintf('Processed %s in %.1f sec; %.0f sec to go\n', path, elapsed,etotal*(length(msdata)-i)/i);
 end
 
 v256.findfeatures();   
