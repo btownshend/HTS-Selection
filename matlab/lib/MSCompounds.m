@@ -600,7 +600,7 @@ classdef MSCompounds < handle
         obj.meantime(:)=nan;
         obj.timewindow(:,:)=nan;
         obj.featureindex=nan(length(obj.names),length(obj.ADDUCTS),length(obj.samples));
-        obj.astats(:)=struct('run',{[]},'args',{[]},'adduct',{[]},'sel',{[]},'hitgood',{[]},'hitlow',{[]},'hithigh',{[]},'missstrong',{[]},'missweak',{[]},'FP',{[]},'FN',{[]},'fpsel',{[]})
+        obj.astats(:)=struct('run',{[]},'args',{[]},'adduct',{[]},'sel',{[]},'hitgood',{[]},'hitlow',{[]},'hithigh',{[]},'missstrong',{[]},'missweak',{[]},'FP',{[]},'FN',{[]},'fpsel',{[]});
       end
       used=cell(size(obj.files));
       for j=1:length(obj.files)
