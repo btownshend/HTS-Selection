@@ -2253,6 +2253,71 @@ classdef MSCompounds < handle
       end
       fclose(fd);
     end
+
+    function attribute(obj,fnum,featindex,varargin)
+    % Try to attribute a peak to one of the compounds by checking mz diff and contains
+      defaults=struct('mztol',obj.MZFUZZ,'allfiles',false);
+      args=processargs(defaults,varargin);
+      feat=obj.reffeatures(fnum).features(featindex);
+      if args.allfiles
+        sel=true(size(obj.compound));
+        flag='';
+      else
+        sel=obj.contains(:,fnum);
+        flag='expected ';
+      end
+      compounds=find(sel);
+      M=obj.mass(sel);
+      adducts={
+'M+3H','M/3+1.007276',
+'M+2H+Na','M/3+8.334590',
+'M+H+2Na','M/3+15.7661904',
+'M+3Na','M/3+22.989218',
+'M+2H','M/2+1.007276',
+'M+H+NH4','M/2+9.520550',
+'M+H+Na','M/2+11.998247',
+'M+H+K','M/2+19.985217',
+'M+ACN+2H','M/2+21.520550',
+'M+2Na','M/2+22.989218',
+'M+2ACN+2H','M/2+42.033823',
+'M+3ACN+2H','M/2+62.547097',
+'M+H','M+1.007276',
+'M+NH4','M+18.033823',
+'M+Na','M+22.989218',
+'M+CH3OH+H','M+33.033489',
+'M+K','M+38.963158',
+'M+ACN+H','M+42.033823',
+'M+2Na-H','M+44.971160',
+'M+IsoProp+H','M+61.06534',
+'M+ACN+Na','M+64.015765',
+'M+2K-H','M+76.919040',
+'M+DMSO+H','M+79.02122',
+'M+2ACN+H','M+83.060370',
+'M+IsoProp+Na+H','M+84.05511',
+'2M+H','2*M+1.007276',
+'2M+NH4','2*M+18.033823',
+'2M+Na','2*M+22.989218',
+'2M+K','2*M+38.963158',
+'2M+ACN+H','2*M+42.033823',
+'2M+ACN+Na','2*M+64.015765'};
+      mz=nan(length(M),size(adducts,1));
+      for i=1:size(adducts,1)
+        mz(:,i)=eval(adducts{i,2});
+      end
+      mdiff=mz-feat.mz;
+      [mindiff,ind]=min(abs(mdiff(:)));
+      [a,b]=ind2sub(size(mdiff),ind);
+      fprintf('Closest %scompound to %.4f is compound %d with adduct %s with error=%.4f\n', flag, feat.mz,compounds(a),adducts{b,1},mdiff(a,b));
+      mdiff(a,b)=nan;
+      [a,b]=ind2sub(size(mdiff),find(abs(mdiff(:))<args.mztol));
+      if ~isempty(a)
+        fprintf('Others within %.4f\n', args.mztol);
+        for i=1:length(a)
+          fprintf(' Compound %d with adduct %s with error=%.4f\n', compounds(a(i)),adducts{b(i),1},mdiff(a(i),b(i)));
+        end
+      end
+      
+    end
     
   end
 end
