@@ -1008,5 +1008,34 @@ classdef MassSpec < handle
       end
     end
     
+    function checkcalibration(obj,varargin)
+    % Check reference mass calibration
+      defaults=struct('refmasses',[121.050873,922.009798]);
+      args=processargs(defaults,varargin);
+      pe=strsplit(obj.path,'/');
+      ti=sprintf('%s - calibration',strjoin(pe(end-1:end),'/'));
+      setfig(ti); clf;
+      maxic=0;
+      semilogy(obj.time,obj.TIC()/1000);
+      hold on;
+      leg={'TIC/1000'};
+      for i=1:length(args.refmasses)
+        % Get EIC
+        [ic,mz,time]=obj.mzscan(args.refmasses(i),'mztol',5e-3);   % Will be exact since machine corrects using these
+        semilogy(time,ic);
+        maxic=max([maxic;ic(time>3)]);
+        hold on;
+        leg{end+1}=sprintf('%.4f',args.refmasses(i));
+      end
+      ax=axis;
+      ax(4)=max([maxic*1.05,1e6]);
+      ax(3)=1000;
+      axis(ax);
+      legend(leg,'Location','best');
+      xlabel('Time (min)');
+      ylabel('Ion Count');
+      title(ti);
+    end
+    
   end % methods
 end % classdef
