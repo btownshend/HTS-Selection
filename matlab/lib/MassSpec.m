@@ -99,6 +99,7 @@ classdef MassSpec < handle
       args=processargs(defaults,varargin);
       fprintf('Loading %s...\n', path);
       mzxml=mzxmlread(path);
+
       [obj.peaks,obj.time]=mzxml2peaks(mzxml);
       good=true(size(obj.peaks));
       for i=1:length(obj.peaks)
@@ -1029,11 +1030,17 @@ classdef MassSpec < handle
     
     function checkcalibration(obj,varargin)
     % Check reference mass calibration
-      defaults=struct('refmasses',[121.050873,922.009798]);
+      defaults=struct('refmasses',[121.050873,922.009798],'newfig',true);
       args=processargs(defaults,varargin);
       pe=strsplit(obj.path,'/');
-      ti=sprintf('%s - calibration',strjoin(pe(end-1:end),'/'));
-      setfig(ti); clf;
+      if length(pe)>2
+        ti=sprintf('%s - calibration',strjoin(pe(end-1:end),'/'));
+      else
+        ti=sprintf('%s - calibration',obj.path);
+      end
+      if args.newfig
+        setfig(ti); clf;
+      end
       maxic=0;
       semilogy(obj.time,obj.TIC()/1000);
       hold on;
@@ -1050,9 +1057,10 @@ classdef MassSpec < handle
       ax(4)=max([maxic*1.05,1e6]);
       ax(3)=1000;
       axis(ax);
-      legend(leg,'Location','best');
+      legend(leg,'Location','North');
       xlabel('Time (min)');
       ylabel('Ion Count');
+      grid on
       title(ti);
     end
     
