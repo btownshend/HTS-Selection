@@ -72,8 +72,27 @@ classdef MassSpec < handle
         fprintf('%8.4f %s\n',c(i,1),sprintf('%4.2f ',c(i,2:end)/c(i,args.ref+1)));
       end
     end
-  end
   
+    function u=uniquepeaks(objs,varargin)
+    % Find m/z peaks that are unique to one of the objs
+      defaults=struct('mztol',0.01,'timerange',[],'minic',5000,'minratio',10);
+      args=processargs(defaults,varargin);
+      comp=Compounds();
+      comp.load();
+      c=MassSpec.comparepeaks(objs,'mztol',args.mztol,'timerange',args.timerange,'minic',args.minic);
+      % Compute ratio of ic of each peak in 1st vs 2nd highest file
+      ratio=zeros(size(c,1),1);
+      u=[];
+      for i=1:size(c,1)
+        [mx,ind]=max(c(i,2:end));
+        ratio(i)=mx/max(c(i,[2:ind,ind+2:end]));
+        if ratio(i)>args.minratio
+          u=[u,struct('mz',c(i,1),'ic',c(i,2:end),'maxind',ind,'maxic',mx)];
+        end
+      end
+    end
+  end
+    
   methods
     function obj=MassSpec(path,varargin)
       defaults=struct('debug',false,'savexml',false);
