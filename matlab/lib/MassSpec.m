@@ -87,7 +87,7 @@ classdef MassSpec < handle
         [mx,ind]=max(c(i,2:end));
         ratio(i)=mx/max(c(i,[2:ind,ind+2:end]));
         if ratio(i)>args.minratio
-          u=[u,struct('mz',c(i,1),'ic',c(i,2:end),'maxind',ind,'maxic',mx)];
+          u=[u,struct('mz',c(i,1),'ic',c(i,2:end),'maxind',ind,'maxic',mx,'ratio',ratio(i))];
         end
       end
     end
