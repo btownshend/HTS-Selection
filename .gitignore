@@ -54,7 +54,7 @@ matlab/QTOF-20210131/savelog.txt
 results/report-*.csv
 v256only-*.log
 database/Compounds.mwb.bak
-matlab/QTOF-20210301/newrun-*.log
+newrun-*.log
 matlab/QTOF-20210301/ident_singles.csv
 matlab/QTOF-20210301/findallhits.txt
 matlab/QTOF-20210131/v256tests.txt
