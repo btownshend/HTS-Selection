@@ -1558,26 +1558,28 @@ classdef MSCompounds < handle
           mz(i,:)=obj.mztarget(i,obj.astats(i).adduct)+obj.MZFUZZ*[-1,1];
         end
       end
-      plot(mean(mz,2),obj.meantime,'.b');
-      hold on;
-      mzmissing=obj.mass(isnan(obj.meantime));
-      plot(mzmissing,-2+2*rand(size(mzmissing)),'.r','MarkerSize',1);
-      ngood=0;
+      overlap=nan(size(obj.meantime));
       for i=1:size(etime,1)
         if isnan(obj.meantime(i))
           continue;
         end
-        overlap=sum(etime(:,1)<etime(i,2) & etime(:,2)>etime(:,1) & mz(:,1)<mz(i,2) & mz(:,2)>mz(i,1));
-        if overlap>1
-          col='r';
-        else
-          col='g';
-          ngood=ngood+1;
-        end
-        plot(mz(i,[1,2,2,1,1]),etime(i,[1,1,2,2,1]),col);
+        overlap(i)=sum(etime(:,1)<etime(i,2) & etime(:,2)>etime(i,1) & mz(:,1)<mz(i,2) & mz(:,2)>mz(i,1));
       end
+      plot(mean(mz(overlap==1,:),2),obj.meantime(overlap==1),'.b');
+      hold on;
+      plot(mean(mz(overlap>1,:),2),obj.meantime(overlap>1),'.r');
+      mzmissing=obj.mass(isnan(obj.meantime));
+      plot(mzmissing,-5+2*rand(size(mzmissing)),'.m','MarkerSize',1);
+      ngood=sum(overlap==1);
+      ticks=get(gca,'YTick');
+      ticklabels=get(gca,'YTickLabels');
+      ticklabels={'Unknown',ticklabels{ticks>=0}};
+      ticks=[-4,ticks(ticks>=0)];
+      set(gca,'YTick',ticks);
+      set(gca,'YTickLabels',ticklabels);
       xlabel('m/z');
-      ylabel('Elution time (s)');
+      ylabel('Elution time (min)');
+      legend({sprintf('Unique (N=%d)',sum(overlap==1)),sprintf('Overlapping (N=%d)',sum(overlap>1)),sprintf('Unidentified (N=%d)',sum(isnan(obj.meantime)))});
       title(sprintf('Compound Map (%d distinguishable/%d identified)',ngood,sum(isfinite(obj.meantime))));
     end
     
