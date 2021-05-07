@@ -1,23 +1,23 @@
-'STK394120','COc1cccc(c1O)/C=C(/c1nc2c([nH]1)cccc2)C#N'
-'STL321458','C1CCN(CC1)Cn1c2ccccc2c2c1nc1ccccc1n2'
-'STK842541','CCOC(=O)c1cnc2c(c1NCc1ccco1)ccc(c2C)Cl'
-'STK744520','COc1ccc2c(c1)c(C(=O)O)c(n2CCc1ccc(c(c1)OC)OC)C'
-'STK111593','O=C(N1CCOCC1)O/N=C(/c1ccccn1)N'
-'STK819042','N#C/C(=Cc1c(Oc2cccc(c2)C)nc2n(c1=O)cccc2)/c1nc2c([nH]1)cccc2'
-'STK705626','CCOCCCNC(=O)/C(=C/c1c(Oc2ccc(cc2)Br)nc2n(c1=O)cccc2)/C#N'
-'STL444096','COc1cc(ccc1OC)C(=O)Cn1c2nc(nn2c2c1cccc2)c1ccccc1'
-'STK705821','N#C/C(=Cc1c(Oc2ccccc2)nc2n(c1=O)cccc2)/c1nc2c(s1)cccc2'
-'STK160385','COc1ccc(c(c1)C)C=C1C(=O)c2c(C1=O)cccc2'
-'STK130209','N=C(Nc1nc(C)c2c(n1)cccc2)NC(=O)CCN1C(=O)c2c(C1=O)cccc2'
-'STK705173','N#C/C(=Cc1c(Oc2ccccc2Cl)nc2n(c1=O)cccc2)/c1nc2c([nH]1)cccc2'
-'STK789217','CCOC(=O)c1cnc(nc1N)SCc1cccc(c1)C'
-'STK801182','N#C/C(=Cc1c(Oc2ccc(c(c2)C)Cl)nc2n(c1=O)cccc2)/C(=O)N1CCCCC1'
-'STK206111','Clc1ccc2c(c1)n1ncc3c(c1n2)cccc3'
-'STK353676','COc1cc(ccc1OC)c1c(C)nn2c1ncc(c2N)C#N'
-'STK848995','CCOC(=O)N1CCN(CC1)c1cnn(c(=O)c1Cl)c1nc2c(s1)cccc2'
-'STL442882','COc1cccc(c1)C(=O)/C=c1/[nH]c2ncc(cc2[nH]c1=O)Br'
-'STK182628','Cc1nn2c(nnc2c2c1cccc2)c1ccco1'
-'STK909612','CCc1ccc2c(c1)c(C)c(o2)C(=O)N(C1CCS(=O)(=O)C1)Cc1ccccc1F'
-'STK499679','Cc1nn2c(nnc2c2c1cccc2)c1ccncc1'
-'STK908689','OCCCN1C(c2ccc(cc2)C(C)C)c2c(C1=O)[nH]nc2c1ccccc1O'
-'STL140273','CCOC(=O)c1cnc(nc1N)SC'
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK394120' FROM compounds c WHERE smiles='COc1cccc(c1O)/C=C(/c1nc2c([nH]1)cccc2)C#N';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STL321458' FROM compounds c WHERE smiles='C1CCN(CC1)Cn1c2ccccc2c2c1nc1ccccc1n2';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK842541' FROM compounds c WHERE smiles='CCOC(=O)c1cnc2c(c1NCc1ccco1)ccc(c2C)Cl';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK744520' FROM compounds c WHERE smiles='COc1ccc2c(c1)c(C(=O)O)c(n2CCc1ccc(c(c1)OC)OC)C';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK111593' FROM compounds c WHERE smiles='O=C(N1CCOCC1)O/N=C(/c1ccccn1)N';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK819042' FROM compounds c WHERE smiles='N#C/C(=Cc1c(Oc2cccc(c2)C)nc2n(c1=O)cccc2)/c1nc2c([nH]1)cccc2';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK705626' FROM compounds c WHERE smiles='CCOCCCNC(=O)/C(=C/c1c(Oc2ccc(cc2)Br)nc2n(c1=O)cccc2)/C#N';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STL444096' FROM compounds c WHERE smiles='COc1cc(ccc1OC)C(=O)Cn1c2nc(nn2c2c1cccc2)c1ccccc1';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK705821' FROM compounds c WHERE smiles='N#C/C(=Cc1c(Oc2ccccc2)nc2n(c1=O)cccc2)/c1nc2c(s1)cccc2';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK160385' FROM compounds c WHERE smiles='COc1ccc(c(c1)C)C=C1C(=O)c2c(C1=O)cccc2';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK130209' FROM compounds c WHERE smiles='N=C(Nc1nc(C)c2c(n1)cccc2)NC(=O)CCN1C(=O)c2c(C1=O)cccc2';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK705173' FROM compounds c WHERE smiles='N#C/C(=Cc1c(Oc2ccccc2Cl)nc2n(c1=O)cccc2)/c1nc2c([nH]1)cccc2';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK789217' FROM compounds c WHERE smiles='CCOC(=O)c1cnc(nc1N)SCc1cccc(c1)C';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK801182' FROM compounds c WHERE smiles='N#C/C(=Cc1c(Oc2ccc(c(c2)C)Cl)nc2n(c1=O)cccc2)/C(=O)N1CCCCC1';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK206111' FROM compounds c WHERE smiles='Clc1ccc2c(c1)n1ncc3c(c1n2)cccc3';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK353676' FROM compounds c WHERE smiles='COc1cc(ccc1OC)c1c(C)nn2c1ncc(c2N)C#N';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK848995' FROM compounds c WHERE smiles='CCOC(=O)N1CCN(CC1)c1cnn(c(=O)c1Cl)c1nc2c(s1)cccc2';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STL442882' FROM compounds c WHERE smiles='COc1cccc(c1)C(=O)/C=c1/[nH]c2ncc(cc2[nH]c1=O)Br';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK182628' FROM compounds c WHERE smiles='Cc1nn2c(nnc2c2c1cccc2)c1ccco1';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK909612' FROM compounds c WHERE smiles='CCc1ccc2c(c1)c(C)c(o2)C(=O)N(C1CCS(=O)(=O)C1)Cc1ccccc1F';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK499679' FROM compounds c WHERE smiles='Cc1nn2c(nnc2c2c1cccc2)c1ccncc1';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STK908689' FROM compounds c WHERE smiles='OCCCN1C(c2ccc(cc2)C(C)C)c2c(C1=O)[nH]nc2c1ccccc1O';
+INSERT INTO names(domain,compound,name) SELECT 7,c.compound,'STL140273' FROM compounds c WHERE smiles='CCOC(=O)c1cnc(nc1N)SC';
