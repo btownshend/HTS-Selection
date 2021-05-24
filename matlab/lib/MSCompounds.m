@@ -1038,6 +1038,145 @@ classdef MSCompounds < handle
       x=struct2table(x);
     end
     
+    function [group,index]=parsevector(obj,vname)
+    % Convert a vector name (e.g. V256A-A3) to a group and index (both 1-indexed)
+      if strncmp(vname,'V256A',5)
+        plate=1;
+      elseif strncmp(vname,'V256B',5)
+        plate=2;
+      else
+        error('Bad vector name: %s', vname);
+      end
+      row=vname(7)-'A'+1;
+      col=str2double(vname(8:end));
+      pos=(plate-1)*96+(col-1)*8+row;
+      assert(pos>=1 && pos<=180);
+      group=floor((pos-1)/20)+1;
+      index=pos-(group-1)*20;
+      %fprintf('%s -> %d,%d\n', vname, group, index);
+    end
+    
+    function x=report2(obj,summary,varargin) 
+    % Build table on data by compound for use as SI to HTS selection paper
+    % Each row is a single compound
+    % Columns are: CDIVWell,SMILES,MW, Selection Group, Max fold individ, Upper bound fold, adduct, m/z,elute time,sensitivity,falsepos,V256-1:V256-9,isolated (e.g. YNYY--YN-), second source
+      defaults=struct();
+      args=processargs(defaults,varargin);
+
+      if any(isfinite(obj.meantime) & ~any(isfinite(obj.tsens),2))
+        error('Run checksensitivity before report');
+      end
+      
+      x=[];row=1;
+      cc=Compounds.instance();
+      mm=Mixtures.instance();
+      dlist=find(ismember(cc.domains,{'ChemspaceID','VitasID','Otava'}));
+
+      fprintf('Processing %d names...',length(obj.names));
+      for i=1:length(obj.names)
+        if rem(i,100)==0
+          fprintf('%d...',i);
+        end
+        x(row).name=obj.names{i};
+        cid=cc.find(obj.names{i});
+        x(row).smiles=cid.smiles;
+        x(row).mass=cid.mass;
+        
+        % Find all the vectors and selection mix that contain this compound
+        mixes=mm.findcontains(cid.compound);
+        x(row).selgroup='?';
+        x(row).vecs=cell(1,9);
+        for m=1:length(mixes)
+          if strncmp(mixes(m).name,'V256A',5) || strncmp(mixes(m).name,'V256B',5)
+            [group,index]=obj.parsevector(mixes(m).name);
+            x(row).vecs{group}=sprintf('%d.%02d',group,index);
+          elseif strncmp(mixes(m).name,'V2560',5)
+            x(row).selgroup=mixes(m).name(6);
+          end
+        end
+        % Get the maximum fold for this compound individually
+        sel=arrayfun(@(z) all(z.contains==cid.compound) && z.conc==10e-6 && ~strncmp(z.target,'87',2),summary.cleavage);
+        if sum(sel)==1
+          x(row).foldsingle=max(summary.cleavage(sel).fold);
+        elseif sum(sel)>1
+          fprintf('Multiple fold data for %s\n', x(row).name);
+          keyboard;
+        else
+          x(row).foldsingle=nan;
+          %fprintf('No single fold data for %s\n', x(row).name);
+        end
+        % Get the minimum fold for any vector that contains this
+        sel=arrayfun(@(z) ismember(cid.compound,z.contains)&& length(z.contains)==256 && z.conc==2e-6,summary.cleavage);
+        if sum(sel)>=1
+          %upper=arrayfun(@(z) z.foldci(:,2), summary.cleavage(sel),'Unif',false);
+          upper=arrayfun(@(z) z.fold, summary.cleavage(sel),'Unif',false);
+          upper=horzcat(upper{:});
+          x(row).foldvec=max(min(upper,[],2));
+        else
+          x(row).foldvec=nan;
+          fprintf('No vector fold data for %s\n', x(row).name);
+          keyboard;
+        end
+        % Get a second source, if any
+        sel=dlist(cellfun(@(z) ~isempty(z),cid.aliases(dlist)));
+        x(row).secondsrc='';
+        if any(sel)
+          ss={};
+          for j=1:length(sel)
+            ss{end+1}=sprintf('%s:%s',strrep(cc.domains{sel(j)},'ID',''),cid.aliases{sel(j)});
+          end
+          x(row).secondsrc = strjoin(ss,',');
+        end
+
+        % Get the Mass spec info
+        if ~isempty(obj.astats) && i<=length(obj.astats) && ~isempty(obj.astats(i).adduct)
+          adduct=obj.astats(i).adduct;  % Same adduct as used to assign it
+        else
+          [~,adduct]=max(obj.tsens(i,:));   % Use highest adduct
+        end
+        x(row).adduct=obj.ADDUCTS(adduct).name;
+        x(row).mz=round(obj.mztarget(i,adduct),5);
+        x(row).time=round(obj.meantime(i),2);
+        if isempty(obj.astats(i).run)
+          x(row).sensitivity=nan;
+          x(row).FP=nan;
+        else
+          x(row).sensitivity=round(obj.tsens(i,adduct),0);
+          x(row).FP=obj.astats(i).FP;
+        end
+        % Check if we see it in each vector
+        x(row).isolated='---------';
+        files=find(obj.contains(i,:));
+        for m=1:length(files)
+          n=obj.samples{files(m)};
+          if strncmp(n,'V256A',5) || strncmp(n,'V256B',5) 
+            [group,index]=obj.parsevector(n);
+            if isfinite(obj.time(i,adduct,files(m)))
+              x(row).isolated(group)='Y';
+            else
+              x(row).isolated(group)='N';
+            end
+          end
+        end
+        row=row+1;
+      end
+      x=struct2table(x);
+      x=renamevars(x,'name','Name');
+      x=renamevars(x,'smiles','SMILES');
+      x=renamevars(x,'mass','Mass');
+      x=renamevars(x,'selgroup','Selection Group');
+      x=renamevars(x,'vecs','Vec256');
+      x=renamevars(x,'adduct','Adduct');
+      x=renamevars(x,'isolated','Isolated');
+      x=renamevars(x,'sensitivity','Sensitivity (ion count)');
+      x=renamevars(x,'time','Elution Time (min)');
+      x=renamevars(x,'secondsrc','Second Source');
+      x=renamevars(x,'foldsingle','Max fold individually @10uM');
+      x=renamevars(x,'foldvec','Upper bound fold @2uM');
+      x.Properties.VariableUnits{'Mass'}='g/mol';
+      x=renamevars(x,'mz','m/z');
+    end
+    
     function platesummary(obj)
     % Summarize stats by original CDIV plate
       plate=cellfun(@(z) z(1:end-3),obj.names,'Unif',false);
