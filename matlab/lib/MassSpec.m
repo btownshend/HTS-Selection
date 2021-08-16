@@ -77,8 +77,7 @@ classdef MassSpec < handle
     % Find m/z peaks that are unique to one of the objs
       defaults=struct('mztol',0.01,'timerange',[],'minic',5000,'minratio',10);
       args=processargs(defaults,varargin);
-      comp=Compounds();
-      comp.load();
+      comp=Compounds.instance();
       c=MassSpec.comparepeaks(objs,'mztol',args.mztol,'timerange',args.timerange,'minic',args.minic);
       % Compute ratio of ic of each peak in 1st vs 2nd highest file
       ratio=zeros(size(c,1),1);
