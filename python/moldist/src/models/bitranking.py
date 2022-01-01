@@ -1,8 +1,10 @@
+from rdkit.ML import InfoTheory
 from rdkit.ML.InfoTheory import InfoBitRanker
 
 
 def getFragRanks(fcat, fps, acts, ntop=5):
-    ranker = InfoBitRanker(len(fps[0]), 2)
+    ranker = InfoBitRanker(len(fps[0]), 2, InfoTheory.InfoType.BIASENTROPY)
+    ranker.SetBiasList((1,))
     print("Num of targets active: %.0f, inactive: %.0f" % (sum(acts), len(acts) - sum(acts)))
     for i, fp in enumerate(fps):
         ranker.AccumulateVotes(fp, int(acts[i]))
