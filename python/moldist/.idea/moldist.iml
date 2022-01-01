@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../../database" isTestSource="false" />
     </content>
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 3.8 (synbio)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.8 (moldist)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
