@@ -58,3 +58,4 @@ newrun-*.log
 matlab/QTOF-20210301/ident_singles.csv
 matlab/QTOF-20210301/findallhits.txt
 matlab/QTOF-20210131/v256tests.txt
+python/moldist/src/my_runs
